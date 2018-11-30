@@ -81,10 +81,10 @@ public class AppRoleServiceTest {
     }
 
     @Test
-    @Ignore
     public void test_createAppRole_successfully() {
 
         Response response =getMockResponse(HttpStatus.NO_CONTENT, true, "");
+        Response responseList = getMockResponse(HttpStatus.OK, true, "{  \"keys\": [    \"myvaultapprole\"  ]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String [] policies = {"default"};
         AppRole appRole = new AppRole("approle1", policies, true, "1", "100m", 0);
@@ -95,7 +95,8 @@ public class AppRoleServiceTest {
         when(ControllerUtil.areAppRoleInputsValid(appRole)).thenReturn(true);
         when(JSONUtil.getJSON(appRole)).thenReturn(jsonStr);
         when(ControllerUtil.convertAppRoleInputsToLowerCase(Mockito.any())).thenReturn(jsonStr);
-        
+        when(reqProcessor.process("/auth/approle/role/list","{}",token)).thenReturn(responseList);
+
         ResponseEntity<String> responseEntityActual = appRoleService.createAppRole(token, appRole);
         assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
         assertEquals(responseEntityExpected, responseEntityActual);
@@ -124,11 +125,11 @@ public class AppRoleServiceTest {
     }
     
     @Test
-    @Ignore
     public void test_createAppRole_Failure_404() {
 
         String responseBody = "{\"errors\":[\"Invalid input values for AppRole creation\"]}";
         Response response =getMockResponse(HttpStatus.NOT_FOUND, true, responseBody);
+        Response responseList = getMockResponse(HttpStatus.OK, true, "{  \"keys\": [    \"myvaultapprole\"  ]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String [] policies = {"default"};
         AppRole appRole = new AppRole("", policies, true, "1", "100m", 0);
@@ -139,7 +140,7 @@ public class AppRoleServiceTest {
         when(ControllerUtil.areAppRoleInputsValid(appRole)).thenReturn(true);
         when(JSONUtil.getJSON(appRole)).thenReturn(jsonStr);
         when(ControllerUtil.convertAppRoleInputsToLowerCase(Mockito.any())).thenReturn(jsonStr);
-        
+        when(reqProcessor.process("/auth/approle/role/list","{}",token)).thenReturn(responseList);
         ResponseEntity<String> responseEntityActual = appRoleService.createAppRole(token, appRole);
         
         assertEquals(HttpStatus.NOT_FOUND, responseEntityActual.getStatusCode());
@@ -202,6 +203,25 @@ public class AppRoleServiceTest {
     }
 
     @Test
+    public void test_createSecretId_failure_500() {
+        Response response =getMockResponse(HttpStatus.INTERNAL_SERVER_ERROR, true, "{\"messages\":[\"Internal server error\"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"messages\":[\"Internal server error\"]}");
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        AppRoleSecretData appRoleSecretData = new AppRoleSecretData("approle1", new SecretData("dev", "appl"));
+
+        String jsonStr = "{\"role_name\":\"approle1\",\"data\":{\"env\":\"dev\",\"appname\":\"appl\"}}";
+
+        when(reqProcessor.process("/auth/approle/secretid/create", jsonStr,token)).thenReturn(response);
+        when(ControllerUtil.convertAppRoleSecretIdToLowerCase(Mockito.any())).thenReturn(jsonStr);
+        when(JSONUtil.getJSON(appRoleSecretData)).thenReturn(jsonStr);
+
+        ResponseEntity<String> responseEntityActual = appRoleService.createsecretId(token, appRoleSecretData);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+
+    }
+
+    @Test
     public void test_readSecretId_successfully() {
 
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
@@ -241,6 +261,27 @@ public class AppRoleServiceTest {
     }
 
     @Test
+    public void test_deleteAppRole_failure_500() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String appRoleId = "approle1";
+        Response response =getMockResponse(HttpStatus.INTERNAL_SERVER_ERROR, true, "{\"messages\":[\"Internal server error\"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"messages\":[\"Internal server error\"]}");
+        AppRole appRole = new AppRole();
+        appRole.setRole_name(appRoleId);
+        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":null,\"bind_secret_id\":false,\"secret_id_num_uses\":null,\"secret_id_ttl\":null,\"token_num_uses\":null,\"token_ttl\":null,\"token_max_ttl\":null}";
+
+        when(JSONUtil.getJSON(appRole)).thenReturn(jsonStr);
+        when(reqProcessor.process("/auth/approle/role/delete",jsonStr,token)).thenReturn(response);
+
+        ResponseEntity<String> responseEntityActual = appRoleService.deleteAppRole(token, appRole);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+
+    }
+
+    @Test
     public void test_deleteSecretId_successfully() {
 
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
@@ -257,6 +298,25 @@ public class AppRoleServiceTest {
         assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
         assertEquals(responseEntityExpected, responseEntityActual);
         
+    }
+
+    @Test
+    public void test_deleteSecretId_failure_500() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String appRoleId = "approle1";
+        AppRoleNameSecretId appRoleNameSecretId = new AppRoleNameSecretId(appRoleId, "5973a6de-38c1-0402-46a3-6d76e38b773c");
+        Response response =getMockResponse(HttpStatus.INTERNAL_SERVER_ERROR, true, "{\"messages\":[\"Internal server error\"]}");
+        String jsonStr = "{\"role_name\":\"approle1\",\"secret_id\":\"5973a6de-38c1-0402-46a3-6d76e38b773c\"}";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"messages\":[\"Internal server error\"]}");
+
+        when(JSONUtil.getJSON(appRoleNameSecretId)).thenReturn(jsonStr);
+        when(reqProcessor.process("/auth/approle/secret/delete",jsonStr,token)).thenReturn(response);
+        ResponseEntity<String> responseEntityActual = appRoleService.deleteSecretId(token, appRoleNameSecretId);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+
     }
 
     @Test
@@ -302,5 +362,22 @@ public class AppRoleServiceTest {
         assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
         assertEquals(responseEntityExpected, responseEntityActual);
         
+    }
+
+    @Test
+    public void test_loginWithApprole_failure_500() {
+        String expectedLoginResponse = "{\"messages\":[\"Internal server error\"]}";
+        Response response =getMockResponse(HttpStatus.INTERNAL_SERVER_ERROR, true, expectedLoginResponse);
+        AppRoleIdSecretId appRoleIdSecretId = new AppRoleIdSecretId("approle1", "5973a6de-38c1-0402-46a3-6d76e38b773c");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Approle Login Failed.\"]}HTTP STATUSCODE  :500");
+        String jsonStr = "{\"role_id\":\"approle1\",\"secret_id\":\"5973a6de-38c1-0402-46a3-6d76e38b773c\"}";
+
+        when(JSONUtil.getJSON(appRoleIdSecretId)).thenReturn(jsonStr);
+        when(reqProcessor.process("/auth/approle/login",jsonStr,"")).thenReturn(response);
+
+        ResponseEntity<String> responseEntityActual = appRoleService.login(appRoleIdSecretId);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+
     }
 }
