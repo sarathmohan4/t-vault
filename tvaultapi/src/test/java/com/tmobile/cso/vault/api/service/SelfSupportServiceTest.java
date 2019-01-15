@@ -1,8 +1,11 @@
 package com.tmobile.cso.vault.api.service;
 
+import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.controller.ControllerUtil;
 import com.tmobile.cso.vault.api.exception.TVaultValidationException;
 import com.tmobile.cso.vault.api.model.*;
+import com.tmobile.cso.vault.api.process.RequestProcessor;
+import com.tmobile.cso.vault.api.process.Response;
 import com.tmobile.cso.vault.api.utils.AuthorizationUtils;
 import com.tmobile.cso.vault.api.utils.JSONUtil;
 import com.tmobile.cso.vault.api.utils.PolicyUtils;
@@ -84,6 +87,16 @@ public class SelfSupportServiceTest {
         userDetails.setClientToken(token);
         userDetails.setSelfSupportToken(token);
         return userDetails;
+    }
+
+    Response getMockResponse(HttpStatus status, boolean success, String expectedBody) {
+        Response response = new Response();
+        response.setHttpstatus(status);
+        response.setSuccess(success);
+        if (expectedBody!="") {
+            response.setResponse(expectedBody);
+        }
+        return response;
     }
 
     private void mockIsAuthorized(UserDetails userDetails, boolean isAuthorized) {
@@ -704,7 +717,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Role association is removed \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Role association is removed \"]}");
 
-        when(safesService.removeAWSRoleFromSafe(token, awsRole, false)).thenReturn(response);
+        when(safesService.removeAWSRoleFromSafe(eq(token), eq(awsRole), eq(false), Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, true);
 
         ResponseEntity<String> responseEntity = selfSupportService.removeAWSRoleFromSafe(userDetails, token, awsRole, false);
@@ -721,7 +734,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to remove AWS role from the safe\"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to remove AWS role from the safe\"]}");
 
-        when(safesService.removeAWSRoleFromSafe(token, awsRole, false)).thenReturn(response);
+        when(safesService.removeAWSRoleFromSafe(eq(token), eq(awsRole), eq(false), Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, false);
 
         ResponseEntity<String> responseEntity = selfSupportService.removeAWSRoleFromSafe(userDetails, token, awsRole, false);
@@ -738,8 +751,9 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Role association is removed \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Role association is removed \"]}");
 
-        when(safesService.removeAWSRoleFromSafe(token, awsRole, true)).thenReturn(response);
-
+        when(safesService.removeAWSRoleFromSafe(eq(token), eq(awsRole), eq(true), Mockito.any())).thenReturn(response);
+        Response responseOK = getMockResponse(HttpStatus.OK, true, "");
+        when(ControllerUtil.canDeleteRole(awsRole.getRole(), token, userDetails, TVaultConstants.AWSROLE_METADATA_MOUNT_PATH)).thenReturn(responseOK);
         ResponseEntity<String> responseEntity = selfSupportService.removeAWSRoleFromSafe(userDetails, token, awsRole, true);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
@@ -930,8 +944,7 @@ public class SelfSupportServiceTest {
 
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role created \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role created \"]}");
-
-        when(awsAuthService.createRole(token, awsLoginRole)).thenReturn(response);
+        when(awsAuthService.createRole(eq(token), eq(awsLoginRole), Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, true);
 
         ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole,"shared/mysafe01");
@@ -951,7 +964,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role created \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role created \"]}");
 
-        when(awsAuthService.createRole(token, awsLoginRole)).thenReturn(response);
+        when(awsAuthService.createRole(eq(token), eq(awsLoginRole), Mockito.any())).thenReturn(response);
         ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole,"shared/mysafe01");
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
@@ -969,7 +982,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to create AWS role\"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to create AWS role\"]}");
 
-        when(awsAuthService.createRole(token, awsLoginRole)).thenReturn(response);
+        when(awsAuthService.createRole(eq(token), eq(awsLoginRole), Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, false);
 
         ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole,"shared/mysafe01");
