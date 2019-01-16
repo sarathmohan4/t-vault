@@ -190,8 +190,11 @@ public class AWSIAMAuthService {
 	 * @param role
 	 * @return
 	 */
-	public ResponseEntity<String> deleteIAMRole(String token, String role){
-
+	public ResponseEntity<String> deleteIAMRole(String token, String role, UserDetails userDetails){
+		Response permissionResponse = ControllerUtil.canDeleteRole(role, token, userDetails, TVaultConstants.AWSROLE_METADATA_MOUNT_PATH);
+		if (HttpStatus.INTERNAL_SERVER_ERROR.equals(permissionResponse.getHttpstatus()) || HttpStatus.UNAUTHORIZED.equals(permissionResponse.getHttpstatus())) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\""+permissionResponse.getResponse()+"\"]}");
+		}
 		Response response = reqProcessor.process("/auth/aws/iam/roles/delete","{\"role\":\""+role+"\"}",token);
 		if(response.getHttpstatus().equals(HttpStatus.NO_CONTENT)){
 			return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"IAM Role deleted \"]}");

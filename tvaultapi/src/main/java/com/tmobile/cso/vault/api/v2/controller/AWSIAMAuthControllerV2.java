@@ -94,8 +94,9 @@ public class AWSIAMAuthControllerV2 {
 	 */
 	@ApiOperation(value = "${AWSIAMAuthControllerV2.deleteRole.value}", notes = "${AWSIAMAuthControllerV2.deleteRole.notes}")
 	@DeleteMapping(value="/v2/auth/aws/iam/roles/{role}",produces="application/json")
-	public ResponseEntity<String> deleteIAMRole(@RequestHeader(value="vault-token") String token, @PathVariable("role" ) String role){
-		return awsIamAuthService.deleteIAMRole(token, role);
+	public ResponseEntity<String> deleteIAMRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @PathVariable("role" ) String role){
+		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
+		return awsIamAuthService.deleteIAMRole(token, role, userDetails);
 	}
 
 }

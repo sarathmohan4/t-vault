@@ -248,7 +248,10 @@ public class AWSIAMAuthServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"IAM Role deleted \"]}");
 
         when(reqProcessor.process("/auth/aws/iam/roles/delete","{\"role\":\"mytestawsrole\"}",token)).thenReturn(response);
-        ResponseEntity<String> responseEntity = awsIamAuthService.deleteIAMRole(token, "mytestawsrole");
+        UserDetails userDetails = getMockUser(true);
+        Response responseOk = getMockResponse(HttpStatus.OK, true, "");
+        when(ControllerUtil.canDeleteRole("mytestawsrole", token, userDetails, TVaultConstants.AWSROLE_METADATA_MOUNT_PATH)).thenReturn(responseOk);
+        ResponseEntity<String> responseEntity = awsIamAuthService.deleteIAMRole(token, "mytestawsrole", userDetails);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -260,7 +263,10 @@ public class AWSIAMAuthServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Internal Server Error\"]}");
 
         when(reqProcessor.process("/auth/aws/iam/roles/delete","{\"role\":\"mytestawsrole\"}",token)).thenReturn(response);
-        ResponseEntity<String> responseEntity = awsIamAuthService.deleteIAMRole(token, "mytestawsrole");
+        UserDetails userDetails = getMockUser(true);
+        Response responseOk = getMockResponse(HttpStatus.OK, true, "");
+        when(ControllerUtil.canDeleteRole("mytestawsrole", token, userDetails, TVaultConstants.AWSROLE_METADATA_MOUNT_PATH)).thenReturn(responseOk);
+        ResponseEntity<String> responseEntity = awsIamAuthService.deleteIAMRole(token, "mytestawsrole", userDetails);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
