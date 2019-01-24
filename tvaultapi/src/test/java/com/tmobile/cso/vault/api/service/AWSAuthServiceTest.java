@@ -473,6 +473,26 @@ public class AWSAuthServiceTest {
     }
 
     @Test
+    public void test_createSTSRole_failure() {
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        AWSStsRole awsStsRole = new AWSStsRole();
+        awsStsRole.setAccount_id("account_id1");
+        awsStsRole.setSts_role("sts_role1");
+
+        String jsonStr = "{ \"account_id\": \"account_id1\", \"sts_role\": \"sts_role1\"}";
+        Response response = getMockResponse(HttpStatus.UNAUTHORIZED, true, "{\"errors\":[\"Permission denied\"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"errors\":[\"Permission denied\"]}");
+
+        when(reqProcessor.process("/auth/aws/config/sts/create",jsonStr, token)).thenReturn(response);
+        when(JSONUtil.getJSON(awsStsRole)).thenReturn(jsonStr);
+
+        ResponseEntity<String> responseEntity = awsAuthService.createSTSRole(awsStsRole, token);
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntity);
+
+    }
+
+    @Test
     public void test_authenticateIAM_failure_500() {
 
         String jsonStr = "{\n" +
@@ -580,4 +600,26 @@ public class AWSAuthServiceTest {
         assertEquals(responseEntityExpected, responseEntity);
 
     }
+
+    @Test
+    public  void test_authenticate_failure_400() {
+        AWSAuthLogin awsAuthLogin = new AWSIAMLogin();
+        awsAuthLogin.setIam_http_request_method("POST");
+        awsAuthLogin.setIam_request_body("{}");
+        awsAuthLogin.setIam_request_headers("{\"token\":\"4qJC0tWjMDIKjRDDmtcUAZBt\"}");
+        awsAuthLogin.setIam_request_url("http://testurl.com");
+        awsAuthLogin.setRole("testawsrole");
+        awsAuthLogin.setPkcs7("MIIBjwYJKoZIhvcNAQcDoIIBgDCCAXwCAQAxggE4MIIBNAIBADCBnDCBlDELMAkGA1UEBhMCWkEx====");
+
+        AWSLogin login = new AWSLogin();
+        login.setPkcs7(awsAuthLogin.getPkcs7());
+        login.setRole(awsAuthLogin.getRole());
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid inputs for the given aws login type");
+        when(ControllerUtil.areAwsLoginInputsValid(AWSAuthType.IAM, awsAuthLogin)).thenReturn(false);
+        ResponseEntity<String> responseEntity = awsAuthService.authenticate(AWSAuthType.IAM, awsAuthLogin);
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntity);
+    }
+
 }

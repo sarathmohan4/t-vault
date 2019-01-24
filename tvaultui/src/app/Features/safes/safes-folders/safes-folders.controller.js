@@ -152,10 +152,17 @@
         vm.loading(false);
         console.log(error);
         if (error) {
-          Modal.createModalWithController('stop.modal.html', {
-            title: 'Error',
-            message: 'Please try again. If this issue persists please contact an administrator.'
-          });
+          if (error.status === 400 && error.data.errors) {
+            Modal.createModalWithController('stop.modal.html', {
+              title: 'Limit Reached',
+              message: error.data.errors[0]
+            });
+          } else {
+            Modal.createModalWithController('stop.modal.html', {
+              title: 'Error',
+              message: 'Please try again. If this issue persists please contact an administrator.'
+            });
+          }          
         }
       }
     }

@@ -46,4 +46,6 @@ public class TVaultConstants {
     public static final String AWSROLE_METADATA_MOUNT_PATH = "metadata/awsrole";
     public static final String SELF_SERVICE_APPROLE_NAME = "selfservicesupportrole";
     public static final String SECRET = "secret";
+    public static final String DATA = "data";
+    public static final String DEFAULT = "default";
 }

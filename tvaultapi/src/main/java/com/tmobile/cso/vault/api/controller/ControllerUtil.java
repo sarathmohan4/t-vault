@@ -185,6 +185,12 @@ public final class ControllerUtil {
 	}
 	
 
+	public static Map<Response, SafeNode> getRecursiveReadResponse(String jsonString, String token, Response response, SafeNode safeNode) {
+		ControllerUtil.recursiveRead(jsonString,token,response, safeNode);
+		Map<Response, SafeNode> recursiveResponse = new HashMap<>();
+		recursiveResponse.put(response, safeNode);
+		return recursiveResponse;
+	}
 	/**
 	 * Recursively reads the folders/secrets for a given path
 	 * @param jsonstr

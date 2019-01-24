@@ -18,9 +18,14 @@
 package com.tmobile.cso.vault.api.service;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.model.Secret;
+import com.tmobile.cso.vault.api.utils.SafeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +56,9 @@ public class  SecretService {
 
 	@Value("${vault.auth.method}")
 	private String vaultAuthMethod;
+
+	@Value("${secret.limit:100}")
+	private String secretLimit;
 
 	private static Logger log = LogManager.getLogger(SecretService.class);
 	/**
@@ -101,6 +109,11 @@ public class  SecretService {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid request.Check json data\"]}");
 		}
 		if(ControllerUtil.isPathValid(path)){
+			//check if the secret limit is reached
+			if (isSecretLimitReached(token, secret)) {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"You have reached the limit of number of secrets that can be created under the safe "+ControllerUtil.getSafePath(path)+"\"]}");
+			}
+
 			//if(ControllerUtil.isValidSafe(path,token)){
 			Response response = reqProcessor.process("/write",jsonStr,token);
 			if(response.getHttpstatus().equals(HttpStatus.NO_CONTENT)) {
@@ -136,6 +149,100 @@ public class  SecretService {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid path\"]}");
 		}
 	}
+
+	private boolean isSecretLimitReached(String token, Secret secret) {
+		String safePath = ControllerUtil.getSafePath(secret.getPath());
+		int secretCountForPath = getSecretCountForPath(token, secret.getPath());
+		int requestCount = secret.getDetails().size();
+		if (requestCount > secretCountForPath) {
+			// adding new secret to the path
+			int newCount = requestCount - secretCountForPath;
+			int secretCountForSafe = getSecretCount(token, safePath);
+			if (secretCountForSafe + newCount > Integer.parseInt(secretLimit)) {
+				return true;
+			}
+			return false;
+		}
+		// else deleting secret from the path
+		return false;
+	}
+
+	/**
+	 * Get the number of secrets in a path
+	 * @param token
+	 * @param path
+	 */
+	private int getSecretCountForPath(String token, String path) {
+		ResponseEntity<String> secrets = readFromVaultRecursive(token, path);
+		try {
+			SafeNode safeNode = (SafeNode)JSONUtil.getObj(secrets.getBody(), SafeNode.class);
+			List<SafeNode> secretTypeNodes = safeNode.getChildren().stream().filter(s->s.getType().equals(TVaultConstants.SECRET)).collect(Collectors.toList());
+			if (!secretTypeNodes.isEmpty()) {
+				return getNonDefaulltSecretCount(secretTypeNodes.get(0).getValue());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	/**
+	 * Get the number of secrets in a path
+	 * @param token
+	 * @param path
+	 */
+	private int getSecretCount(String token, String path) {
+		ResponseEntity<String> secrets = readFromVaultRecursive(token, path);
+		try {
+			SafeNode safeNode = (SafeNode)JSONUtil.getObj(secrets.getBody(), SafeNode.class);
+			List<SafeNode> children = safeNode.getChildren();
+			return getSecretCountForSafe(children);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	/**
+	 * Get the total number of secrets including all sub folders for a path
+	 * @param children
+	 * @return
+	 */
+	private int getSecretCountForSafe(List<SafeNode> children) {
+		int count = 0;
+		for(SafeNode child: children) {
+			// check if type is secret
+			// count secrets of this node
+			// get child node
+			if (TVaultConstants.FOLDER.equals(child.getType()) || TVaultConstants.SAFE.equals(child.getType())) {
+				count+= getSecretCountForSafe(child.getChildren());
+			} else {
+				//count my secrets
+				count += getNonDefaulltSecretCount(child.getValue());
+			}
+		}
+		return count;
+	}
+
+	/**
+	 * Get the number of non default secrets
+	 * @param value
+	 * @return
+	 */
+	private int getNonDefaulltSecretCount(String value) {
+		ObjectMapper objectMapper = new ObjectMapper();
+		HashMap<String, String> dataMap = null;
+		try {
+			dataMap = ((HashMap)objectMapper.readValue(value, HashMap.class).get(TVaultConstants.DATA));
+			if (!dataMap.isEmpty() && dataMap.get(TVaultConstants.DEFAULT) == null) {
+				return dataMap.size();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
 	/**
 	 * Delete secret from vault
 	 * @param token
@@ -193,7 +300,10 @@ public class  SecretService {
 		else {
 			safeNode.setType(TVaultConstants.FOLDER);
 		}
-		ControllerUtil.recursiveRead("{\"path\":\""+path+"\"}",token,response, safeNode);
+		Map<Response, SafeNode> recursiveResponse = ControllerUtil.getRecursiveReadResponse("{\"path\":\""+path+"\"}",token,response, safeNode);
+		response = (Response)recursiveResponse.keySet().toArray()[0];
+		safeNode = recursiveResponse.get(response);
+		//ControllerUtil.recursiveRead("{\"path\":\""+path+"\"}",token,response, safeNode);
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			String res = mapper.writeValueAsString(safeNode);
