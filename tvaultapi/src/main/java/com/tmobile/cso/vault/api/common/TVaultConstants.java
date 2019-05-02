@@ -71,6 +71,11 @@ public class TVaultConstants {
     	SVC_ACC_POLICIES_PREFIXES = new DualHashBidiMap(SVC_ACC_POLICIES);
     }
     public static final String SVC_ACC_CREDS_PATH="ad/creds/";
+    public static final String AUTH_LDAP_PATH="auth/ldap/*";
+    public static final String AUTH_USERPASS_PATH="/auth/userpass/*";
+    public static final String AUTH_AWS_PATH="/auth/aws/*";
+    public static final String AUTH_APPROLE_PATH="/auth/approle/*";
+    public static final String AWS_ROLE_METADATA_PATH = "metadata/awsrole/*";
 	/**
 	 * @return the svcAccPolicies
 	 */
@@ -80,8 +85,8 @@ public class TVaultConstants {
 
     public static final String ADD_GROUP = "addGroup";
     public static final String REMOVE_GROUP = "removeGroup";
-    public static final String SVC_ACC_ROLES_METADATA_MOUNT_PATH = "metadata/ad/roles";
-    public static final String SVC_ACC_ROLES_PATH = "ad/roles";
+    public static final String SVC_ACC_ROLES_METADATA_MOUNT_PATH = "metadata/ad/roles/";
+    public static final String SVC_ACC_ROLES_PATH = "ad/roles/";
     public static final Long PASSWORD_AUTOROTATE_TTL_MAX_VALUE = 1590897977L;
     public static final String EC2 = "ec2";
     public static final String SELFSERVICE = "selfservice";

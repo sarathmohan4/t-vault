@@ -298,6 +298,9 @@ public class  ServiceAccountsService {
 	 */
 	public ResponseEntity<String> onboardServiceAccount(String token, ServiceAccount serviceAccount, UserDetails userDetails) {
 		if (serviceAccount.isAutoRotate()) {
+			if (null == serviceAccount.getTtl() || null == serviceAccount.getMax_ttl()) {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid value provided for TTL or MAX_TTL\"]}");
+			}
 			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 					put(LogMessage.ACTION, "onboardServiceAccount").
@@ -468,7 +471,7 @@ public class  ServiceAccountsService {
 	 * @return
 	 */
 	private String populateSvcAccMetaJson(String svcAccName, String username) {
-		String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "/" + svcAccName;
+		String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + svcAccName;
 		ServiceAccountMetadataDetails serviceAccountMetadataDetails = new ServiceAccountMetadataDetails(svcAccName);
 		serviceAccountMetadataDetails.setManagedBy(username);
 		ServiceAccountMetadata serviceAccountMetadata =  new ServiceAccountMetadata(_path, serviceAccountMetadataDetails);
@@ -497,7 +500,7 @@ public class  ServiceAccountsService {
 					build()));
 		}
 		// delete users,groups,aws-roles,app-roles from service account
-		String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "/" + svcAccName;
+		String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + svcAccName;
 		Response metaResponse = reqProcessor.process("/sdb","{\"path\":\""+_path+"\"}",token);
 		Map<String, Object> responseMap = null;
 		try {
@@ -635,6 +638,24 @@ public class  ServiceAccountsService {
 			HashMap<String,String> accessMap = new HashMap<String,String>();
 			String svcAccCredsPath=new StringBuffer().append(TVaultConstants.SVC_ACC_CREDS_PATH).append(svcAccName).toString();
 			accessMap.put(svcAccCredsPath, TVaultConstants.getSvcAccPolicies().get(policyPrefix));
+			// Attaching the required permissions for owner
+			if (TVaultConstants.getSvcAccPolicies().get(policyPrefix).equals(TVaultConstants.SUDO_POLICY)) {
+				// ad roles
+				accessMap.put(TVaultConstants.SVC_ACC_ROLES_PATH+svcAccName, TVaultConstants.READ_POLICY);
+				// ldap
+				accessMap.put(TVaultConstants.AUTH_LDAP_PATH, TVaultConstants.WRITE_POLICY);
+				// userpass
+				accessMap.put(TVaultConstants.AUTH_USERPASS_PATH, TVaultConstants.WRITE_POLICY);
+				// metadata
+				accessMap.put(TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + svcAccName, TVaultConstants.WRITE_POLICY);
+				// metadata awsrole
+				accessMap.put(TVaultConstants.AWS_ROLE_METADATA_PATH, TVaultConstants.WRITE_POLICY);
+				// aws
+				accessMap.put(TVaultConstants.AUTH_AWS_PATH, TVaultConstants.WRITE_POLICY);
+				// approle
+				accessMap.put(TVaultConstants.AUTH_APPROLE_PATH, TVaultConstants.WRITE_POLICY);
+
+			}
 			accessPolicy.setAccess(accessMap);
 			ResponseEntity<String> policyCreationStatus = accessService.createPolicy(token, accessPolicy);
 			if (HttpStatus.OK.equals(policyCreationStatus.getStatusCode())) {
@@ -802,7 +823,7 @@ public class  ServiceAccountsService {
 			}
 			if(ldapConfigresponse.getHttpstatus().equals(HttpStatus.NO_CONTENT) || ldapConfigresponse.getHttpstatus().equals(HttpStatus.OK)){
 				// User has been associated with Service Account. Now metadata has to be created
-				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append("/").append(svcAccName).toString();
+				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append(svcAccName).toString();
 				Map<String,String> params = new HashMap<String,String>();
 				params.put("type", "users");
 				params.put("name",serviceAccountUser.getUsername());
@@ -931,7 +952,7 @@ public class  ServiceAccountsService {
 			}
 			if(ldapConfigresponse.getHttpstatus().equals(HttpStatus.NO_CONTENT) || ldapConfigresponse.getHttpstatus().equals(HttpStatus.OK)){
 				// User has been associated with Service Account. Now metadata has to be deleted
-				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append("/").append(svcAccName).toString();
+				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append(svcAccName).toString();
 				Map<String,String> params = new HashMap<String,String>();
 				params.put("type", "users");
 				params.put("name",serviceAccountUser.getUsername());
@@ -1099,7 +1120,17 @@ public class  ServiceAccountsService {
 			response = reqProcessor.process("/ad/serviceaccount/onboardedlist","{}",token);
 		}
 		else {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"TO BE IMPLEMENTED for non admin user\"]}");
+			String[] latestPolicies = policyUtils.getCurrentPolicies(userDetails.getSelfSupportToken(), userDetails.getUsername());
+			List<String> onboardedlist = new ArrayList<>();
+			for (String policy: latestPolicies) {
+				if (policy.startsWith("o_")) {
+					onboardedlist.add(policy.substring(10));
+				}
+			}
+			response = new Response();
+			response.setHttpstatus(HttpStatus.OK);
+			response.setSuccess(true);
+			response.setResponse("{\"keys\":"+JSONUtil.getJSON(onboardedlist)+"}");
 		}
 
 		if (HttpStatus.OK.equals(response.getHttpstatus())) {
@@ -1255,7 +1286,7 @@ public class  ServiceAccountsService {
 			Response ldapConfigresponse = ControllerUtil.configureLDAPGroup(groupName,policiesString,token);
 
 			if(ldapConfigresponse.getHttpstatus().equals(HttpStatus.NO_CONTENT) || ldapConfigresponse.getHttpstatus().equals(HttpStatus.OK)){
-				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append("/").append(svcAccName).toString();
+				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append(svcAccName).toString();
 				Map<String,String> params = new HashMap<String,String>();
 				params.put("type", "groups");
 				params.put("name",groupName);
@@ -1384,7 +1415,7 @@ public class  ServiceAccountsService {
             Response ldapConfigresponse = ControllerUtil.configureLDAPGroup(groupName,policiesString,token);
 
             if(ldapConfigresponse.getHttpstatus().equals(HttpStatus.NO_CONTENT) || ldapConfigresponse.getHttpstatus().equals(HttpStatus.OK)){
-				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append("/").append(svcAccName).toString();
+				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append(svcAccName).toString();
 				Map<String,String> params = new HashMap<String,String>();
 				params.put("type", "groups");
 				params.put("name",groupName);
@@ -1539,7 +1570,7 @@ public class  ServiceAccountsService {
 			Response approleControllerResp = appRoleService.configureApprole(approleName,policiesString,token);
 
 			if(approleControllerResp.getHttpstatus().equals(HttpStatus.NO_CONTENT) || approleControllerResp.getHttpstatus().equals(HttpStatus.OK)){
-				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append("/").append(svcAccName).toString();
+				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append(svcAccName).toString();
 				Map<String,String> params = new HashMap<String,String>();
 				params.put("type", "app-roles");
 				params.put("name",approleName);
@@ -1874,7 +1905,7 @@ public class  ServiceAccountsService {
 			//Update the policy for approle
 			Response approleControllerResp = appRoleService.configureApprole(approleName,policiesString,token);
 			if(approleControllerResp.getHttpstatus().equals(HttpStatus.NO_CONTENT) || approleControllerResp.getHttpstatus().equals(HttpStatus.OK)){
-				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append("/").append(svcAccName).toString();
+				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append(svcAccName).toString();
 				Map<String,String> params = new HashMap<String,String>();
 				params.put("type", "app-roles");
 				params.put("name",approleName);
@@ -2013,7 +2044,7 @@ public class  ServiceAccountsService {
 				awsRoleConfigresponse = awsAuthService.configureAWSRole(roleName,policiesString,token);
 			}
 			if(awsRoleConfigresponse.getHttpstatus().equals(HttpStatus.NO_CONTENT) || awsRoleConfigresponse.getHttpstatus().equals(HttpStatus.OK)){
-				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append("/").append(svcAccName).toString();
+				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append(svcAccName).toString();
 				Map<String,String> params = new HashMap<String,String>();
 				params.put("type", "aws-roles");
 				params.put("name",roleName);
@@ -2150,7 +2181,7 @@ public class  ServiceAccountsService {
 				awsRoleConfigresponse = awsAuthService.configureAWSRole(roleName,policiesString,token);
 			}
 			if(awsRoleConfigresponse.getHttpstatus().equals(HttpStatus.NO_CONTENT) || awsRoleConfigresponse.getHttpstatus().equals(HttpStatus.OK)){
-				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append("/").append(svcAccName).toString();
+				String path = new StringBuffer(TVaultConstants.SVC_ACC_ROLES_PATH).append(svcAccName).toString();
 				Map<String,String> params = new HashMap<String,String>();
 				params.put("type", "aws-roles");
 				params.put("name",roleName);
@@ -2272,23 +2303,28 @@ public class  ServiceAccountsService {
 				put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 				build()));
 
-		if (serviceAccount.getTtl() >= (TVaultConstants.PASSWORD_AUTOROTATE_TTL_MAX_VALUE)) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
-					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
-					put(LogMessage.ACTION, "Update onboarded Service Account").
-					put(LogMessage.MESSAGE, String.format ("TTL is [%s] is greater the MAX_TTL [%s]", serviceAccount.getTtl(), TVaultConstants.PASSWORD_AUTOROTATE_TTL_MAX_VALUE-1)).
-					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
-					build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid value provided for TTL. TTL can't be more than "+(TVaultConstants.PASSWORD_AUTOROTATE_TTL_MAX_VALUE-1)+"\"]}");
-		}
-		if (serviceAccount.getTtl() >= serviceAccount.getMax_ttl()) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
-					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
-					put(LogMessage.ACTION, "Update onboarded Service Account").
-					put(LogMessage.MESSAGE, String.format ("TTL is [%s] is greater the MAX_TTL [%s]", serviceAccount.getTtl(), serviceAccount.getMax_ttl())).
-					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
-					build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Password TTL must be less than MAX_TTL\"]}");
+		if (serviceAccount.isAutoRotate()) {
+			if (null == serviceAccount.getTtl() || null == serviceAccount.getMax_ttl()) {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid value provided for TTL or MAX_TTL\"]}");
+			}
+			if (serviceAccount.getTtl() >= (TVaultConstants.PASSWORD_AUTOROTATE_TTL_MAX_VALUE)) {
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+						put(LogMessage.ACTION, "Update onboarded Service Account").
+						put(LogMessage.MESSAGE, String.format ("TTL is [%s] is greater the MAX_TTL [%s]", serviceAccount.getTtl(), TVaultConstants.PASSWORD_AUTOROTATE_TTL_MAX_VALUE-1)).
+						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+						build()));
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid value provided for TTL. TTL can't be more than "+(TVaultConstants.PASSWORD_AUTOROTATE_TTL_MAX_VALUE-1)+"\"]}");
+			}
+			if (serviceAccount.getTtl() >= serviceAccount.getMax_ttl()) {
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+						put(LogMessage.ACTION, "Update onboarded Service Account").
+						put(LogMessage.MESSAGE, String.format ("TTL is [%s] is greater the MAX_TTL [%s]", serviceAccount.getTtl(), serviceAccount.getMax_ttl())).
+						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+						build()));
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Password TTL must be less than MAX_TTL\"]}");
+			}
 		}
 		if (!serviceAccount.isAutoRotate()) {
 			serviceAccount.setTtl(TVaultConstants.PASSWORD_AUTOROTATE_TTL_MAX_VALUE);
@@ -2301,7 +2337,7 @@ public class  ServiceAccountsService {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 					put(LogMessage.ACTION, "Update onboarded Service Account").
-					put(LogMessage.MESSAGE, "Failed to updated onboarded Service Account.").
+					put(LogMessage.MESSAGE, "Failed to update onboarded Service Account.").
 					put(LogMessage.STATUS, accountRoleDeletionResponse.getStatusCode().toString()).
 					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 					build()));

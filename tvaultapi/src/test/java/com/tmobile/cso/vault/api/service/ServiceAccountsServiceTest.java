@@ -22,10 +22,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.tmobile.cso.vault.api.model.*;
 import com.tmobile.cso.vault.api.utils.PolicyUtils;
@@ -226,37 +223,6 @@ public class ServiceAccountsServiceTest {
     }
 
     @Test
-    public void test_getADServiceAccounts_excluded_success_BadRequest_Onboarded() {
-		UserDetails userDetails = getMockUser(false);
-    	String token = userDetails.getClientToken();
-    	String userPrincipalName = "test";
-    	boolean excludeOnboarded = true;
-    	String encodedFilter = "(&(userPrincipalName=test*)(objectClass=user)(!(CN=null)))";
-        List<ADServiceAccount> allServiceAccounts = generateADSerivceAccounts();
-        allServiceAccounts.add(generateADServiceAccount("testacc02"));
-        ResponseEntity<ADServiceAccountObjects> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(generateADServiceAccountObjects(allServiceAccounts));
-        List<ADUserAccount> list = new ArrayList<>();
-        ADUserAccount adUserAccount = new ADUserAccount();
-        adUserAccount.setUserId("user.user11");
-        adUserAccount.setUserName("user11");
-        adUserAccount.setDisplayName("user user11");
-        adUserAccount.setGivenName("user11");
-        adUserAccount.setUserEmail("user11@abc.com");
-        list.add(adUserAccount);
-        ReflectionTestUtils.setField(serviceAccountsService, "ldapTemplate", ldapTemplate);
-        when(ldapTemplate.search(Mockito.anyString(), Mockito.anyString(), Mockito.any(AttributesMapper.class))).thenReturn(list);
-        ReflectionTestUtils.setField(serviceAccountsService, "adUserLdapTemplate", ldapTemplate);
-        when(ldapTemplate.search(Mockito.anyString(), Mockito.eq(encodedFilter), Mockito.any(AttributesMapper.class))).thenReturn(allServiceAccounts);
-        String expectedMsg = "{\"errors\":[\"TO BE IMPLEMENTED for non admin user\"]}";
-        Response response = getMockResponse(HttpStatus.BAD_REQUEST, true, expectedMsg);
-        when(reqProcessor.process("/ad/serviceaccount/onboardedlist","{}",token)).thenReturn(response);
-        ResponseEntity<ADServiceAccountObjects> responseEntity = serviceAccountsService.getADServiceAccounts(token, userDetails, userPrincipalName, excludeOnboarded);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(2, responseEntity.getBody().getData().getValues().length);
-
-    }
-
-    @Test
     public void test_getADServiceAccounts_excluded_success_NotFound_Onboarded() {
 		UserDetails userDetails = getMockUser(true);
     	String token = userDetails.getClientToken();
@@ -381,7 +347,7 @@ public class ServiceAccountsServiceTest {
         //create metadata
         ServiceAccountMetadataDetails serviceAccountMetadataDetails = new ServiceAccountMetadataDetails("testacc02");
         serviceAccountMetadataDetails.setManagedBy("testacc01");
-        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "/testacc02";
+        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "testacc02";
         ServiceAccountMetadata serviceAccountMetadata =  new ServiceAccountMetadata(_path, serviceAccountMetadataDetails);
         when(JSONUtil.getJSON(serviceAccountMetadata)).thenReturn("{\"name\":\"testacc02\", \"managedBy\":\"testacc01\"}");
         Map<String,Object> rqstParams = new HashMap<>();
@@ -427,7 +393,7 @@ public class ServiceAccountsServiceTest {
     	serviceAccount.setAutoRotate(true);
     	serviceAccount.setTtl(1112L);
     	serviceAccount.setMax_ttl(1111L);
-    	String expectedResponse = "{\"errors\":[\"Password TTL can't be more than MAX_TTL\"]}";
+        String expectedResponse = "{\"errors\":[\"Password TTL can't be more than MAX_TTL\"]}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedResponse);
 
 
@@ -435,6 +401,22 @@ public class ServiceAccountsServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
+
+    @Test
+    public void test_onboardServiceAccount_failure_invalid_ttl() {
+        UserDetails userDetails = getMockUser(true);
+        String token = userDetails.getClientToken();
+        ServiceAccount serviceAccount = new ServiceAccount();
+        serviceAccount.setName("testacc02");
+        serviceAccount.setAutoRotate(true);
+        serviceAccount.setOwner("testacc01");
+        String expectedResponse = "{\"errors\":[\"Invalid value provided for TTL or MAX_TTL\"]}";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedResponse);
+        ResponseEntity<String> responseEntity = serviceAccountsService.onboardServiceAccount(token, serviceAccount, userDetails);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntity);
+    }
+
     @Test
     public void test_onboardServiceAccount_succss_autorotate_on_ttl_biggerthan_maxallowed() {
         UserDetails userDetails = getMockUser(true);
@@ -471,7 +453,7 @@ public class ServiceAccountsServiceTest {
         //create metadata
         ServiceAccountMetadataDetails serviceAccountMetadataDetails = new ServiceAccountMetadataDetails("testacc02");
         serviceAccountMetadataDetails.setManagedBy("testacc01");
-        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "/testacc02";
+        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "testacc02";
         ServiceAccountMetadata serviceAccountMetadata =  new ServiceAccountMetadata(_path, serviceAccountMetadataDetails);
         when(JSONUtil.getJSON(serviceAccountMetadata)).thenReturn("{\"name\":\"testacc02\", \"managedBy\":\"testacc01\"}");
         Map<String,Object> rqstParams = new HashMap<>();
@@ -530,7 +512,7 @@ public class ServiceAccountsServiceTest {
         //create metadata
         ServiceAccountMetadataDetails serviceAccountMetadataDetails = new ServiceAccountMetadataDetails("testacc02");
         serviceAccountMetadataDetails.setManagedBy("testacc01");
-        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "/testacc02";
+        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "testacc02";
         ServiceAccountMetadata serviceAccountMetadata =  new ServiceAccountMetadata(_path, serviceAccountMetadataDetails);
         when(JSONUtil.getJSON(serviceAccountMetadata)).thenReturn("{\"name\":\"testacc02\", \"managedBy\":\"testacc01\"}");
         Map<String,Object> rqstParams = new HashMap<>();
@@ -705,7 +687,7 @@ public class ServiceAccountsServiceTest {
         when(accessService.deletePolicyInfo(Mockito.anyString(), Mockito.any())).thenReturn(createPolicyResponse);
 
         // delete user/group/role associations
-        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "/testacc02";
+        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "testacc02";
         Response metaResponse = getMockResponse(HttpStatus.OK, true, "{\"data\":{\n" +
                 "  \"groups\": {\n" +
                 "    \"group1\": \"read\"\n" +
@@ -777,7 +759,7 @@ public class ServiceAccountsServiceTest {
         when(accessService.deletePolicyInfo(Mockito.anyString(), Mockito.any())).thenReturn(createPolicyResponse);
 
         // delete user/group/role associations
-        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "/testacc02";
+        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "testacc02";
         Response metaResponse = getMockResponse(HttpStatus.OK, true, "{\"data\":{\n" +
                 "  \"groups\": {\n" +
                 "    \"group1\": \"read\"\n" +
@@ -847,7 +829,7 @@ public class ServiceAccountsServiceTest {
         when(accessService.deletePolicyInfo(Mockito.anyString(), Mockito.any())).thenReturn(createPolicyResponse);
 
         // delete user/group/role associations
-        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "/testacc02";
+        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "testacc02";
         Response metaResponse = getMockResponse(HttpStatus.OK, true, "{\"data\":{\n" +
                 "  \"groups\": {\n" +
                 "    \"group1\": \"read\"\n" +
@@ -921,7 +903,7 @@ public class ServiceAccountsServiceTest {
         when(accessService.deletePolicyInfo(Mockito.anyString(), Mockito.any())).thenReturn(createPolicyResponse);
 
         // delete user/group/role associations
-        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "/testacc02";
+        String _path = TVaultConstants.SVC_ACC_ROLES_METADATA_MOUNT_PATH + "testacc02";
         Response metaResponse = getMockResponse(HttpStatus.OK, true, "{\"data\":{\n" +
                 "  \"groups\": {\n" +
                 "    \"group1\": \"read\"\n" +
@@ -1297,15 +1279,15 @@ public class ServiceAccountsServiceTest {
     public void test_getOnboardedServiceAccounts_nonadmin_notfound() {
     	UserDetails userDetails = getMockUser(false);
     	String token = userDetails.getClientToken();
-    	// Bevavior setup
-    	String expectedOutput = "{\"errors\":[\"TO BE IMPLEMENTED for non admin user\"]}";
-    	Response onboardedSvsAccsResponse = getMockResponse(HttpStatus.NOT_FOUND, true, expectedOutput);
-    	when(reqProcessor.process("/ad/serviceaccount/onboardedlist","{}",token)).thenReturn(onboardedSvsAccsResponse);
+        String expectedOutput = "{\"keys\":[\"acc1\",\"acc2\"]}";
+        String[] latestPolicies = {"o_svcacc_acc1", "o_svcacc_acc2"};
 
+        when(JSONUtil.getJSON(Mockito.any(List.class))).thenReturn("[\"acc1\",\"acc2\"]");
+        when(policyUtils.getCurrentPolicies(userDetails.getSelfSupportToken(), userDetails.getUsername())).thenReturn(latestPolicies);
     	// System under test
-    	ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedOutput);
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(expectedOutput);
     	ResponseEntity<String> responseEntity = serviceAccountsService.getOnboardedServiceAccounts(token, userDetails);
-    	assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     	assertEquals(responseEntityExpected, responseEntity);
 
     }
@@ -2248,6 +2230,26 @@ public class ServiceAccountsServiceTest {
         serviceAccount.setAutoRotate(true);
         serviceAccount.setTtl(TVaultConstants.PASSWORD_AUTOROTATE_TTL_MAX_VALUE);
         serviceAccount.setMax_ttl(TVaultConstants.PASSWORD_AUTOROTATE_TTL_MAX_VALUE);
+        serviceAccount.setOwner("testacc0`");
+
+        Response response = getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"testacc02\"]}");
+        when(reqProcessor.process("/ad/serviceaccount/onboardedlist","{}",token)).thenReturn(response);
+
+        ResponseEntity<String> responseEntityActual =  serviceAccountsService.updateOnboardedServiceAccount(token, serviceAccount, userDetails);
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+    }
+
+    @Test
+    public void test_updateOnboardedServiceAccount_failure_invalid_ttl_or_maxttl() throws Exception {
+
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid value provided for TTL or MAX_TTL\"]}");
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        UserDetails userDetails = getMockUser(true);
+        ServiceAccount serviceAccount = new ServiceAccount();
+        serviceAccount.setName("testacc02");
+        serviceAccount.setAutoRotate(true);
         serviceAccount.setOwner("testacc0`");
 
         Response response = getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"testacc02\"]}");
