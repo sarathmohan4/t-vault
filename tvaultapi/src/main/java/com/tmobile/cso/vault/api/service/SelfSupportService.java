@@ -17,12 +17,12 @@
 
 package com.tmobile.cso.vault.api.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import com.google.common.collect.ImmutableMap;
+import com.tmobile.cso.vault.api.exception.LogMessage;
+import com.tmobile.cso.vault.api.model.*;
+import com.tmobile.cso.vault.api.utils.*;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -37,20 +37,6 @@ import org.springframework.util.ObjectUtils;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.controller.ControllerUtil;
 import com.tmobile.cso.vault.api.exception.TVaultValidationException;
-import com.tmobile.cso.vault.api.model.AWSIAMRole;
-import com.tmobile.cso.vault.api.model.AWSLoginRole;
-import com.tmobile.cso.vault.api.model.AWSRole;
-import com.tmobile.cso.vault.api.model.AppRole;
-import com.tmobile.cso.vault.api.model.AppRoleAccessorIds;
-import com.tmobile.cso.vault.api.model.Safe;
-import com.tmobile.cso.vault.api.model.SafeAppRoleAccess;
-import com.tmobile.cso.vault.api.model.SafeGroup;
-import com.tmobile.cso.vault.api.model.SafeUser;
-import com.tmobile.cso.vault.api.model.UserDetails;
-import com.tmobile.cso.vault.api.utils.AuthorizationUtils;
-import com.tmobile.cso.vault.api.utils.JSONUtil;
-import com.tmobile.cso.vault.api.utils.PolicyUtils;
-import com.tmobile.cso.vault.api.utils.SafeUtils;
 
 
 @Component
@@ -522,21 +508,13 @@ public class  SelfSupportService {
 	 * @return
 	 * @throws TVaultValidationException
 	 */
-	public ResponseEntity<String> createRole(UserDetails userDetails, String userToken, AWSLoginRole awsLoginRole, String path) throws TVaultValidationException {
+	public ResponseEntity<String> createRole(UserDetails userDetails, String userToken, AWSLoginRole awsLoginRole) throws TVaultValidationException {
 		String token = userDetails.getClientToken();
 		if (userDetails.isAdmin()) {
 			return awsAuthService.createRole(token, awsLoginRole, userDetails);
 		}
 		else {
-			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, path);
-			if (!isAuthorized.getStatusCode().equals(HttpStatus.OK)) {
-				return isAuthorized.getStatusCode().equals(HttpStatus.BAD_REQUEST)?isAuthorized:ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Error checking user permission\"]}");
-			}
-			if (isAuthorized.getBody().equals(TVaultConstants.FALSE)) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to create AWS role\"]}");
-			}
-			token = userDetails.getSelfSupportToken();
-			return awsAuthService.createRole(token, awsLoginRole, userDetails);
+			return awsAuthService.createRole(userDetails.getSelfSupportToken(), awsLoginRole, userDetails);
 		}
 	}
 
@@ -549,21 +527,14 @@ public class  SelfSupportService {
 	 * @return
 	 * @throws TVaultValidationException
 	 */
-	public ResponseEntity<String> updateRole(UserDetails userDetails, String userToken, AWSLoginRole awsLoginRole, String path) throws TVaultValidationException {
+	public ResponseEntity<String> updateRole(UserDetails userDetails, String userToken, AWSLoginRole awsLoginRole) throws TVaultValidationException {
 		String token = userDetails.getClientToken();
 		if (userDetails.isAdmin()) {
-			return awsAuthService.updateRole(token, awsLoginRole);
+			return awsAuthService.updateRole(token, awsLoginRole, userDetails);
 		}
 		else {
-			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, path);
-			if (!isAuthorized.getStatusCode().equals(HttpStatus.OK)) {
-				return isAuthorized.getStatusCode().equals(HttpStatus.BAD_REQUEST)?isAuthorized:ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Error checking user permission\"]}");
-			}
-			if (isAuthorized.getBody().equals(TVaultConstants.FALSE)) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS role\"]}");
-			}
 			token = userDetails.getSelfSupportToken();
-			return awsAuthService.updateRole(token, awsLoginRole);
+			return awsAuthService.updateRole(token, awsLoginRole, userDetails);
 		}
 	}
 
@@ -576,19 +547,12 @@ public class  SelfSupportService {
 	 * @return
 	 * @throws TVaultValidationException
 	 */
-	public ResponseEntity<String> createIAMRole(UserDetails userDetails, String userToken, AWSIAMRole awsiamRole, String path) throws TVaultValidationException {
+	public ResponseEntity<String> createIAMRole(UserDetails userDetails, String userToken, AWSIAMRole awsiamRole) throws TVaultValidationException {
 		String token = userDetails.getClientToken();
 		if (userDetails.isAdmin()) {
 			return awsiamAuthService.createIAMRole(awsiamRole, token, userDetails);
 		}
 		else {
-			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, path);
-			if (!isAuthorized.getStatusCode().equals(HttpStatus.OK)) {
-				return isAuthorized.getStatusCode().equals(HttpStatus.BAD_REQUEST)?isAuthorized:ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Error checking user permission\"]}");
-			}
-			if (isAuthorized.getBody().equals(TVaultConstants.FALSE)) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to create AWS IAM role\"]}");
-			}
 			token = userDetails.getSelfSupportToken();
 			return awsiamAuthService.createIAMRole(awsiamRole, token, userDetails);
 		}
@@ -603,23 +567,44 @@ public class  SelfSupportService {
 	 * @return
 	 * @throws TVaultValidationException
 	 */
-	public ResponseEntity<String> updateIAMRole(UserDetails userDetails, String userToken, AWSIAMRole awsiamRole, String path) throws TVaultValidationException {
+	public ResponseEntity<String> updateIAMRole(UserDetails userDetails, String userToken, AWSIAMRole awsiamRole) throws TVaultValidationException {
 		String token = userDetails.getClientToken();
 		if (userDetails.isAdmin()) {
-			return awsiamAuthService.updateIAMRole(token, awsiamRole);
+			return awsiamAuthService.updateIAMRole(token, awsiamRole, userDetails);
 		}
 		else {
-			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, path);
-			if (!isAuthorized.getStatusCode().equals(HttpStatus.OK)) {
-				return isAuthorized.getStatusCode().equals(HttpStatus.BAD_REQUEST)?isAuthorized:ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Error checking user permission\"]}");
-			}
-			if (isAuthorized.getBody().equals(TVaultConstants.FALSE)) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS IAM role\"]}");
-			}
 			token = userDetails.getSelfSupportToken();
-			return awsiamAuthService.updateIAMRole(token, awsiamRole);
+			return awsiamAuthService.updateIAMRole(token, awsiamRole, userDetails);
 		}
 	}
+
+
+	/**
+	 * To get list of AWS Roles
+	 * @param token
+	 * @param userDetails
+	 * @return
+	 */
+	public ResponseEntity<String> listRoles(String token, UserDetails userDetails) {
+		return awsAuthService.listRoles(token, userDetails);
+	}
+
+	/**
+	 * To fetch information for an awsrole.
+	 * @param token
+	 * @param role
+	 * @return
+	 */
+	public ResponseEntity<String> fetchRole(String token, String role, UserDetails userDetails){
+		if (userDetails.isAdmin()) {
+			return awsAuthService.fetchRole(token, role, userDetails);
+		}
+		else {
+			token = userDetails.getSelfSupportToken();
+			return awsAuthService.fetchRole(token, role, userDetails);
+		}
+	}
+
 	/**
 	 * Gets the map of all existing safe names
 	 * @param userDetails

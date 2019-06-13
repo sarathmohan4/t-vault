@@ -82,6 +82,11 @@
                     return response;
                 });
             },
+            getAWSroles: function(payload, url) {
+                return ServiceEndpoint.getAWSroles.makeRequest(payload, url).then(function(response) {
+                    return response;
+                });
+            },
             getApproles: function(payload, url) {
                 return ServiceEndpoint.getApproles.makeRequest(payload, url).then(function(response) {
                     return response;

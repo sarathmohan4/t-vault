@@ -353,7 +353,10 @@
         $rootScope.cancel = function () {
             Modal.close();
         };
-
+        $scope.cancelAWSConfigPopUp = function () {
+            Modal.close('close');
+            $scope.isLoadingData = false;
+        };
         $rootScope.deleteAccessorCancel = function () {
             Modal.close();
             $scope.showAccessorsPopUp($scope.approleToShow);
@@ -421,6 +424,23 @@
                 AdminSafesManagement.getApproles().then(function (response) {
                     if (UtilityService.ifAPIRequestSuccessful(response)) {
                         $scope.appRoleData = response.data;
+                    }
+                    else {
+                        $scope.errorMessage = AdminSafesManagement.getTheRightErrorMessage(response);
+                        error('md');
+                    }
+                },
+                function (error) {
+                    // Error handling function
+                    console.log(error);
+                    $scope.isLoadingData = false;
+                    $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
+                    $scope.error('md');
+                });
+                $scope.awsRoleData = {"keys": []};
+                AdminSafesManagement.getAWSroles().then(function (response) {
+                    if (UtilityService.ifAPIRequestSuccessful(response)) {
+                        $scope.awsRoleData = response.data;
                     }
                     else {
                         $scope.errorMessage = AdminSafesManagement.getTheRightErrorMessage(response);
@@ -985,6 +1005,124 @@
             if ($scope.appRoleData.keys.includes($scope.approleConfPopupObj.role_name)) {
                $scope.rolenameExists = true;
             }
+        }
+
+        $scope.editAWSConfigurationDetails = function (rolename) {
+            try {
+                $scope.isLoadingData = true;
+                var queryParameters = rolename;
+                var updatedUrlOfEndPoint = ModifyUrl.addUrlParameteres('getAwsConfigurationDetails', queryParameters);
+                AdminSafesManagement.getAWSConfigurationDetails(null, updatedUrlOfEndPoint).then(
+                    function (response) {
+                        if (UtilityService.ifAPIRequestSuccessful(response)) {
+                            // Try-Catch block to catch errors if there is any change in object structure in the response
+                            try {
+                                // $scope.awsConfPopupObj = response.data;
+                                // $scope.awsConfPopupObj['role'] = rolename;
+                                $scope.editingAwsPermission = {"status": true};
+                                $scope.awsConfPopupObj = {
+                                    "auth_type": response.data.auth_type,
+                                    "role": rolename,
+                                    "bound_account_id": response.data.bound_account_id,
+                                    "bound_region": response.data.bound_region,
+                                    "bound_vpc_id": response.data.bound_vpc_id,
+                                    "bound_subnet_id": response.data.bound_subnet_id,
+                                    "bound_ami_id": response.data.bound_ami_id,
+                                    "bound_iam_instance_profile_arn": response.data.bound_iam_instance_profile_arn,
+                                    "bound_iam_role_arn": response.data.bound_iam_role_arn,
+                                    "policies": response.data.policies,
+                                    "bound_iam_principal_arn": response.data.bound_iam_principal_arn,
+                                    "resolve_aws_unique_ids": "false"
+                                };
+                                $scope.policies = response.data.policies;
+                                $scope.openAWSConfigPopup('md');   // open the AWS configuration popup with prefilled data
+                            }
+                            catch (e) {
+                                console.log(e);
+                                $scope.isLoadingData = false;
+                                $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_PROCESSING_DATA');
+                                $scope.error('md');
+                            }
+                        }
+                        else {
+                            $scope.errorMessage = AdminSafesManagement.getTheRightErrorMessage(response);
+                            error('md');
+                        }
+                    },
+                    function (error) {
+
+                        // Error handling function
+                        console.log(error);
+                        $scope.isLoadingData = false;
+                        $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
+                        $scope.error('md');
+
+                    })
+            } catch (e) {
+
+                // To handle errors while calling 'fetchData' function
+                console.log(e);
+                $scope.isLoadingData = false;
+                $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
+                $scope.error('md');
+            }            
+        }
+
+        $scope.openAWSConfigPopup = function (size) {
+            Modal.createModal(size, 'changeAWSConfigPopup.html', 'AdminCtrl', $scope);
+        };      
+
+        $scope.configureAwsRole = function () {
+            var rolename = $scope.awsConfPopupObj.role;
+            if ($scope.awsConfPopupObj.auth_type === 'ec2') {
+                apiCallFunction = AdminSafesManagement.updateAWSRole;
+                updatedUrlOfEndPoint = ModifyUrl.addUrlParameteres('updateAwsRole',"path="+rolename);
+            }
+            else {
+                apiCallFunction = AdminSafesManagement.updateAWSIAMRole;
+                updatedUrlOfEndPoint = ModifyUrl.addUrlParameteres('updateAwsIAMRole',"path="+rolename);
+            }
+            reqObjtobeSent = $scope.awsConfPopupObj;
+            apiCallFunction(reqObjtobeSent, updatedUrlOfEndPoint).then(function (response) {
+                if (UtilityService.ifAPIRequestSuccessful(response)) {
+                    try {
+                        $scope.isLoadingData = false;
+                        if (type === 'AwsRoleConfigure') {
+                            $scope.addPermission('AWSPermission', $scope.awsConfPopupObj.role, permission, false);
+                        }
+                        else {
+                            $scope.requestDataFrChangeSafe();
+                            var notification = UtilityService.getAParticularSuccessMessage('MESSAGE_ADD_SUCCESS');
+                            if (key !== null && key !== undefined) {
+                                if (type === "users" && key === SessionStore.getItem("username")) {
+                                    return Modal.createModalWithController('stop.modal.html', {
+                                        title: 'Permission changed',
+                                        message: 'For security reasons, if you add or modify permission to yourself, you need to log out and log in again for the added or modified permissions to take effect.'
+                                      });
+                                }
+                                Notifications.toast(key + "'s permission" + notification);
+                            }
+                        }
+                    } catch (e) {
+                        console.log(e);
+                        $scope.isLoadingData = false;
+                        $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_PROCESSING_DATA');
+                        $scope.error('md');
+                    }
+                }
+                else {
+                    $scope.errorMessage = AdminSafesManagement.getTheRightErrorMessage(response);
+                    error('md');
+                }
+                $scope.roleNameSelected = false;
+            },
+            function (error) {
+                // Error handling function
+                console.log(error);
+                $scope.isLoadingData = false;
+                $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
+                $scope.error('md');
+            })
         }
 
         init();

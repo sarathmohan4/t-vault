@@ -264,9 +264,9 @@ public class SelfSupportController {
 	 */
 	@ApiOperation(value = "${SelfSupportController.createRole.value}", notes = "${SelfSupportController.createRole.notes}")
 	@PostMapping(value="/v2/ss/auth/aws/role",consumes="application/json",produces="application/json")
-	public ResponseEntity<String> createRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSLoginRole awsLoginRole, @RequestParam("path") String path) throws TVaultValidationException {
+	public ResponseEntity<String> createRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSLoginRole awsLoginRole) throws TVaultValidationException {
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
-		return selfSupportService.createRole(userDetails, token, awsLoginRole, path);
+		return selfSupportService.createRole(userDetails, token, awsLoginRole);
 	}
 
 	/**
@@ -277,9 +277,9 @@ public class SelfSupportController {
 	 */
 	@ApiOperation(value = "${SelfSupportController.updateRole.value}", notes = "${SelfSupportController.updateRole.notes}")
 	@PutMapping(value="/v2/ss/auth/aws/role",consumes="application/json",produces="application/json")
-	public ResponseEntity<String> updateRole(HttpServletRequest request,@RequestHeader(value="vault-token") String token, @RequestBody AWSLoginRole awsLoginRole, @RequestParam("path") String path) throws TVaultValidationException {
+	public ResponseEntity<String> updateRole(HttpServletRequest request,@RequestHeader(value="vault-token") String token, @RequestBody AWSLoginRole awsLoginRole) throws TVaultValidationException {
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
-		return selfSupportService.updateRole(userDetails, token, awsLoginRole, path);
+		return selfSupportService.updateRole(userDetails, token, awsLoginRole);
 	}
 
 	/**
@@ -290,9 +290,9 @@ public class SelfSupportController {
 	 */
 	@ApiOperation(value = "${SelfSupportController.createIamRole.value}", notes = "${SelfSupportController.createIamRole.notes}")
 	@PostMapping(value="/v2/ss/auth/aws/iam/role",produces="application/json")
-	public ResponseEntity<String> createIAMRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSIAMRole awsiamRole, @RequestParam("path") String path) throws TVaultValidationException{
+	public ResponseEntity<String> createIAMRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSIAMRole awsiamRole) throws TVaultValidationException{
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
-		return selfSupportService.createIAMRole(userDetails, token, awsiamRole, path);
+		return selfSupportService.createIAMRole(userDetails, token, awsiamRole);
 	}
 
 	/**
@@ -304,9 +304,9 @@ public class SelfSupportController {
 	 */
 	@ApiOperation(value = "${SelfSupportController.updateIAMRole.value}", notes = "${SelfSupportController.updateIAMRole.notes}")
 	@PutMapping(value="/v2/ss/auth/aws/iam/role",consumes="application/json",produces="application/json")
-	public ResponseEntity<String> updateRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSIAMRole awsiamRole, @RequestParam("path") String path) throws TVaultValidationException {
+	public ResponseEntity<String> updateRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSIAMRole awsiamRole) throws TVaultValidationException {
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
-		return selfSupportService.updateIAMRole(userDetails, token, awsiamRole, path);
+		return selfSupportService.updateIAMRole(userDetails, token, awsiamRole);
 	}
 
 	/**
@@ -468,5 +468,30 @@ public class SelfSupportController {
 	public ResponseEntity<String> updateAppRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @Valid @RequestBody AppRole appRole){
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
 		return selfSupportService.updateAppRole(token, appRole, userDetails);
+	}
+
+	/**
+	 * Method to get list of AWS Roles
+	 * @param token
+	 * @return
+	 */
+	@ApiOperation(value = "${AWSAuthControllerV2.listRoles.value}", notes = "${AWSAuthControllerV2.listRoles.notes}")
+	@GetMapping(value="/v2/ss/roles",produces="application/json")
+	public ResponseEntity<String> listRoles(HttpServletRequest request, @RequestHeader(value="vault-token") String token){
+		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
+		return selfSupportService.listRoles(token, userDetails);
+	}
+
+	/**
+	 * Mwthod to read the aws role details
+	 * @param token
+	 * @param role
+	 * @return
+	 */
+	@ApiOperation(value = "${AWSAuthControllerV2.fetchRole.value}", notes = "${AWSAuthControllerV2.fetchRole.notes}")
+	@GetMapping(value="/v2/ss/aws/role/{role}",produces="application/json")
+	public ResponseEntity<String> fetchRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @PathVariable("role") String role){
+		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
+		return selfSupportService.fetchRole(token, role, userDetails);
 	}
 }

@@ -136,8 +136,8 @@ public class  ServiceAccountsService {
 				}
 			}
 		}
-		List<ADServiceAccount> allServiceAccounts = getADServiceAccounts(andFilter);
 		// get the managed_by details
+		List<ADServiceAccount> allServiceAccounts = getADServiceAccounts(andFilter);
 		if (allServiceAccounts != null && !allServiceAccounts.isEmpty()) {
 			List<String> ownerlist = allServiceAccounts.stream().map(m -> m.getManagedBy().getUserName()).collect(Collectors.toList());
 			// remove duplicate usernames

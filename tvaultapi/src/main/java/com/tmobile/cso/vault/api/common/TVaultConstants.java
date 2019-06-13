@@ -52,13 +52,14 @@ public class TVaultConstants {
     public static final String APPROLE = "approle";
     public static final String APPROLE_METADATA_MOUNT_PATH = "metadata/approle";
     public static final String APPROLE_USERS_METADATA_MOUNT_PATH = "metadata/approle_users";
+    public static final String AWSROLE_USERS_METADATA_MOUNT_PATH = "metadata/awsrole_users";
     public static final String AWSROLE_METADATA_MOUNT_PATH = "metadata/awsrole";
     public static final String SELF_SERVICE_APPROLE_NAME = "selfservicesupportrole";
     public static final String SECRET = "secret";
     public static final boolean HIDEMASTERAPPROLE = true;
-    public static final String APPROLE_DELETE_OPERATION="DELETE";
-    public static final String APPROLE_READ_OPERATION="READ";
-    public static final String APPROLE_UPDATE_OPERATION="UPDATE";
+    public static final String DELETE_OPERATION ="DELETE";
+    public static final String READ_OPERATION ="READ";
+    public static final String UPDATE_OPERATION ="UPDATE";
     public static final String SVC_ACC_PATH_PREFIX="svcacct";
     protected static final Map<String, String> SVC_ACC_POLICIES;
     public static final DualHashBidiMap SVC_ACC_POLICIES_PREFIXES ;

@@ -21,10 +21,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
+import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.exception.LogMessage;
 import com.tmobile.cso.vault.api.model.*;
 import com.tmobile.cso.vault.api.utils.ThreadLocalContext;
@@ -98,7 +100,17 @@ public class AWSIAMAuthService {
 	 * @return
 	 * @throws TVaultValidationException
 	 */
-	public ResponseEntity<String> updateIAMRole(String token, AWSIAMRole awsiamRole) throws TVaultValidationException{
+	public ResponseEntity<String> updateIAMRole(String token, AWSIAMRole awsiamRole, UserDetails userDetails) throws TVaultValidationException{
+		boolean isAllowed = isAllowed(awsiamRole.getRole(), userDetails, TVaultConstants.UPDATE_OPERATION);
+		if (!isAllowed) {
+			logger.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+					put(LogMessage.ACTION, "update AWSIAMRole").
+					put(LogMessage.MESSAGE, "Update AWSIAMRole failed").
+					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+					build()));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: You don't have enough permission to update this AWSIAMRole\"]}");
+		}
 		if (!ControllerUtil.areAWSIAMRoleInputsValid(awsiamRole)) {
 			//return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid inputs for the given aws login type");
 			throw new TVaultValidationException("Invalid inputs for the given aws login type");
@@ -227,4 +239,87 @@ public class AWSIAMAuthService {
 		return reqProcessor.process("/auth/aws/iam/roles/update",awsConfigJson,token);
 	}
 
+	/**
+	 * Checks whether given AWSIAMRole operation is allowed for a given user based on the ownership of the AWSIAMRole
+	 * @param userDetails
+	 * @param rolename
+	 * @return
+	 */
+	public boolean isAllowed(String rolename, UserDetails userDetails, String operation) {
+		boolean isAllowed = false;
+		if (userDetails.isAdmin()) {
+			// As an admin, I can read, delete, update anybody's AWSIAMRole
+			isAllowed = true;
+		}
+		else {
+			AWSRoleMetadata awsRoleMetadata = readAWSRoleMetadata(userDetails.getSelfSupportToken(), rolename);
+			String awsRoleOwner = null;
+			if (awsRoleMetadata != null && awsRoleMetadata.getAwsRoleMetadataDetails() != null) {
+				awsRoleOwner = awsRoleMetadata.getAwsRoleMetadataDetails().getCreatedBy();
+			}
+			if (Objects.equals(userDetails.getUsername(), awsRoleOwner)) {
+				if (TVaultConstants.READ_OPERATION.equals(operation)
+						|| TVaultConstants.DELETE_OPERATION.equals(operation)
+						|| TVaultConstants.UPDATE_OPERATION.equals(operation)
+						) {
+					// As a owner of the AWSIAMRole, I can read, delete, update his AWSIAMRole
+					isAllowed = true;
+				}
+
+			}
+		}
+		return isAllowed;
+	}
+
+	/**
+	 * Reads the metadata associated with an AWS IAM role
+	 * @param token
+	 * @param rolename
+	 * @return AWSRoleMetadata
+	 */
+	public AWSRoleMetadata readAWSRoleMetadata(String token, String rolename) {
+		AWSRoleMetadata awsRoleMetadata = null;
+		String _path = TVaultConstants.AWSROLE_METADATA_MOUNT_PATH + "/" + rolename;
+		Response readResponse = reqProcessor.process("/read","{\"path\":\""+_path+"\"}",token);
+		Map<String, Object> responseMap = null;
+		if(HttpStatus.OK.equals(readResponse.getHttpstatus())) {
+			responseMap = ControllerUtil.parseJson(readResponse.getResponse());
+			if(responseMap.isEmpty()) {
+				logger.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+						put(LogMessage.ACTION, "getMetaDataForAWSRole").
+						put(LogMessage.MESSAGE, "Reading Metadata for AWSRole failed").
+						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+						build()));
+				return awsRoleMetadata;
+			}
+
+			Map<String,Object> appRoleMetadataMap = (Map<String,Object>) responseMap.get("data");
+			if (appRoleMetadataMap != null) {
+				awsRoleMetadata = new AWSRoleMetadata();
+				AWSRoleMetadataDetails awsRoleMetadataDetails = new AWSRoleMetadataDetails();
+				awsRoleMetadataDetails.setCreatedBy((String)appRoleMetadataMap.get("createdBy"));
+				awsRoleMetadataDetails.setName(rolename);
+				awsRoleMetadata.setAwsRoleMetadataDetails(awsRoleMetadataDetails);
+				awsRoleMetadata.setPath(_path);
+			}
+			return awsRoleMetadata;
+		}
+		else if (HttpStatus.NOT_FOUND.equals(readResponse.getHttpstatus())) {
+			logger.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+					put(LogMessage.ACTION, "getMetaDataForAWSRole").
+					put(LogMessage.MESSAGE, "Reading Metadata for AWSRole failed. AWSRole Not found.").
+					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+					build()));
+			return awsRoleMetadata;
+		}
+		logger.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+				put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+				put(LogMessage.ACTION, "getMetaDataForAWSRole").
+				put(LogMessage.MESSAGE, "Reading Metadata for AWSRole failed").
+				put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+				build()));
+		return awsRoleMetadata;
+	}
 }

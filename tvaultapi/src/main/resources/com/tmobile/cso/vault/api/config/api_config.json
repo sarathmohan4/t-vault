@@ -738,6 +738,17 @@
         "outparams":["data/keys"]
         
     },
+	{"#":"**** - Read list of AWSRoles created by a user *******",
+
+		"apiEndPoint":"/auth/awsroles/rolesbyuser/list",
+		"vaultEndPoint":"/<path>?list=true",
+		"method":"GET",
+		"params":[
+			{"name":"path","required":true, "appendToPath":true}
+		],
+		"outparams":["data/keys"]
+
+	},
 	{"#" : "**** Onboard AD Service Account ****** ",
  	
     	"apiEndPoint":"/ad/serviceaccount/onboard",

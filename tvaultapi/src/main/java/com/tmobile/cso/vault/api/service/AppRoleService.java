@@ -98,7 +98,7 @@ public class  AppRoleService {
 			if(response.getHttpstatus().equals(HttpStatus.NO_CONTENT) || response.getHttpstatus().equals(HttpStatus.OK)) {
 				String metadataJson = ControllerUtil.populateAppRoleMetaJson(appRole.getRole_name(), userDetails.getUsername());
 				boolean appRoleMetaDataCreationStatus = ControllerUtil.createMetadata(metadataJson, token);
-				String appRoleUsermetadataJson = ControllerUtil.populateUserMetaJson(appRole.getRole_name(), userDetails.getUsername());
+				String appRoleUsermetadataJson = ControllerUtil.populateUserMetaJson(appRole.getRole_name(), userDetails.getUsername(), TVaultConstants.APPROLE_USERS_METADATA_MOUNT_PATH);
 				boolean appRoleUserMetaDataCreationStatus = ControllerUtil.createMetadata(appRoleUsermetadataJson, token);
 				if(appRoleMetaDataCreationStatus && appRoleUserMetaDataCreationStatus) {
 					return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AppRole created successfully\"]}");
@@ -515,9 +515,9 @@ public class  AppRoleService {
 				appRoleOwner = appRoleMetadata.getAppRoleMetadataDetails().getCreatedBy();
 			}
 			if (Objects.equals(userDetails.getUsername(), appRoleOwner)) {
-				if (TVaultConstants.APPROLE_READ_OPERATION.equals(operation)
-						|| TVaultConstants.APPROLE_DELETE_OPERATION.equals(operation)
-						|| TVaultConstants.APPROLE_UPDATE_OPERATION.equals(operation)
+				if (TVaultConstants.READ_OPERATION.equals(operation)
+						|| TVaultConstants.DELETE_OPERATION.equals(operation)
+						|| TVaultConstants.UPDATE_OPERATION.equals(operation)
 						) {
 					// As a owner of the AppRole, I can read, delete, update my AppRole
 					isAllowed = true;
@@ -580,7 +580,7 @@ public class  AppRoleService {
 			return ResponseEntity.status(HttpStatus.OK).body("{\"errors\":[\"AppRole doesn't exist\"]}");
 
 		}
-		boolean isAllowed = isAllowed(rolename, userDetails, TVaultConstants.APPROLE_READ_OPERATION);
+		boolean isAllowed = isAllowed(rolename, userDetails, TVaultConstants.READ_OPERATION);
 		if (isAllowed) {
 			Response response = reqProcessor.process("/auth/approle/role/readRoleID","{\"role_name\":\""+rolename+"\"}",token);
 			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -631,7 +631,7 @@ public class  AppRoleService {
 			return ResponseEntity.status(HttpStatus.OK).body("{\"errors\":[\"AppRole doesn't exist\"]}");
 
 		}
-		boolean isAllowed = isAllowed(rolename, userDetails, TVaultConstants.APPROLE_READ_OPERATION);
+		boolean isAllowed = isAllowed(rolename, userDetails, TVaultConstants.READ_OPERATION);
 		if (isAllowed) {
 			Response response = reqProcessor.process("/auth/approle/secretid/lookup","{\"role_name\":\""+rolename+"\"}",token);
 			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -681,7 +681,7 @@ public class  AppRoleService {
 				      build()));
 			return ResponseEntity.status(HttpStatus.OK).body("{\"errors\":[\"Unable to read AppRole. AppRole does not exist.\"]}");
 		}
-		boolean isAllowed = isAllowed(rolename, userDetails, TVaultConstants.APPROLE_READ_OPERATION);
+		boolean isAllowed = isAllowed(rolename, userDetails, TVaultConstants.READ_OPERATION);
 		if (isAllowed) {
 			Response response = reqProcessor.process("/auth/approle/role/accessors/list","{\"role_name\":\""+rolename+"\"}",token);
 			if(HttpStatus.OK.equals(response.getHttpstatus())) {
@@ -756,7 +756,7 @@ public class  AppRoleService {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"AppRole doesn't exist\"]}");
 
 		}
-		boolean isAllowed = isAllowed(rolename, userDetails, TVaultConstants.APPROLE_READ_OPERATION);
+		boolean isAllowed = isAllowed(rolename, userDetails, TVaultConstants.READ_OPERATION);
 		if (isAllowed) {
 			AppRoleMetadata appRoleMetadata = readAppRoleMetadata(token, rolename);
 			String roleId = readRoleId(token, rolename);
@@ -925,7 +925,7 @@ public class  AppRoleService {
 			// delete metadata
 			String jsonstr = ControllerUtil.populateAppRoleMetaJson(appRole.getRole_name(), userDetails.getUsername());
 			Response resp = reqProcessor.process("/delete",jsonstr,token);
-			String appRoleUsermetadataJson = ControllerUtil.populateUserMetaJson(appRole.getRole_name(),approleCreatedBy);
+			String appRoleUsermetadataJson = ControllerUtil.populateUserMetaJson(appRole.getRole_name(),approleCreatedBy, TVaultConstants.APPROLE_USERS_METADATA_MOUNT_PATH);
 			Response appRoleUserMetaDataDeletionResponse = reqProcessor.process("/delete",appRoleUsermetadataJson,token);
 			
 			if (HttpStatus.NO_CONTENT.equals(resp.getHttpstatus()) && HttpStatus.NO_CONTENT.equals(appRoleUserMetaDataDeletionResponse.getHttpstatus())) {
@@ -954,7 +954,7 @@ public class  AppRoleService {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).
 					body(String.format("{\"errors\":[\"Access denied: You don't have enough permission to delete the secret_ids associated with the AppRole (%s) \"]}", appRoleAccessorIds.getRole_name()));
 		}
-		boolean isAllowed = isAllowed(appRoleAccessorIds.getRole_name(), userDetails, TVaultConstants.APPROLE_DELETE_OPERATION);
+		boolean isAllowed = isAllowed(appRoleAccessorIds.getRole_name(), userDetails, TVaultConstants.DELETE_OPERATION);
 		if (!userDetails.isAdmin()) {
 			// Non admin owners, who created AppRoles using SelfService feature, need to use SelfSupportToken in order to read role_id
 			token = userDetails.getSelfSupportToken();
