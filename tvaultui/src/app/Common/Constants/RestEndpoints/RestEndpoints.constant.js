@@ -164,21 +164,25 @@ readTextFile("../apiUrls.json");
             method: 'GET'
         }, {
             name: 'createAwsRole',
-            url: '/v2/ss/auth/aws/role?',
+            url: '/v2/ss/auth/aws/role',
             method: 'POST'
         }, {
             name: 'updateAwsRole',
-            url: '/auth/aws/roles/update',
-            method: 'POST'
+            url: '/v2/ss/auth/aws/role',
+            method: 'PUT'
         }, {
             name: 'createAwsIAMRole',
-            url: '/v2/ss/auth/aws/iam/role?',
+            url: '/v2/ss/auth/aws/iam/role',
             method: 'POST'
         }, {
             name: 'updateAwsIAMRole',
-            url: '/v2/auth/aws/iam/role',
+            url: '/v2/ss/auth/aws/iam/role',
             method: 'PUT'
-        },{
+        }, {
+            name: 'deleteAwsRole',
+            url: '/v2/ss/auth/aws/role/',
+            method: 'DELETE'
+        }, {
             name: 'getAWSroles',
             url: '/v2/ss/roles',
             method: 'GET'

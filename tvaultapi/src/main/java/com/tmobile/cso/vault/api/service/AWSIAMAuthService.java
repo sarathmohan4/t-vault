@@ -18,10 +18,7 @@
 package com.tmobile.cso.vault.api.service;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -106,76 +103,90 @@ public class AWSIAMAuthService {
 			logger.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 					put(LogMessage.ACTION, "update AWSIAMRole").
-					put(LogMessage.MESSAGE, "Update AWSIAMRole failed").
+					put(LogMessage.MESSAGE, "Update AWS IAM role failed").
 					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 					build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: You don't have enough permission to update this AWSIAMRole\"]}");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: You don't have enough permission to update this AWS IAM role\"]}");
 		}
 		if (!ControllerUtil.areAWSIAMRoleInputsValid(awsiamRole)) {
 			//return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid inputs for the given aws login type");
 			throw new TVaultValidationException("Invalid inputs for the given aws login type");
 		}
-		String jsonStr = JSONUtil.getJSON(awsiamRole);
-		ObjectMapper objMapper = new ObjectMapper();
-		String currentPolicies = "";
-		String latestPolicies = "";
-		String roleName = "" ;
 
-		try {
-			JsonNode root = objMapper.readTree(jsonStr);
-			roleName = root.get("role").asText();
-			if(root.get("policies") != null)
-				latestPolicies = root.get("policies").asText();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		String roleName = awsiamRole.getRole();
+		AWSIAMRole existingAWSRole = readAWSRoleBasicDetails(roleName, token);
+
+		if (existingAWSRole == null) {
 			logger.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
-					put(LogMessage.ACTION, "Update IAM role").
-					put(LogMessage.MESSAGE, String.format("Failed to extract role/policies from json string [%s]", jsonStr)).
+					put(LogMessage.ACTION, "updateRole").
+					put(LogMessage.MESSAGE, String.format("Unable to read AWS role information. AWS IAM role [%s] doesn't exist", roleName)).
 					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 					build()));
+			return ResponseEntity.status(HttpStatus.OK).body("{\"errors\":[\"Update failed . AWS IAM Role does not exist\"]}");
+
 		}
 
-		Response awsResponse = reqProcessor.process("/auth/aws/iam/roles","{\"role\":\""+roleName+"\"}",token);
-		String responseJson="";	
+		awsiamRole.setPolicies(existingAWSRole.getPolicies());
+		String jsonStr = JSONUtil.getJSON(awsiamRole);
 
-		if(HttpStatus.OK.equals(awsResponse.getHttpstatus())){
-			responseJson = awsResponse.getResponse();	
-			try {
-				Map<String,Object> responseMap; 
-				responseMap = objMapper.readValue(responseJson, new TypeReference<Map<String, Object>>(){});
-				@SuppressWarnings("unchecked")
-				List<String> policies  = (List<String>) responseMap.get("policies");
-				currentPolicies = policies.stream().collect(Collectors.joining(",")).toString();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				logger.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
-						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
-						put(LogMessage.ACTION, "Update IAM role").
-						put(LogMessage.MESSAGE, "Failed to extract from IAM read response").
-						put(LogMessage.RESPONSE, awsResponse.getResponse()).
-						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
-						build()));
-			}
-		}else{
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"messages\":[\"Update failed . AWS Role does not exist \"]}");
-		}
-
-		Response response = reqProcessor.process("/auth/aws/roles/delete",jsonStr,token);
+		Response response = reqProcessor.process("/auth/aws/roles/delete",JSONUtil.getJSON(existingAWSRole),token);
 		if(response.getHttpstatus().equals(HttpStatus.NO_CONTENT)){
 			response = reqProcessor.process("/auth/aws/iam/roles/update",jsonStr,token);
 			if(response.getHttpstatus().equals(HttpStatus.NO_CONTENT)){
-				response = ControllerUtil.updateMetaDataOnConfigChanges(roleName, "aws-roles", currentPolicies, latestPolicies, token);
-				if(!HttpStatus.OK.equals(response.getHttpstatus()))
-					return ResponseEntity.status(response.getHttpstatus()).body("{\"messages\":[\"AWS Role configured\",\""+response.getResponse()+"\"]}");
-				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
+				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS IAM Role updated \"]}");
 			}else{
 				return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 			}
-		}else{
-			return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
+		}
+		else{
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"messages\":[\"Failed to update the AWS IAM role.\"]}");
 		}
 	}
+
+	private AWSIAMRole readAWSRoleBasicDetails(String roleName, String token) {
+		AWSIAMRole awsiamRole = null;
+		Response awsResponse = reqProcessor.process("/auth/aws/roles","{\"role\":\""+roleName+"\"}",token);
+		Map<String, Object> responseMap = null;
+		if(HttpStatus.OK.equals(awsResponse.getHttpstatus())) {
+			responseMap = ControllerUtil.parseJson(awsResponse.getResponse());
+			if(responseMap.isEmpty()) {
+				logger.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+						put(LogMessage.ACTION, "getAppRole").
+						put(LogMessage.MESSAGE, "Reading AWS IAM role failed").
+						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+						build()));
+				return awsiamRole;
+			}
+
+			String[] policies = null;
+			if (responseMap.get("policies") != null && ((ArrayList<String>)responseMap.get("policies")) != null) {
+				ArrayList<String> policiesList = ((ArrayList<String>)responseMap.get("policies"));
+				policies = policiesList.toArray(new String[policiesList.size()]);
+			}
+			ArrayList<String> bound_iam_principal_arn = ((ArrayList<String>)responseMap.get("bound_iam_principal_arn")).size()>0?((ArrayList<String>)responseMap.get("bound_iam_principal_arn")):new ArrayList<>();
+			String[] bound_iam_principal_arn_array = bound_iam_principal_arn.toArray(new String[bound_iam_principal_arn.size()]);
+			Boolean resolve_aws_unique_ids = (Boolean)responseMap.get("resolve_aws_unique_ids");
+			awsiamRole = new AWSIAMRole(
+					((String)responseMap.get("auth_type")),
+					roleName,
+					bound_iam_principal_arn_array,
+					resolve_aws_unique_ids,
+					(policies!=null)?policies: new String[0]
+			);
+
+			return awsiamRole;
+		}
+		logger.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+				put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+				put(LogMessage.ACTION, "getAWSrole").
+				put(LogMessage.MESSAGE, "Reading AWS role failed").
+				put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+				build()));
+		return awsiamRole;
+	}
+
 	/**
 	 * Gets the registered role
 	 * @param token

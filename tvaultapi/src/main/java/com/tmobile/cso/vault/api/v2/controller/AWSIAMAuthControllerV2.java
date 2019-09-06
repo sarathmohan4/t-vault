@@ -62,8 +62,9 @@ public class AWSIAMAuthControllerV2 {
 	
 	@ApiOperation(value = "${AWSIAMAuthControllerV2.updateRole.value}", notes = "${AWSIAMAuthControllerV2.updateRole.notes}")
 	@PutMapping(value="/v2/auth/aws/iam/role",consumes="application/json",produces="application/json")
-	public ResponseEntity<String> updateRole(@RequestHeader(value="vault-token") String token, @RequestBody AWSIAMRole awsiamRole) throws TVaultValidationException {
-		return awsIamAuthService.updateIAMRole(token, awsiamRole);
+	public ResponseEntity<String> updateRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSIAMRole awsiamRole) throws TVaultValidationException {
+		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
+		return awsIamAuthService.updateIAMRole(token, awsiamRole, userDetails);
 	}
 	/**
 	 * 

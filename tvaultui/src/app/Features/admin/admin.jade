@@ -134,6 +134,18 @@ script(type='text/ng-template', id='deleteApprolePopUp.html')
       .clearfix
         button.link-style.common-btn.btn.btn-default.btn-lg(ng-click="close()") CANCEL
 
+script(type='text/ng-template', id='deleteAWSrolePopUp.html')
+  loading-state(ng-if="isLoadingModalData")
+  .top-lg-sep(ng-if="!isLoadingModalData")
+    .top-lg-sep
+        .common-header-label.text-center Confirmation
+    .top-lg-sep.notification-text Are you sure you want to delete the AWS Role {{awsRoleToDelete}} ?
+    .text-center.bottom-lg-sep.top-lg-sep.notification-button
+      .clearfix.bottom-sm-sep
+        button.common-btn.btn.btn-primary.btn-lg(ng-click="deleteAwsRole(awsRoleToDelete)") DELETE
+      .clearfix
+        button.link-style.common-btn.btn.btn-default.btn-lg(ng-click="close()") CANCEL
+
 script(type='text/ng-template', id='offboardSvcaccPopUp.html')
   loading-state(ng-if="isLoadingModalData")
   .top-lg-sep(ng-if="!isLoadingModalData")
@@ -185,7 +197,7 @@ script(type='text/ng-template', id='changeAWSConfigPopup.html')
                                   span *
                                 .common-radio-group
                                     label.control.control--radio EC2
-                                      input(type='radio' id='auth_type' value="ec2" ng-model="awsConfPopupObj.auth_type" ng-checked="awsConfPopupObj.auth_type == 'ec2'" ng-click="enableEc2Controls($event)" ng-disabled="editingAwsPermission.status")
+                                      input(type='radio' id='auth_type' value="ec2" ng-model="awsConfPopupObj.auth_type" ng-checked="awsConfPopupObj.auth_type != 'iam'" ng-click="enableEc2Controls($event)" ng-disabled="editingAwsPermission.status")
                                       .control__indicator
                                     label.control.control--radio IAM
                                       input(type='radio' id='auth_type' value="iam" ng-model="awsConfPopupObj.auth_type" ng-checked="awsConfPopupObj.auth_type == 'iam'" ng-click="enableIamControls($event)" ng-disabled="editingAwsPermission.status")
@@ -203,42 +215,42 @@ script(type='text/ng-template', id='changeAWSConfigPopup.html')
                   .details-input-group
                     .common-form-label Account ID
                       span **
-                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_account_id}}" id="bound_account_id" minlength="12" maxlength="15" restrict-to-numbers placeholder="Account ID" ng-model="awsConfPopupObj.bound_account_id" required ng-disabled="editingAwsPermission.status && awsConfPopupObj.auth_type=='iam'")
+                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_account_id}}" id="bound_account_id" minlength="12" maxlength="15" restrict-to-numbers placeholder="Account ID" ng-model="awsConfPopupObj.bound_account_id" required ng-disabled="awsConfPopupObj.auth_type=='iam'")
                 .col-lg-6.col-md-6.col-sm-12.col-xs-12.common-form-row
                   .details-input-group
                     .common-form-label Region
                       span **
-                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_region}}" id="bound_region" restrict-config-char maxlength="25" placeholder="Region ID" ng-model="awsConfPopupObj.bound_region" required ng-disabled="editingAwsPermission.status && awsConfPopupObj.auth_type=='iam'")
+                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_region}}" id="bound_region" restrict-config-char maxlength="25" placeholder="Region ID" ng-model="awsConfPopupObj.bound_region" required ng-disabled="awsConfPopupObj.auth_type=='iam'")
                 .col-lg-6.col-md-6.col-sm-12.col-xs-12.common-form-row
                   .details-input-group
                     .common-form-label VPC ID
                       span **
-                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_vpc_id}}" id="bound_vpc_id" restrict-config-char  maxlength="256" placeholder="VPC ID" ng-model="awsConfPopupObj.bound_vpc_id" required ng-disabled="editingAwsPermission.status && awsConfPopupObj.auth_type=='iam'")
+                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_vpc_id}}" id="bound_vpc_id" restrict-config-char  maxlength="256" placeholder="VPC ID" ng-model="awsConfPopupObj.bound_vpc_id" required ng-disabled="awsConfPopupObj.auth_type=='iam'")
                 .col-lg-6.col-md-6.col-sm-12.col-xs-12.common-form-row
                   .details-input-group
                     .common-form-label Subnet ID
                       span **
-                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_subnet_id}}" id="bound_subnet_id" restrict-config-char maxlength="256" placeholder="Subnet ID" ng-model="awsConfPopupObj.bound_subnet_id" required ng-disabled="editingAwsPermission.status && awsConfPopupObj.auth_type=='iam'")
+                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_subnet_id}}" id="bound_subnet_id" restrict-config-char maxlength="256" placeholder="Subnet ID" ng-model="awsConfPopupObj.bound_subnet_id" required ng-disabled="awsConfPopupObj.auth_type=='iam'")
                 .col-lg-6.col-md-6.col-sm-12.col-xs-12.common-form-row
                   .details-input-group
                     .common-form-label AMI ID
                       span **
-                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_ami_id}}" id="bound_ami_id" restrict-config-char maxlength="256" placeholder="AMI ID" ng-model="awsConfPopupObj.bound_ami_id" ng-disabled="editingAwsPermission.status && awsConfPopupObj.auth_type=='iam'")
+                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_ami_id}}" id="bound_ami_id" restrict-config-char maxlength="256" placeholder="AMI ID" ng-model="awsConfPopupObj.bound_ami_id" ng-disabled="awsConfPopupObj.auth_type=='iam'")
                 .col-lg-6.col-md-6.col-sm-12.col-xs-12.common-form-row
                   .details-input-group
                     .common-form-label Instance Profile ARN
                       span **
-                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_iam_instance_profile_arn}}" id="bound_iam_instance_profile_arn" restrict-arn-special-char minlength="20" maxlength="1024" placeholder="Instance Profile ARN" ng-model="awsConfPopupObj.bound_iam_instance_profile_arn" ng-disabled="editingAwsPermission.status && awsConfPopupObj.auth_type=='iam'")
+                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_iam_instance_profile_arn}}" id="bound_iam_instance_profile_arn" restrict-arn-special-char minlength="20" maxlength="1024" placeholder="Instance Profile ARN" ng-model="awsConfPopupObj.bound_iam_instance_profile_arn" ng-disabled="awsConfPopupObj.auth_type=='iam'")
                 .col-lg-6.col-md-6.col-sm-12.col-xs-12.common-form-row
                   .details-input-group
                     .common-form-label IAM Role ARN
                       span **
-                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_iam_role_arn}}" id="bound_iam_role_arn" restrict-arn-special-char minlength="20" maxlength="1024" placeholder="IAM Role ARN" ng-model="awsConfPopupObj.bound_iam_role_arn" ng-disabled="editingAwsPermission.status && awsConfPopupObj.auth_type=='iam'")
+                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_iam_role_arn}}" id="bound_iam_role_arn" restrict-arn-special-char minlength="20" maxlength="1024" placeholder="IAM Role ARN" ng-model="awsConfPopupObj.bound_iam_role_arn" ng-disabled="awsConfPopupObj.auth_type=='iam'")
                 .col-lg-6.col-md-6.col-sm-12.col-xs-12.common-form-row
                   .details-input-group
                     .common-form-label IAM Principal ARN
                       span *
-                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_iam_principal_arn}}" id="bound_iam_principal_arn" restrict-arn-special-char minlength="20" maxlength="1024" placeholder="IAM Principal ARN" ng-model="awsConfPopupObj.bound_iam_principal_arn" required ng-disabled="editingAwsPermission.status && awsConfPopupObj.auth_type=='ec2'")
+                    input.form-control.input-box-style(value="{{awsConfPopupObj.bound_iam_principal_arn}}" id="bound_iam_principal_arn" restrict-arn-special-char minlength="20" maxlength="1024" placeholder="IAM Principal ARN" ng-model="awsConfPopupObj.bound_iam_principal_arn" required ng-disabled="awsConfPopupObj.auth_type=='ec2'")
                 
               .aws.common-form(ng-if='editingAwsPermission.status == true')
                 .common-form-row
@@ -329,7 +341,7 @@ script(type='text/ng-template', id='changeAWSConfigPopup.html')
                                             .change-list-table-data.row
                                                 .unavailable-text(ng-show="!isLoadingData && awsRoleData.keys.length==0")
                                                     .container.name No AWSRoles Available
-                                                .row.change-data.item(ng-show="!isLoadingData" ng-class="{'grayBackground' : activeItem == true}" ng-repeat="value in awsRoleData.keys")
+                                                .row.change-data.item(ng-show="!isLoadingData && awsRoleData.keys.length>0" ng-class="{'grayBackground' : activeItem == true}" ng-repeat="value in awsRoleData.keys")
                                                     .container.name.col-lg-3.col-md-3.col-sm-3.col-xs-3(title="{{value}}") {{value}}
                                                     .container.radio-inputs.col-lg-7.col-md-7.col-sm-7.col-xs-7
                                                         .down.view

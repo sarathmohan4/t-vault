@@ -475,7 +475,7 @@ public class SelfSupportController {
 	 * @param token
 	 * @return
 	 */
-	@ApiOperation(value = "${AWSAuthControllerV2.listRoles.value}", notes = "${AWSAuthControllerV2.listRoles.notes}")
+	@ApiOperation(value = "${SelfSupportController.listRoles.value}", notes = "${SelfSupportController.listRoles.notes}")
 	@GetMapping(value="/v2/ss/roles",produces="application/json")
 	public ResponseEntity<String> listRoles(HttpServletRequest request, @RequestHeader(value="vault-token") String token){
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
@@ -483,15 +483,29 @@ public class SelfSupportController {
 	}
 
 	/**
-	 * Mwthod to read the aws role details
+	 * Method to read the aws role details
 	 * @param token
 	 * @param role
 	 * @return
 	 */
-	@ApiOperation(value = "${AWSAuthControllerV2.fetchRole.value}", notes = "${AWSAuthControllerV2.fetchRole.notes}")
+	@ApiOperation(value = "${SelfSupportController.fetchRole.value}", notes = "${SelfSupportController.fetchRole.notes}")
 	@GetMapping(value="/v2/ss/aws/role/{role}",produces="application/json")
 	public ResponseEntity<String> fetchRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @PathVariable("role") String role){
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
 		return selfSupportService.fetchRole(token, role, userDetails);
+	}
+
+	/**
+	 * Delere an aws role
+	 * @param request
+	 * @param token
+	 * @param role
+	 * @return
+	 */
+	@ApiOperation(value = "${SelfSupportController.deleteRole.value}", notes = "${SelfSupportController.deleteRole.notes}")
+	@DeleteMapping(value="/v2/ss/auth/aws/role/{role}",produces="application/json")
+	public ResponseEntity<String> deleteRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @PathVariable("role" ) String role){
+		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
+		return selfSupportService.deleteRole(token, role, userDetails);
 	}
 }

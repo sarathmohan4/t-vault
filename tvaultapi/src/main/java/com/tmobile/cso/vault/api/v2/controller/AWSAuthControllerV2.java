@@ -78,8 +78,9 @@ public class AWSAuthControllerV2 {
 	 */
 	@ApiOperation(value = "${AWSAuthControllerV2.updateRole.value}", notes = "${AWSAuthControllerV2.updateRole.notes}")
 	@PutMapping(value="/v2/auth/aws/role",consumes="application/json",produces="application/json")
-	public ResponseEntity<String> updateRole(@RequestHeader(value="vault-token") String token, @RequestBody AWSLoginRole awsLoginRole) throws TVaultValidationException {
-		return awsAuthService.updateRole(token, awsLoginRole);
+	public ResponseEntity<String> updateRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSLoginRole awsLoginRole) throws TVaultValidationException {
+		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
+		return awsAuthService.updateRole(token, awsLoginRole, userDetails);
 	}
 	/**
 	 * Deleting an existing role.
@@ -107,8 +108,9 @@ public class AWSAuthControllerV2 {
 	 */
 	@ApiOperation(value = "${AWSAuthControllerV2.fetchRole.value}", notes = "${AWSAuthControllerV2.fetchRole.notes}")
 	@GetMapping(value="/v2/auth/aws/role/{role}",produces="application/json")
-	public ResponseEntity<String> fetchRole(@RequestHeader(value="vault-token") String token, @PathVariable("role") String role){
-		return awsAuthService.fetchRole(token, role);
+	public ResponseEntity<String> fetchRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @PathVariable("role") String role){
+		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
+		return awsAuthService.fetchRole(token, role, userDetails);
 	}
 	/**
 	 * Method to get list of AWS Roles

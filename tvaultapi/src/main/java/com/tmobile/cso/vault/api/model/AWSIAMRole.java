@@ -16,6 +16,8 @@
 // =========================================================================
 package com.tmobile.cso.vault.api.model;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.io.Serializable;
 
 public class AWSIAMRole implements Serializable {
@@ -27,6 +29,14 @@ public class AWSIAMRole implements Serializable {
 
 	public AWSIAMRole() {
 		// TODO Auto-generated constructor stub
+	}
+
+	public AWSIAMRole(String auth_type, String role, String[] bound_iam_principal_arn, Boolean resolve_aws_unique_ids, String[] policies) {
+		this.auth_type = auth_type;
+		this.role = role;
+		this.bound_iam_principal_arn = bound_iam_principal_arn;
+		this.resolve_aws_unique_ids = resolve_aws_unique_ids;
+		this.policies = policies;
 	}
 
 	private String role;
@@ -59,6 +69,7 @@ public class AWSIAMRole implements Serializable {
 	/**
 	 * @return the policies
 	 */
+	@ApiModelProperty(hidden=true)
 	public String[] getPolicies() {
 		return policies;
 	}

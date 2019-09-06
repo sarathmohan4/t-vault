@@ -191,37 +191,12 @@ public class  AWSAuthService {
 				logger.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 						put(LogMessage.ACTION, "getAppRole").
-						put(LogMessage.MESSAGE, "Reading AppRole failed").
+						put(LogMessage.MESSAGE, "Reading AWSrole failed").
 						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 						build()));
 				return awsLoginRole;
 			}
-
-			String[] policies = null;
-			if (responseMap.get("policies") != null && ((ArrayList<String>)responseMap.get("policies")) != null) {
-				ArrayList<String> policiesList = ((ArrayList<String>)responseMap.get("policies"));
-				policies = policiesList.toArray(new String[policiesList.size()]);
-			}
-			String bound_ami_id = ((ArrayList<String>)responseMap.get("bound_ami_id")).size()>0?((ArrayList<String>)responseMap.get("bound_ami_id")).get(0):"";
-			String bound_account_id = ((ArrayList<String>)responseMap.get("bound_account_id")).size()>0?((ArrayList<String>)responseMap.get("bound_account_id")).get(0):"";
-			String bound_region = ((ArrayList<String>)responseMap.get("bound_region")).size()>0?((ArrayList<String>)responseMap.get("bound_region")).get(0):"";
-			String bound_vpc_id = ((ArrayList<String>)responseMap.get("bound_vpc_id")).size()>0?((ArrayList<String>)responseMap.get("bound_vpc_id")).get(0):"";
-			String bound_subnet_id = ((ArrayList<String>)responseMap.get("bound_subnet_id")).size()>0?((ArrayList<String>)responseMap.get("bound_subnet_id")).get(0):"";
-			String bound_iam_role_arn = ((ArrayList<String>)responseMap.get("bound_iam_role_arn")).size()>0?((ArrayList<String>)responseMap.get("bound_iam_role_arn")).get(0):"";
-			String bound_iam_instance_profile_arn = ((ArrayList<String>)responseMap.get("bound_iam_instance_profile_arn")).size()>0?((ArrayList<String>)responseMap.get("bound_iam_instance_profile_arn")).get(0):"";
-			awsLoginRole = new AWSLoginRole(
-					((String)responseMap.get("auth_type")),
-					roleName,
-					bound_ami_id,
-					bound_account_id,
-					bound_region,
-					bound_vpc_id,
-					bound_subnet_id,
-					bound_iam_role_arn,
-					bound_iam_instance_profile_arn,
-					policies.toString()
-			);
-
+			awsLoginRole = createAWSLgoinRole(roleName, responseMap);
 			return awsLoginRole;
 		}
 		logger.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -230,6 +205,36 @@ public class  AWSAuthService {
 				put(LogMessage.MESSAGE, "Reading AWS role failed").
 				put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 				build()));
+		return awsLoginRole;
+	}
+
+	private AWSLoginRole createAWSLgoinRole(String roleName, Map<String, Object> responseMap) {
+		ArrayList<String> bound_ami_id = (ArrayList<String>)responseMap.get("bound_ami_id");
+		ArrayList<String> bound_account_id = (ArrayList<String>)responseMap.get("bound_account_id");
+		ArrayList<String> bound_region = (ArrayList<String>)responseMap.get("bound_region");
+		ArrayList<String> bound_vpc_id = (ArrayList<String>)responseMap.get("bound_vpc_id");
+		ArrayList<String> bound_subnet_id = (ArrayList<String>)responseMap.get("bound_subnet_id");
+		ArrayList<String> bound_iam_role_arn = (ArrayList<String>)responseMap.get("bound_iam_role_arn");
+		ArrayList<String> bound_iam_instance_profile_arn = (ArrayList<String>)responseMap.get("bound_iam_instance_profile_arn");
+
+		String[] policies = null;
+		if (responseMap.get("policies") != null && ((ArrayList<String>)responseMap.get("policies")) != null) {
+			ArrayList<String> policiesList = ((ArrayList<String>)responseMap.get("policies"));
+			policies = policiesList.toArray(new String[policiesList.size()]);
+		}
+
+		AWSLoginRole awsLoginRole = new AWSLoginRole(
+				((String)responseMap.get("auth_type")),
+				roleName,
+				bound_ami_id.toArray(new String[bound_ami_id.size()]),
+				bound_account_id.toArray(new String[bound_account_id.size()]),
+				bound_region.toArray(new String[bound_region.size()]),
+				bound_vpc_id.toArray(new String[bound_vpc_id.size()]),
+				bound_subnet_id.toArray(new String[bound_subnet_id.size()]),
+				bound_iam_role_arn.toArray(new String[bound_iam_role_arn.size()]),
+				bound_iam_instance_profile_arn.toArray(new String[bound_iam_instance_profile_arn.size()]),
+				(policies!=null)?policies: new String[0]
+		);
 		return awsLoginRole;
 	}
 
@@ -257,9 +262,9 @@ public class  AWSAuthService {
 						put(LogMessage.STATUS, response.getHttpstatus().toString()).
 						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 						build()));
-				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Role deleted \"]}");
+				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role deleted \"]}");
 			}
-			return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Role deleted, metadata delete failed\"]}");
+			return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role deleted, metadata delete failed\"]}");
 		}else{
 			return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 		}

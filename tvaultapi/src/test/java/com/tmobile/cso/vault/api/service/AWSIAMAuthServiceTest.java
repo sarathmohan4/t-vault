@@ -253,7 +253,7 @@ public class AWSIAMAuthServiceTest {
         when(ControllerUtil.updateMetaDataOnConfigChanges(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(updateResponse);
         try {
             when(ControllerUtil.areAWSIAMRoleInputsValid(awsiamRole)).thenReturn(true);
-            ResponseEntity<String> responseEntity = awsIamAuthService.updateIAMRole(token, awsiamRole);
+            ResponseEntity<String> responseEntity = awsIamAuthService.updateIAMRole(token, awsiamRole,Mockito.any());
             assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
             assertEquals(responseEntityExpected, responseEntity);
         } catch (TVaultValidationException e) {
@@ -287,7 +287,7 @@ public class AWSIAMAuthServiceTest {
 
         try {
             when(ControllerUtil.areAWSIAMRoleInputsValid(awsiamRole)).thenReturn(true);
-            ResponseEntity<String> responseEntity = awsIamAuthService.updateIAMRole(token, awsiamRole);
+            ResponseEntity<String> responseEntity = awsIamAuthService.updateIAMRole(token, awsiamRole,Mockito.any());
             assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
             assertEquals(responseEntityExpected, responseEntity);
         } catch (TVaultValidationException e) {

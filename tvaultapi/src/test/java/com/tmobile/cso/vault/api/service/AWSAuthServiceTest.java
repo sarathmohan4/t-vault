@@ -309,7 +309,7 @@ public class AWSAuthServiceTest {
         ResponseEntity<String> responseEntity = null;
         try {
             when(ControllerUtil.areAWSEC2RoleInputsValid(awsLoginRole)).thenReturn(true);
-            responseEntity = awsAuthService.updateRole(token, awsLoginRole);
+            responseEntity = awsAuthService.updateRole(token, awsLoginRole, getMockUser(true));
         } catch (TVaultValidationException e) {
             e.printStackTrace();
         }
@@ -330,7 +330,7 @@ public class AWSAuthServiceTest {
 
         ResponseEntity<String> responseEntity = null;
         when(ControllerUtil.areAWSEC2RoleInputsValid(awsLoginRole)).thenReturn(false);
-        responseEntity = awsAuthService.updateRole(token, awsLoginRole);
+        responseEntity = awsAuthService.updateRole(token, awsLoginRole, getMockUser(true));
     }
 
     @Test
@@ -362,7 +362,7 @@ public class AWSAuthServiceTest {
         ResponseEntity<String> responseEntity = null;
         try {
             when(ControllerUtil.areAWSEC2RoleInputsValid(awsLoginRole)).thenReturn(true);
-            responseEntity = awsAuthService.updateRole(token, awsLoginRole);
+            responseEntity = awsAuthService.updateRole(token, awsLoginRole, getMockUser(true));
         } catch (TVaultValidationException e) {
             e.printStackTrace();
         }
@@ -403,7 +403,7 @@ public class AWSAuthServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseBody);
         when(reqProcessor.process("/auth/aws/roles", jsoninput, token)).thenReturn(readResponse);
 
-        ResponseEntity<String> responseEntity = awsAuthService.fetchRole(token, "mytestawsrole");
+        ResponseEntity<String> responseEntity = awsAuthService.fetchRole(token, "mytestawsrole", getMockUser(true));
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
@@ -421,7 +421,7 @@ public class AWSAuthServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseBody);
         when(reqProcessor.process("/auth/aws/roles/list", "{}", token)).thenReturn(listResponse);
 
-        ResponseEntity<String> responseEntity = awsAuthService.listRoles(token);
+        ResponseEntity<String> responseEntity = awsAuthService.listRoles(token, getMockUser(true));
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);

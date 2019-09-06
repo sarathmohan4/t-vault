@@ -1101,7 +1101,7 @@ public class SelfSupportServiceTest {
         when(awsAuthService.createRole(eq(token), eq(awsLoginRole), Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, true);
 
-        ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1119,7 +1119,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role created \"]}");
 
         when(awsAuthService.createRole(eq(token), eq(awsLoginRole), Mockito.any())).thenReturn(response);
-        ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1139,7 +1139,7 @@ public class SelfSupportServiceTest {
         when(awsAuthService.createRole(eq(token), eq(awsLoginRole), Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, false);
 
-        ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1157,7 +1157,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
         when(ControllerUtil.isPathValid("shared/mysafe01")).thenReturn(false);
 
-        ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1174,10 +1174,10 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
 
-        when(awsAuthService.updateRole(token, awsLoginRole)).thenReturn(response);
+        when(awsAuthService.updateRole(token, awsLoginRole, Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, true);
 
-        ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1194,8 +1194,8 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
 
-        when(awsAuthService.updateRole(token, awsLoginRole)).thenReturn(response);
-        ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole,"shared/mysafe01");
+        when(awsAuthService.updateRole(token, awsLoginRole, Mockito.any())).thenReturn(response);
+        ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1212,10 +1212,10 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS role\"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS role\"]}");
 
-        when(awsAuthService.updateRole(token, awsLoginRole)).thenReturn(response);
+        when(awsAuthService.updateRole(token, awsLoginRole, Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, false);
 
-        ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1233,7 +1233,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
         when(ControllerUtil.isPathValid("shared/mysafe01")).thenReturn(false);
 
-        ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1257,7 +1257,7 @@ public class SelfSupportServiceTest {
         when(awsiamAuthService.createIAMRole(awsiamRole, token, userDetails)).thenReturn(response);
         mockIsAuthorized(userDetails, true);
 
-        ResponseEntity<String> responseEntity = selfSupportService.createIAMRole(userDetails, token, awsiamRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.createIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1281,7 +1281,7 @@ public class SelfSupportServiceTest {
         when(awsiamAuthService.createIAMRole(awsiamRole, token, userDetails)).thenReturn(response);
         mockIsAuthorized(userDetails, false);
 
-        ResponseEntity<String> responseEntity = selfSupportService.createIAMRole(userDetails, token, awsiamRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.createIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1304,7 +1304,7 @@ public class SelfSupportServiceTest {
         when(ControllerUtil.createMetadata(Mockito.any(), eq(token))).thenReturn(true);
         when(awsiamAuthService.createIAMRole(awsiamRole, token, userDetails)).thenReturn(response);
 
-        ResponseEntity<String> responseEntity = selfSupportService.createIAMRole(userDetails, token, awsiamRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.createIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1325,7 +1325,7 @@ public class SelfSupportServiceTest {
         String responseJson = "{\"errors\":[\"Invalid path specified\"]}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
         when(ControllerUtil.isPathValid("shared/mysafe01")).thenReturn(false);
-        ResponseEntity<String> responseEntity = selfSupportService.createIAMRole(userDetails, token, awsiamRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.createIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1346,10 +1346,10 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
 
-        when(awsiamAuthService.updateIAMRole(token, awsiamRole)).thenReturn(response);
+        when(awsiamAuthService.updateIAMRole(token, awsiamRole, Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, true);
 
-        ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1370,10 +1370,10 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS IAM role\"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS IAM role\"]}");
 
-        when(awsiamAuthService.updateIAMRole(token, awsiamRole)).thenReturn(response);
+        when(awsiamAuthService.updateIAMRole(token, awsiamRole, Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, false);
 
-        ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1394,9 +1394,9 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
 
-        when(awsiamAuthService.updateIAMRole(token, awsiamRole)).thenReturn(response);
+        when(awsiamAuthService.updateIAMRole(token, awsiamRole, Mockito.any())).thenReturn(response);
 
-        ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
@@ -1418,7 +1418,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
         when(ControllerUtil.isPathValid("shared/mysafe01")).thenReturn(false);
 
-        ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole,"shared/mysafe01");
+        ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }

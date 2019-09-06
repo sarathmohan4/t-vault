@@ -449,10 +449,12 @@
                 },
                 function (error) {
                     // Error handling function
-                    console.log(error);
                     $scope.isLoadingData = false;
-                    $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
-                    $scope.error('md');
+                    if(error.status !== 404) {
+                        console.log(error);
+                        $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
+                        $scope.error('md');
+                    }
                 });
             }
             if ($scope.enableSvcacc == true) {
@@ -497,6 +499,26 @@
             };
             $scope.openApprole(size);
         }
+
+        $scope.newAWSRoleConfiguration = function (size) {
+            $scope.editingAwsPermission = {"status": false};
+            $scope.awsConfPopupObj = {
+                "auth_type": 'ec2',
+                "role": '',
+                "bound_account_id": '',
+                "bound_region": '',
+                "bound_vpc_id": '',
+                "bound_subnet_id": '',
+                "bound_ami_id": '',
+                "bound_iam_instance_profile_arn": '',
+                "bound_iam_role_arn": '',
+                "policies": '',
+                "bound_iam_principal_arn": '',
+                "resolve_aws_unique_ids": "false"
+            };
+            $scope.openAWSConfigPopup(size);
+        }
+
 
         $scope.editOnboardedSvcacc = function (userId, size) {
             var obj = "svcaccData";
@@ -1017,21 +1039,20 @@
                         if (UtilityService.ifAPIRequestSuccessful(response)) {
                             // Try-Catch block to catch errors if there is any change in object structure in the response
                             try {
-                                // $scope.awsConfPopupObj = response.data;
-                                // $scope.awsConfPopupObj['role'] = rolename;
+                                $scope.isLoadingData = false;
                                 $scope.editingAwsPermission = {"status": true};
                                 $scope.awsConfPopupObj = {
                                     "auth_type": response.data.auth_type,
                                     "role": rolename,
-                                    "bound_account_id": response.data.bound_account_id,
-                                    "bound_region": response.data.bound_region,
-                                    "bound_vpc_id": response.data.bound_vpc_id,
-                                    "bound_subnet_id": response.data.bound_subnet_id,
-                                    "bound_ami_id": response.data.bound_ami_id,
-                                    "bound_iam_instance_profile_arn": response.data.bound_iam_instance_profile_arn,
-                                    "bound_iam_role_arn": response.data.bound_iam_role_arn,
-                                    "policies": response.data.policies,
-                                    "bound_iam_principal_arn": response.data.bound_iam_principal_arn,
+                                    "bound_account_id": (response.data.bound_account_id.length>0)?response.data.bound_account_id[0]:"",
+                                    "bound_region": (response.data.bound_region.length>0)?response.data.bound_region[0]:"",
+                                    "bound_vpc_id": (response.data.bound_vpc_id.length>0)?response.data.bound_vpc_id[0]:"",
+                                    "bound_subnet_id": (response.data.bound_subnet_id.length>0)?response.data.bound_subnet_id[0]:"",
+                                    "bound_ami_id": (response.data.bound_ami_id.length>0)?response.data.bound_ami_id[0]:"",
+                                    "bound_iam_instance_profile_arn": (response.data.bound_iam_instance_profile_arn.length>0)?response.data.bound_iam_instance_profile_arn[0]:"",
+                                    "bound_iam_role_arn": (response.data.bound_iam_role_arn.length>0)?response.data.bound_iam_role_arn[0]:"",
+                                    "policies": (response.data.policies!=null)?response.data.policies:[],
+                                    "bound_iam_principal_arn": (response.data.bound_iam_principal_arn.length>0)?response.data.bound_iam_principal_arn[0]:"",
                                     "resolve_aws_unique_ids": "false"
                                 };
                                 $scope.policies = response.data.policies;
@@ -1073,36 +1094,48 @@
         };      
 
         $scope.configureAwsRole = function () {
-            var rolename = $scope.awsConfPopupObj.role;
+            Modal.close('');
+            var apiCallFunction = '';
+            var reqObjtobeSent = {}; 
             if ($scope.awsConfPopupObj.auth_type === 'ec2') {
-                apiCallFunction = AdminSafesManagement.updateAWSRole;
-                updatedUrlOfEndPoint = ModifyUrl.addUrlParameteres('updateAwsRole',"path="+rolename);
+                apiCallFunction = ($scope.editingAwsPermission.status == true)?AdminSafesManagement.updateAWSRole:AdminSafesManagement.createAwsRole;
+                reqObjtobeSent = {
+                    "auth_type": $scope.awsConfPopupObj.auth_type,
+                    "role": $scope.awsConfPopupObj.role,
+                    "bound_account_id": [$scope.awsConfPopupObj.bound_account_id],
+                    "bound_region": [$scope.awsConfPopupObj.bound_region],
+                    "bound_vpc_id": [$scope.awsConfPopupObj.bound_vpc_id],
+                    "bound_subnet_id": [$scope.awsConfPopupObj.bound_subnet_id],
+                    "bound_ami_id": [$scope.awsConfPopupObj.bound_ami_id],
+                    "bound_iam_instance_profile_arn": [$scope.awsConfPopupObj.bound_iam_instance_profile_arn],
+                    "bound_iam_role_arn": [$scope.awsConfPopupObj.bound_iam_role_arn]
+                }; 
             }
             else {
-                apiCallFunction = AdminSafesManagement.updateAWSIAMRole;
-                updatedUrlOfEndPoint = ModifyUrl.addUrlParameteres('updateAwsIAMRole',"path="+rolename);
-            }
-            reqObjtobeSent = $scope.awsConfPopupObj;
-            apiCallFunction(reqObjtobeSent, updatedUrlOfEndPoint).then(function (response) {
+                apiCallFunction = ($scope.editingAwsPermission.status == true)?apiCallFunction = AdminSafesManagement.updateAWSIAMRole:AdminSafesManagement.createAwsIAMRole;
+                reqObjtobeSent = {
+                    "auth_type": $scope.awsConfPopupObj.auth_type,
+                    "role": $scope.awsConfPopupObj.role,
+                    "bound_iam_principal_arn": [$scope.awsConfPopupObj.bound_iam_principal_arn],
+                    "resolve_aws_unique_ids": "false"
+                };
+            }    
+                 
+            //reqObjtobeSent = $scope.awsConfPopupObj;
+
+            apiCallFunction(reqObjtobeSent, null).then(function (response) {
                 if (UtilityService.ifAPIRequestSuccessful(response)) {
                     try {
                         $scope.isLoadingData = false;
-                        if (type === 'AwsRoleConfigure') {
-                            $scope.addPermission('AWSPermission', $scope.awsConfPopupObj.role, permission, false);
+                        if ($scope.editingAwsPermission.status == true) {
+                            var notification = UtilityService.getAParticularSuccessMessage('MESSAGE_UPDATE_SUCCESS');
                         }
                         else {
-                            $scope.requestDataFrChangeSafe();
-                            var notification = UtilityService.getAParticularSuccessMessage('MESSAGE_ADD_SUCCESS');
-                            if (key !== null && key !== undefined) {
-                                if (type === "users" && key === SessionStore.getItem("username")) {
-                                    return Modal.createModalWithController('stop.modal.html', {
-                                        title: 'Permission changed',
-                                        message: 'For security reasons, if you add or modify permission to yourself, you need to log out and log in again for the added or modified permissions to take effect.'
-                                      });
-                                }
-                                Notifications.toast(key + "'s permission" + notification);
-                            }
+                            $scope.awsRoleData.keys.push($scope.awsConfPopupObj.role);
+                            $scope.awsRoleData.keys.sort();
+                            var notification = UtilityService.getAParticularSuccessMessage('MESSAGE_CREATE_SUCCESS');
                         }
+                        Notifications.toast('AWS Role '+notification);
                     } catch (e) {
                         console.log(e);
                         $scope.isLoadingData = false;
@@ -1111,10 +1144,10 @@
                     }
                 }
                 else {
+                    $scope.isLoadingData = false;
                     $scope.errorMessage = AdminSafesManagement.getTheRightErrorMessage(response);
                     error('md');
                 }
-                $scope.roleNameSelected = false;
             },
             function (error) {
                 // Error handling function
@@ -1123,6 +1156,54 @@
                 $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
                 $scope.error('md');
             })
+        }
+
+        $scope.deleteAWSrolePopUp = function(awsRoleName) {
+            $rootScope.awsRoleToDelete = awsRoleName;
+            Modal.createModal('md', 'deleteAWSrolePopUp.html', 'AdminCtrl', $scope);
+        }
+
+        $scope.deleteAwsRole = function (awsRoleName) {
+            if($rootScope.awsRoleToDelete !== null && $rootScope.awsRoleToDelete !== undefined) {
+                awsRoleName = $rootScope.awsRoleToDelete;
+            }     
+            $rootScope.awsRoleToDelete = null;
+            try {                
+                $scope.isLoadingData = true;
+                Modal.close();
+                var updatedUrlOfEndPoint = ModifyUrl.addUrlParameteres('deleteAwsRole', awsRoleName);
+                AdminSafesManagement.deleteAwsRole(null, updatedUrlOfEndPoint).then(function (response) {
+                    $scope.isLoadingData = false;  
+                    if (UtilityService.ifAPIRequestSuccessful(response)) {        
+                        var notification = UtilityService.getAParticularSuccessMessage('MESSAGE_DELETE_SUCCESS');
+                        Notifications.toast(awsRoleName+notification);
+                        var currentAwsRoleList = $scope.awsRoleData.keys;
+                        var index = currentAwsRoleList.indexOf(awsRoleName);
+                        if (index > -1) {
+                            currentAwsRoleList.splice(index, 1);
+                            $scope.awsRoleData.keys = currentAwsRoleList;
+                        }
+                    } else {
+                        console.log(error);
+                        $scope.isLoadingData = false;
+                        $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
+                        $scope.error('md');
+                    }
+                },
+                function (error) {
+                    // Error handling function
+                    console.log(error);
+                    $scope.isLoadingData = false;
+                    $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
+                    $scope.error('md');
+                })
+            } catch(e) {
+                console.log(e);
+                $scope.isLoadingData = false;
+                $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
+                $scope.error('md');
+
+            }
         }
 
         init();

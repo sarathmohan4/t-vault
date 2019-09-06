@@ -963,7 +963,7 @@ public class ControllerUtilTest {
 
     @Test
     public void test_populateUserMetaJson()  {
-        String json = ControllerUtil.populateUserMetaJson("role1", "normalsuer");
+        String json = ControllerUtil.populateUserMetaJson("role1", "normalsuer", "metadata/approle_users");
         assertEquals("{\"path\":\"metadata/approle_users/normalsuer/role1\"}", json);
     }
     

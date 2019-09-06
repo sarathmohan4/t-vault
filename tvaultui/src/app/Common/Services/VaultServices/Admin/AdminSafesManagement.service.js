@@ -137,7 +137,7 @@
                     return response;
                 });
             }, 
-            addAWSRole: function(payload, url) {
+            createAwsRole: function(payload, url) {
                 return ServiceEndpoint.createAwsRole.makeRequest(payload, url).then(function(response) {
                     return response;
                 });
@@ -147,13 +147,18 @@
                     return response;
                 });
             },
-            addAWSIAMRole: function(payload, url) {
+            createAwsIAMRole: function(payload, url) {
                 return ServiceEndpoint.createAwsIAMRole.makeRequest(payload, url).then(function(response) {
                     return response;
                 });
             },
             updateAWSIAMRole: function(payload, url) {
                 return ServiceEndpoint.updateAwsIAMRole.makeRequest(payload, url).then(function(response) {
+                    return response;
+                });
+            },
+            deleteAwsRole: function(payload, url) {
+                return ServiceEndpoint.deleteAwsRole.makeRequest(payload, url).then(function(response) {
                     return response;
                 });
             },
