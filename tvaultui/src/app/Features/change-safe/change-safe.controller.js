@@ -36,6 +36,7 @@
         $scope.approleRadioBtn['value'] = 'read';
         $scope.isEmpty = UtilityService.isObjectEmpty;
         $scope.roleNameSelected = false;
+        $scope.awsRoleNameSelected = false;
         $scope.awsConfPopupObj = {
             "auth_type":"",
             "role": "",
@@ -436,12 +437,8 @@
                             };
                             break;
                         case 'AWSPermission' :
-                            if (editingPermission) {
-                                apiCallFunction = AdminSafesManagement.detachAWSPermissionFromSafe;
-                            }
-                            else {
-                                apiCallFunction = AdminSafesManagement.deleteAWSPermissionFromSafe;
-                            }
+                            apiCallFunction = AdminSafesManagement.detachAWSPermissionFromSafe;
+
                             reqObjtobeSent = {
                                 "path": setPath,
                                 "role": key
@@ -1045,7 +1042,7 @@
                             apiCallFunction = AdminSafesManagement.addAppRolePermissionForSafe;
                             reqObjtobeSent = {"path": setPath, "role_name": key, "access": permission.toLowerCase()};
                             break;
-                                }
+                    }
                     apiCallFunction(reqObjtobeSent, updatedUrlOfEndPoint).then(function (response) {
                             if (UtilityService.ifAPIRequestSuccessful(response)) {
                                 // Try-Catch block to catch errors if there is any change in object structure in the response
@@ -1079,6 +1076,7 @@
                                 error('md');
                             }
                             $scope.roleNameSelected = false;
+                            $scope.awsRoleNameSelected = false;
                         },
                         function (error) {
                             // Error handling function
@@ -1160,6 +1158,63 @@
             $scope.openApprole(size);
         }
 
+        $scope.isAwsRoleBtnDisabled = function() {
+            if ($scope.awsRoleNameSelected){
+                return false;
+            }
+            return true;
+        }
+        $scope.awsRoleNameSelect = function() {
+            var queryParameters = $scope.dropDownAwsRoleNames.selectedGroupOption.type;
+            $scope.awsRoleNameSelected = true;
+            $scope.awsConfPopupObj.role = queryParameters;
+        }
+
+        $scope.addAwsRoleToSafe = function(size) {
+            $scope.awsConfPopupObj = {
+                "auth_type":"",
+                "role": "",
+                "bound_account_id": "",
+                "bound_region": "",
+                "bound_vpc_id": "",
+                "bound_subnet_id": "",
+                "bound_ami_id": "",
+                "bound_iam_instance_profile_arn": "",
+                "bound_iam_role_arn": "",
+                "policies": "",
+                "bound_iam_principal_arn": "",
+                "resolve_aws_unique_ids":"false"
+            };
+            $scope.awsRoleNameSelected = false;
+            $scope.awsRoleNameTableOptions = [];
+            AdminSafesManagement.getAWSroles().then(function (response) {
+                if (UtilityService.ifAPIRequestSuccessful(response)) {
+                    var keys = response.data.keys +'';
+                    var roles = keys.split(',');
+                    for (var index = 0;index<roles.length;index++) {
+                        $scope.awsRoleNameTableOptions.push({"type":roles[index]});
+                    }
+                }
+                else {
+                    $scope.errorMessage = AdminSafesManagement.getTheRightErrorMessage(response);
+                    error('md');
+                }
+            },
+            function (error) {
+                // Error handling function
+                console.log(error);
+                $scope.isLoadingData = false;
+                $scope.errorMessage = UtilityService.getAParticularErrorMessage('ERROR_GENERAL');
+                $scope.error('md');
+            })
+
+            $scope.dropDownAwsRoleNames = {
+                'selectedGroupOption': {"type": "Select AWS Role Name"},       // As initial placeholder
+                'tableOptions': $scope.awsRoleNameTableOptions
+            }
+            $scope.openAWSrole(size);
+        }
+
         /* TODO: What is open, functon name should be more descriptive */
         $scope.open = function (size) {
             Modal.createModal(size, 'changeSafePopup.html', 'ChangeSafeCtrl', $scope);
@@ -1168,6 +1223,10 @@
         /* TODO: What is open, functon name should be more descriptive */
         $scope.openApprole = function (size) {
             Modal.createModal(size, 'appRolePopup.html', 'ChangeSafeCtrl', $scope);
+        };
+
+        $scope.openAWSrole = function (size) {
+            Modal.createModal(size, 'awsRolePopup.html', 'ChangeSafeCtrl', $scope);
         };
 
         /* TODO: What is ok, functon name should be more descriptive */

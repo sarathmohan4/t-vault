@@ -74,7 +74,10 @@ public class AWSIAMAuthService {
 		Response response = reqProcessor.process("/auth/aws/iam/role/create",jsonStr, token);
 		if(response.getHttpstatus().equals(HttpStatus.NO_CONTENT)){
 			String metadataJson = ControllerUtil.populateAWSMetaJson(awsiamRole.getRole(), userDetails.getUsername());
-			if(ControllerUtil.createMetadata(metadataJson, token)) {
+			boolean awsRoleMetaDataCreationStatus = ControllerUtil.createMetadata(metadataJson, token);
+			String awsRoleUsermetadataJson = ControllerUtil.populateUserMetaJson(awsiamRole.getRole(), userDetails.getUsername(), TVaultConstants.AWSROLE_USERS_METADATA_MOUNT_PATH);
+			boolean awsRoleUserMetaDataCreationStatus = ControllerUtil.createMetadata(awsRoleUsermetadataJson, token);
+			if(awsRoleMetaDataCreationStatus && awsRoleUserMetaDataCreationStatus) {
 				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS IAM Role created successfully \"]}");
 			}
 			// revert role creation

@@ -818,6 +818,9 @@ public class  SelfSupportService {
 	}
 
 	public ResponseEntity<String> deleteRole(String token, String role, UserDetails userDetails) {
+		if (!userDetails.isAdmin()) {
+			token = userDetails.getSelfSupportToken();
+		}
 		return awsAuthService.deleteRole(token, role, userDetails);
 	}
 }

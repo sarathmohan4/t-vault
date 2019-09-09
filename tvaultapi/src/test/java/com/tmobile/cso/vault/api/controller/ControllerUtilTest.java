@@ -758,10 +758,10 @@ public class ControllerUtilTest {
     @Test
     public void test_areAWSEC2RoleInputsValid() throws TVaultValidationException {
 
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "",
-                "", "", "vpc-2f09a348", "",
-                "", "",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", null,
+                null, null, new String[] {"vpc-2f09a348"}, null,
+                null, null,
+                new String[]{"prod", "dev"});
         boolean valid = ControllerUtil.areAWSEC2RoleInputsValid(awsLoginRole);
         assertTrue(valid);
     }
@@ -770,10 +770,10 @@ public class ControllerUtilTest {
     public void test_areAWSEC2RoleInputsValid_invalid()  {
 
         try {
-            AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "", "",
-                    "", "", "vpc-2f09a348", "",
-                    "", "",
-                    "\"[prod, dev\"]");
+            AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "", null,
+                    null, null, new String[] {"vpc-2f09a348"}, null,
+                    null, null,
+                    new String[] {"prod", "dev"});
             boolean valid = ControllerUtil.areAWSEC2RoleInputsValid(awsLoginRole);
         } catch (TVaultValidationException e) {
             assertTrue(true);
@@ -784,10 +784,10 @@ public class ControllerUtilTest {
     public void test_areAWSEC2RoleInputsValid_invalid_authType()  {
 
         try {
-            AWSLoginRole awsLoginRole = new AWSLoginRole("iam", "mytestawsrole", "",
-                    "", "", "vpc-2f09a348", "",
-                    "", "",
-                    "\"[prod, dev\"]");
+            AWSLoginRole awsLoginRole = new AWSLoginRole("iam", "mytestawsrole", null,
+                    null, null, new String[] {"vpc-2f09a348"}, null,
+                    null, null,
+                    new String[] {"prod", "dev"});
             boolean valid = ControllerUtil.areAWSEC2RoleInputsValid(awsLoginRole);
         } catch (TVaultValidationException e) {
             assertTrue(true);

@@ -120,6 +120,30 @@ script(type='text/ng-template', id='appRolePopup.html')
               button.common-btn.btn.btn-primary.btn-lg(id="approle_create_btn" ng-click="addPermission('AppRolePermission', approleConfPopupObj.role_name, approleRadioBtn.value, false)" ng-disabled="isApproleBtnDisabled()" ) Add
             .clearfix
               button.link-style.common-btn.btn.btn-default.btn-lg(ng-click="cancel()") Cancel
+script(type='text/ng-template', id='awsRolePopup.html')
+          .modal-sep
+            .common-header-label.text-center Add your app
+
+          //-   First popup of the AWSrole configure with multiple ID input fields
+
+          .left-lg-sep.right-lg-sep
+            .common-form.modal-inner-wrapper.aws
+              .common-form-row
+                .details-input-group
+                    .common-form-label Choose a Role Name
+                    drop-down(drop-down-options="dropDownAwsRoleNames" name="dropdownRoles" ng-click="awsRoleNameSelect()")              
+              .aws.common-form
+                .common-form-row
+                    .aws-conf.clearfix
+                        .details-input-group
+                            .common-form-label Permission
+                            .common-radio-group
+                                radio-buttons(data="radio" value="awsRadioBtn.value" state="true")
+          .text-center.bottom-lg-sep.modal-sep.aws
+            .clearfix.bottom-sm-sep
+              button.common-btn.btn.btn-primary.btn-lg(id="awsrole_create_btn" ng-click="addPermission('AWSPermission', awsConfPopupObj.role, awsRadioBtn.value, false)" ng-disabled="isAwsRoleBtnDisabled()" ) Add
+            .clearfix
+              button.link-style.common-btn.btn.btn-default.btn-lg(ng-click="cancel()") Cancel
 
 script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")
 .container-fluid.common-main-content.route-page.change-safe-wrapper
@@ -328,7 +352,7 @@ script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
                                 .new-container.page-content-container
                                     .row.change-safe
                                         .container.actions
-                                            .function-text.right.link-style(ng-click="newAwsConfiguration('md')")
+                                            .function-text.right.link-style(ng-click="addAwsRoleToSafe('md')")
                                                 .add-icon-container.action-icon-wrapper.static
                                                     .rotate.glyphicon.glyphicon-remove-circle 
                                                 .text ADD AWS CONFIGURATION
@@ -341,7 +365,7 @@ script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
                                             .container.radio-inputs.col-lg-4.col-md-4.col-sm-4.col-xs-4 ACTION
                                         .change-safe-table-data.row
                                             .row.change-safe.item.hide-in-mobile(ng-if="!isLoadingData" ng-init="editPermissionItem = false; activeItem = false; radioValue = value" ng-class="{'grayBackground' : activeItem == true}" ng-repeat="(key, value) in AwsPermissionsData.data")
-                                                .container.name.col-lg-4.col-md-4.col-sm-4.col-xs-4(ng-click="editAWSConfigurationDetails(editPermissionItem, key)" ng-class="{'inactive' : editPermissionItem == false, 'pink-text' : editPermissionItem == true}") {{key}}
+                                                .container.name.col-lg-4.col-md-4.col-sm-4.col-xs-4(ng-class="{'inactive' : editPermissionItem == false, 'pink-text' : editPermissionItem == true}") {{key}}
                                                 .container.radio-inputs.col-lg-4.col-md-4.col-sm-4.col-xs-4
                                                     radio-buttons(data="radio" value="radioValue" state="editPermissionItem")
                                                 .container.actions.col-lg-4.col-md-4.col-sm-4.col-xs-4

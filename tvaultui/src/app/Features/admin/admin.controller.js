@@ -1097,6 +1097,7 @@
             Modal.close('');
             var apiCallFunction = '';
             var reqObjtobeSent = {}; 
+            $scope.isLoadingData = true;
             if ($scope.awsConfPopupObj.auth_type === 'ec2') {
                 apiCallFunction = ($scope.editingAwsPermission.status == true)?AdminSafesManagement.updateAWSRole:AdminSafesManagement.createAwsRole;
                 reqObjtobeSent = {

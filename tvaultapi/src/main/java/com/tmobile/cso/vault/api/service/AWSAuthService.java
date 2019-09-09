@@ -249,12 +249,20 @@ public class  AWSAuthService {
 		if (HttpStatus.INTERNAL_SERVER_ERROR.equals(permissionResponse.getHttpstatus()) || HttpStatus.UNAUTHORIZED.equals(permissionResponse.getHttpstatus())) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\""+permissionResponse.getResponse()+"\"]}");
 		}
+		AWSRoleMetadata awsRoleMetadata = readAWSRoleMetadata(token, role);
+		String awsroleCreatedBy = userDetails.getUsername();
+		if ( awsRoleMetadata.getAwsRoleMetadataDetails() != null) {
+			awsroleCreatedBy = awsRoleMetadata.getAwsRoleMetadataDetails().getCreatedBy();
+		}
 		Response response = reqProcessor.process("/auth/aws/roles/delete","{\"role\":\""+role+"\"}",token);
 		if(response.getHttpstatus().equals(HttpStatus.NO_CONTENT)){
 			// delete metadata
 			String metaJson = ControllerUtil.populateAWSMetaJson(role, userDetails.getUsername());
 			Response resp = reqProcessor.process("/delete",metaJson,token);
-			if (HttpStatus.NO_CONTENT.equals(resp.getHttpstatus())) {
+			String appRoleUsermetadataJson = ControllerUtil.populateUserMetaJson(role,awsroleCreatedBy, TVaultConstants.AWSROLE_USERS_METADATA_MOUNT_PATH);
+			Response appRoleUserMetaDataDeletionResponse = reqProcessor.process("/delete",appRoleUsermetadataJson,token);
+
+			if (HttpStatus.NO_CONTENT.equals(resp.getHttpstatus()) && HttpStatus.NO_CONTENT.equals(appRoleUserMetaDataDeletionResponse.getHttpstatus())) {
 				logger.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 						put(LogMessage.ACTION, "Delete AWS Role").

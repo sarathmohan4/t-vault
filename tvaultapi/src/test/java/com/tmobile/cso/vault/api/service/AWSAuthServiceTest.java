@@ -106,10 +106,10 @@ public class AWSAuthServiceTest {
         response.setHttpstatus(HttpStatus.OK);
         Response responseNoContent = getMockResponse(HttpStatus.NO_CONTENT, true, "");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         String jsonStr = "{\"auth_type\": \"ec2\", \"role\": \"mytestawsrole\", \"bound_ami_id\": \"ami-fce3c696\", " +
                 "\"bound_account_id\": 1234567890123, \"bound_region\": \"us-east-2\",\"bound_vpc_id\": " +
@@ -143,10 +143,10 @@ public class AWSAuthServiceTest {
         response.setHttpstatus(HttpStatus.OK);
         Response responseNoContent = getMockResponse(HttpStatus.NO_CONTENT, true, "");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         String jsonStr = "{\"auth_type\": \"ec2\", \"role\": \"mytestawsrole\", \"bound_ami_id\": \"ami-fce3c696\", " +
                 "\"bound_account_id\": 1234567890123, \"bound_region\": \"us-east-2\",\"bound_vpc_id\": " +
@@ -182,10 +182,10 @@ public class AWSAuthServiceTest {
         Response responseNoContent = getMockResponse(HttpStatus.NO_CONTENT, true, "");
         Response response500 = getMockResponse(HttpStatus.INTERNAL_SERVER_ERROR, true, "");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         String jsonStr = "{\"auth_type\": \"ec2\", \"role\": \"mytestawsrole\", \"bound_ami_id\": \"ami-fce3c696\", " +
                 "\"bound_account_id\": 1234567890123, \"bound_region\": \"us-east-2\",\"bound_vpc_id\": " +
@@ -219,10 +219,10 @@ public class AWSAuthServiceTest {
         Response response = new Response();
         response.setHttpstatus(HttpStatus.OK);
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         ResponseEntity<String> responseEntity = null;
         when(ControllerUtil.areAWSEC2RoleInputsValid(awsLoginRole)).thenReturn(false);
@@ -239,10 +239,10 @@ public class AWSAuthServiceTest {
         response.setHttpstatus(HttpStatus.OK);
         Response responseServerError = getMockResponse(HttpStatus.INTERNAL_SERVER_ERROR, true, "{\"errors\":[\"Internal Server Error\"]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+        new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+        new String[] {"prod", "dev"});
 
         String jsonStr = "{\"auth_type\": \"ec2\", \"role\": \"mytestawsrole\", \"bound_ami_id\": \"ami-fce3c696\", " +
                 "\"bound_account_id\": 1234567890123, \"bound_region\": \"us-east-2\",\"bound_vpc_id\": " +
@@ -285,10 +285,10 @@ public class AWSAuthServiceTest {
         Response responseNoContent = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         String jsonStr = "{\"auth_type\": \"ec2\", \"role\": \"mytestawsrole\", \"bound_ami_id\": \"ami-fce3c696\", " +
                 "\"bound_account_id\": 1234567890123, \"bound_region\": \"us-east-2\",\"bound_vpc_id\": " +
@@ -323,10 +323,10 @@ public class AWSAuthServiceTest {
         Response response = new Response();
         response.setHttpstatus(HttpStatus.OK);
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         ResponseEntity<String> responseEntity = null;
         when(ControllerUtil.areAWSEC2RoleInputsValid(awsLoginRole)).thenReturn(false);
@@ -342,10 +342,10 @@ public class AWSAuthServiceTest {
 
         Response responseError = getMockResponse(HttpStatus.BAD_REQUEST, true, "{\"messages\":[\"Update failed . AWS Role does not exist \"]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         String jsonStr = "{\"auth_type\": \"ec2\", \"role\": \"mytestawsrole\", \"bound_ami_id\": \"ami-fce3c696\", " +
                 "\"bound_account_id\": 1234567890123, \"bound_region\": \"us-east-2\",\"bound_vpc_id\": " +

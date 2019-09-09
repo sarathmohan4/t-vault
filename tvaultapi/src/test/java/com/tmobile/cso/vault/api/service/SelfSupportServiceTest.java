@@ -1091,10 +1091,10 @@ public class SelfSupportServiceTest {
     public void test_createRole_successfully() throws TVaultValidationException {
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         UserDetails userDetails = getMockUser(false);
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[]{"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                        new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                        new String[] {"prod", "dev"});
 
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role created \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role created \"]}");
@@ -1110,10 +1110,10 @@ public class SelfSupportServiceTest {
     public void test_createRole_successfully_admin() throws TVaultValidationException {
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         UserDetails userDetails = getMockUser(true);
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+            new String[]{"1234567890123"}, new String[]{"us-east-2"}, new String[]{"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[]{"arn:aws:iam::8987887:role/test-role"}, new String[]{"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+        new String[]{"prod", "dev"});
 
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role created \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role created \"]}");
@@ -1128,10 +1128,10 @@ public class SelfSupportServiceTest {
     public void test_createRole_failure_403() throws TVaultValidationException {
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         UserDetails userDetails = getMockUser(false);
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to create AWS role\"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to create AWS role\"]}");
@@ -1148,10 +1148,10 @@ public class SelfSupportServiceTest {
     public void test_createRole_failure_400() throws TVaultValidationException {
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         UserDetails userDetails = getMockUser(false);
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         String responseJson = "{\"errors\":[\"Invalid path specified\"]}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
@@ -1166,10 +1166,10 @@ public class SelfSupportServiceTest {
     public void test_updateRole_successfully() throws TVaultValidationException {
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         UserDetails userDetails = getMockUser(false);
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
@@ -1186,10 +1186,10 @@ public class SelfSupportServiceTest {
     public void test_updateRole_successfully_admin() throws TVaultValidationException {
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         UserDetails userDetails = getMockUser(true);
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                        new String[] {"prod", "dev"});
 
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
@@ -1204,10 +1204,10 @@ public class SelfSupportServiceTest {
     public void test_updateRole_failure_403() throws TVaultValidationException {
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         UserDetails userDetails = getMockUser(false);
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS role\"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS role\"]}");
@@ -1224,10 +1224,10 @@ public class SelfSupportServiceTest {
     public void test_updateRole_failure_400() throws TVaultValidationException {
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         UserDetails userDetails = getMockUser(false);
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"},new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         String responseJson = "{\"errors\":[\"Invalid path specified\"]}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);

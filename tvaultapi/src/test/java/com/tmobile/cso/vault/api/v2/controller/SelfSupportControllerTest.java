@@ -357,10 +357,10 @@ public class SelfSupportControllerTest {
 
     @Test
     public void test_createRole() throws Exception {
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         String inputJson =new ObjectMapper().writeValueAsString(awsLoginRole);
         String responseMessage = "{\"messages\":[\"AWS Role created \"]}";
@@ -378,10 +378,10 @@ public class SelfSupportControllerTest {
 
     @Test
     public void test_updateRole() throws Exception {
-        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", "ami-fce3c696",
-                "1234567890123", "us-east-2", "vpc-2f09a348", "subnet-1122aabb",
-                "arn:aws:iam::8987887:role/test-role", "arn:aws:iam::877677878:instance-profile/exampleinstanceprofile",
-                "\"[prod, dev\"]");
+        AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
+                new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
+                new String[] {"arn:aws:iam::8987887:role/test-role"}, new String[] {"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile"},
+                new String[] {"prod", "dev"});
 
         String inputJson =new ObjectMapper().writeValueAsString(awsLoginRole);
         String responseMessage = "{\"messages\":[\"AWS Role updated \"]}";
