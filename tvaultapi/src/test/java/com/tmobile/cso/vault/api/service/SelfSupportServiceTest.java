@@ -1155,7 +1155,8 @@ public class SelfSupportServiceTest {
 
         String responseJson = "{\"errors\":[\"Invalid path specified\"]}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
-        when(ControllerUtil.isPathValid("shared/mysafe01")).thenReturn(false);
+        ResponseEntity<String> response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
+        when(awsAuthService.createRole(userDetails.getSelfSupportToken(), awsLoginRole, userDetails)).thenReturn(response);
 
         ResponseEntity<String> responseEntity = selfSupportService.createRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -1174,7 +1175,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
 
-        when(awsAuthService.updateRole(token, awsLoginRole, Mockito.any())).thenReturn(response);
+        when(awsAuthService.updateRole(eq(token), eq(awsLoginRole), Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, true);
 
         ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole);
@@ -1194,7 +1195,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{ \"messages\": [\"AWS Role updated \"]}");
 
-        when(awsAuthService.updateRole(token, awsLoginRole, Mockito.any())).thenReturn(response);
+        when(awsAuthService.updateRole(eq(token), eq(awsLoginRole), Mockito.any())).thenReturn(response);
         ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
@@ -1212,7 +1213,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS role\"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS role\"]}");
 
-        when(awsAuthService.updateRole(token, awsLoginRole, Mockito.any())).thenReturn(response);
+        when(awsAuthService.updateRole(eq(token), eq(awsLoginRole), Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, false);
 
         ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole);
@@ -1232,7 +1233,9 @@ public class SelfSupportServiceTest {
         String responseJson = "{\"errors\":[\"Invalid path specified\"]}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
         when(ControllerUtil.isPathValid("shared/mysafe01")).thenReturn(false);
+        ResponseEntity<String> response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid path specified\"]}");
 
+        when(awsAuthService.updateRole(eq(token), eq(awsLoginRole), Mockito.any())).thenReturn(response);
         ResponseEntity<String> responseEntity = selfSupportService.updateRole(userDetails, token, awsLoginRole);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
@@ -1324,7 +1327,8 @@ public class SelfSupportServiceTest {
 
         String responseJson = "{\"errors\":[\"Invalid path specified\"]}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
-        when(ControllerUtil.isPathValid("shared/mysafe01")).thenReturn(false);
+        ResponseEntity<String> response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
+        when(awsiamAuthService.createIAMRole(awsiamRole, token, userDetails)).thenReturn(response);
         ResponseEntity<String> responseEntity = selfSupportService.createIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
@@ -1346,7 +1350,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
 
-        when(awsiamAuthService.updateIAMRole(token, awsiamRole, Mockito.any())).thenReturn(response);
+        when(awsiamAuthService.updateIAMRole(eq(token), eq(awsiamRole), Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, true);
 
         ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole);
@@ -1370,7 +1374,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS IAM role\"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: no permission to update AWS IAM role\"]}");
 
-        when(awsiamAuthService.updateIAMRole(token, awsiamRole, Mockito.any())).thenReturn(response);
+        when(awsiamAuthService.updateIAMRole(eq(token), eq(awsiamRole), Mockito.any())).thenReturn(response);
         mockIsAuthorized(userDetails, false);
 
         ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole);
@@ -1394,7 +1398,7 @@ public class SelfSupportServiceTest {
         ResponseEntity<String> response = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
 
-        when(awsiamAuthService.updateIAMRole(token, awsiamRole, Mockito.any())).thenReturn(response);
+        when(awsiamAuthService.updateIAMRole(eq(token), eq(awsiamRole), Mockito.any())).thenReturn(response);
 
         ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -1416,7 +1420,8 @@ public class SelfSupportServiceTest {
 
         String responseJson = "{\"errors\":[\"Invalid path specified\"]}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
-        when(ControllerUtil.isPathValid("shared/mysafe01")).thenReturn(false);
+        ResponseEntity<String> response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseJson);
+        when(awsiamAuthService.updateIAMRole(token, awsiamRole, userDetails)).thenReturn(response);
 
         ResponseEntity<String> responseEntity = selfSupportService.updateIAMRole(userDetails, token, awsiamRole);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -1632,4 +1637,301 @@ public class SelfSupportServiceTest {
         assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
         assertEquals(responseEntityExpected, responseEntityActual);
     }
+
+    @Test
+    public void test_readAppRoleRoleId_successfully() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String roleName = "role2";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\n" +
+                "  \"data\": {\n" +
+                "    \"role_id\": \"2a64452f-aad2-f520-c260-0951e6df33f7\"\n" +
+                "  }\n" +
+                "}");
+        UserDetails userDetails = getMockUser(true);
+        when(appRoleService.readAppRoleRoleId(token, roleName, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.readAppRoleRoleId(token, roleName, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+    }
+
+    @Test
+    public void test_readAppRoleSecretId_successfully_admin() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String roleName = "role2";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\n" +
+                "  \"data\": {\n" +
+                "    \"secret_id\": \"02fe4b02-2e71-957d-cd92-d63746333478\",\n" +
+                "    \"secret_id_accessor\": \"07c88221-4919-7def-8ec2-b824e0a07e2f\"\n" +
+                "  }\n" +
+                "}");
+        UserDetails userDetails = getMockUser(true);
+        when(appRoleService.readAppRoleSecretId(token, roleName, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.readAppRoleSecretId(token, roleName, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+    }
+
+    @Test
+    public void test_readAppRoleSecretId_successfully_nonAdmin() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String roleName = "role2";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\n" +
+                "  \"data\": {\n" +
+                "    \"secret_id\": \"02fe4b02-2e71-957d-cd92-d63746333478\",\n" +
+                "    \"secret_id_accessor\": \"07c88221-4919-7def-8ec2-b824e0a07e2f\"\n" +
+                "  }\n" +
+                "}");
+        UserDetails userDetails = getMockUser(false);
+        when(appRoleService.readAppRoleSecretId(token, roleName, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.readAppRoleSecretId(token, roleName, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+    }
+
+    @Test
+    public void test_readAppRoleDetails_successfully() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String roleName = "role2";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\n" +
+                "  \"appRole\": {\n" +
+                "    \"role_name\": \"role1\",\n" +
+                "    \"policies\": [\n" +
+                "      \"w_users_safe1\"\n" +
+                "    ],\n" +
+                "    \"bind_secret_id\": true,\n" +
+                "    \"secret_id_num_uses\": 0,\n" +
+                "    \"secret_id_ttl\": 0,\n" +
+                "    \"token_num_uses\": 0,\n" +
+                "    \"token_ttl\": 0,\n" +
+                "    \"token_max_ttl\": 0\n" +
+                "  },\n" +
+                "  \"role_id\": \"2a64452f-aad2-f520-c260-0121e6df33f7\",\n" +
+                "  \"accessorIds\": [\n" +
+                "    \"07c88221-4919-7def-8ec2-b824e0a07e2f\"\n" +
+                "  ],\n" +
+                "  \"appRoleMetadata\": {\n" +
+                "    \"path\": \"metadata/approle/role1\",\n" +
+                "    \"data\": {\n" +
+                "      \"name\": \"role1\",\n" +
+                "      \"createdBy\": \"username1\"\n" +
+                "    }\n" +
+                "  }\n" +
+                "}");
+        UserDetails userDetails = getMockUser(false);
+        when(appRoleService.readAppRoleDetails(token, roleName, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.readAppRoleDetails(token, roleName, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+    }
+
+    @Test
+    public void test_readSecretIdAccessors_successfully() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String roleName = "role2";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\n" +
+                "  \"keys\": [\n" +
+                "    \"07c88221-4919-7def-8ec2-b824e0a07e2f\"\n" +
+                "  ]\n" +
+                "}");
+        UserDetails userDetails = getMockUser(false);
+        when(appRoleService.readSecretIdAccessors(token, roleName, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.readSecretIdAccessors(token, roleName, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+    }
+
+    @Test
+    public void test_deleteSecretIds_successfully() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String appRoleAccessorIds = "07c88221-4919-7def-8ec2-b824e0a07e2f";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\n" +
+                "  \"messages\": [\n" +
+                "    \"Deletion of secret_ids completed as: Succssfully deleted the secret_ids for the following accessor_ids: [07c88221-4919-7def-8ec2-b824e0a07e2f]. \"\n" +
+                "  ]\n" +
+                "}");
+        UserDetails userDetails = getMockUser(false);
+        AppRoleAccessorIds accessorIds = new AppRoleAccessorIds();
+        accessorIds.setRole_name("role1");
+        accessorIds.setAccessorIds(new String[] {appRoleAccessorIds});
+        when(appRoleService.deleteSecretIds(token, accessorIds, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.deleteSecretIds(token, accessorIds, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
+    @Test
+    public void test_updateAppRole_successfully() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("\"{\"messages\":[\"AppRole updated successfully.\"]}\"");
+        UserDetails userDetails = getMockUser(false);
+        String[] policies = {"default"};
+        AppRole appRole = new AppRole("approle1", policies, true, 1, 100, 0);
+        when(appRoleService.updateAppRole(token, appRole, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.updateAppRole(token, appRole, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
+    @Test
+    public void test_deleteAWSRole_successfully_admin() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String role = "role1";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role deleted \"]}");
+        UserDetails userDetails = getMockUser(true);
+        String[] policies = {"default"};
+        when(awsAuthService.deleteRole(token, role, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.deleteAWSRole(token, role, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
+    @Test
+    public void test_deleteAWSRole_successfully_nonAdmin() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String role = "role1";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role deleted \"]}");
+        UserDetails userDetails = getMockUser(false);
+        when(awsAuthService.deleteRole(token, role, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.deleteAWSRole(token, role, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
+    @Test
+    public void test_listAppRoles_successfully() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String role = "role1";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\n" +
+                "  \"keys\": [\n" +
+                "    \"role1\"\n" +
+                "  ]\n" +
+                "}");
+        UserDetails userDetails = getMockUser(false);
+        when(appRoleService.listAppRoles(token, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.listAppRoles(token, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
+    @Test
+    public void test_fetchAWSRole_successfully_admin() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String role = "role1";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\n" +
+                "  \"auth_type\": \"ec2\",\n" +
+                "  \"bound_account_id\": [\n" +
+                "    \"1234567890123\"\n" +
+                "  ],\n" +
+                "  \"bound_ami_id\": [\n" +
+                "    \"ami-fce3c696\"\n" +
+                "  ],\n" +
+                "  \"bound_iam_instance_profile_arn\": [\n" +
+                "    \"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile\"\n" +
+                "  ],\n" +
+                "  \"bound_iam_principal_arn\": [],\n" +
+                "  \"bound_iam_role_arn\": [\n" +
+                "    \"arn:aws:iam::8987887:role/test-role\"\n" +
+                "  ],\n" +
+                "  \"bound_vpc_id\": [\n" +
+                "    \"vpc-2f09a348\"\n" +
+                "  ],\n" +
+                "  \"bound_subnet_id\": [\n" +
+                "    \"subnet-1122aabb\"\n" +
+                "  ],\n" +
+                "  \"bound_region\": [\n" +
+                "    \"us-east-2\"\n" +
+                "  ],\n" +
+                "  \"policies\": null\n" +
+                "}");
+        UserDetails userDetails = getMockUser(true);
+        when(awsAuthService.fetchRole(token, role, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.fetchAWSRole(token, role, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
+    @Test
+    public void test_fetchAWSRole_successfully_nonAdmin() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String role = "role1";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\n" +
+                "  \"auth_type\": \"ec2\",\n" +
+                "  \"bound_account_id\": [\n" +
+                "    \"1234567890123\"\n" +
+                "  ],\n" +
+                "  \"bound_ami_id\": [\n" +
+                "    \"ami-fce3c696\"\n" +
+                "  ],\n" +
+                "  \"bound_iam_instance_profile_arn\": [\n" +
+                "    \"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile\"\n" +
+                "  ],\n" +
+                "  \"bound_iam_principal_arn\": [],\n" +
+                "  \"bound_iam_role_arn\": [\n" +
+                "    \"arn:aws:iam::8987887:role/test-role\"\n" +
+                "  ],\n" +
+                "  \"bound_vpc_id\": [\n" +
+                "    \"vpc-2f09a348\"\n" +
+                "  ],\n" +
+                "  \"bound_subnet_id\": [\n" +
+                "    \"subnet-1122aabb\"\n" +
+                "  ],\n" +
+                "  \"bound_region\": [\n" +
+                "    \"us-east-2\"\n" +
+                "  ],\n" +
+                "  \"policies\": null\n" +
+                "}");
+        UserDetails userDetails = getMockUser(false);
+        when(awsAuthService.fetchRole(token, role, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.fetchAWSRole(token, role, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
+    @Test
+    public void test_listAWSRoles_successfully() {
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String role = "role1";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\n" +
+                "  \"keys\": [\n" +
+                "    \"mytestawsrole\"\n" +
+                "  ]\n" +
+                "}");
+        UserDetails userDetails = getMockUser(false);
+        when(awsAuthService.listRoles(token, userDetails)).thenReturn(responseEntityExpected);
+
+        ResponseEntity<String> responseEntityActual = selfSupportService.listAWSRoles(token, userDetails);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
 }

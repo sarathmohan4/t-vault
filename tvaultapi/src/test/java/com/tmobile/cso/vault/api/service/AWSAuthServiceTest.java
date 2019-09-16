@@ -16,6 +16,8 @@
 // =========================================================================
 package com.tmobile.cso.vault.api.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.controller.ControllerUtil;
@@ -43,6 +45,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -281,6 +284,13 @@ public class AWSAuthServiceTest {
                 "  \"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile\" ], \"bound_iam_role_arn\": [\"arn:aws:iam::8987887:role/test-role\" ], " +
                 "\"bound_vpc_id\": [    \"vpc-2f09a348\"], \"bound_subnet_id\": [ \"subnet-1122aabb\"],\"bound_region\": [\"us-east-2\"],\"policies\": [ \"\\\"[prod\",\"dev\\\"]\" ]}";
         Response readResponse = getMockResponse(HttpStatus.OK, true, responseBody);
+        Map<String, Object> responseMap = null;
+        try {
+            responseMap = new ObjectMapper().readValue(responseBody, new TypeReference<Map<String, Object>>(){});
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        when(ControllerUtil.parseJson(Mockito.any())).thenReturn(responseMap);
 
         Response responseNoContent = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 
@@ -300,7 +310,7 @@ public class AWSAuthServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
 
         when(reqProcessor.process("/auth/aws/roles", "{\"role\":\"" + roleName + "\"}", token)).thenReturn(readResponse);
-        when(reqProcessor.process("/auth/aws/roles/delete", jsonStr, token)).thenReturn(responseNoContent);
+        when(reqProcessor.process(eq("/auth/aws/roles/delete"), Mockito.any(), eq(token))).thenReturn(responseNoContent);
         when(reqProcessor.process("/auth/aws/roles/update", jsonStr, token)).thenReturn(responseNoContent);
 
         when(ControllerUtil.updateMetaDataOnConfigChanges(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(response);
@@ -340,7 +350,7 @@ public class AWSAuthServiceTest {
         response.setHttpstatus(HttpStatus.OK);
         String roleName = "mytestawsrole";
 
-        Response responseError = getMockResponse(HttpStatus.BAD_REQUEST, true, "{\"messages\":[\"Update failed . AWS Role does not exist \"]}");
+        Response responseError = getMockResponse(HttpStatus.BAD_REQUEST, true, "{\"messages\":[\"Update failed . AWS Role does not exist\"]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         AWSLoginRole awsLoginRole = new AWSLoginRole("ec2", "mytestawsrole", new String[] {"ami-fce3c696"},
                 new String[] {"1234567890123"}, new String[] {"us-east-2"}, new String[] {"vpc-2f09a348"}, new String[] {"subnet-1122aabb"},
@@ -354,7 +364,7 @@ public class AWSAuthServiceTest {
                 "\"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile\",  " +
                 "\"policies\": \"\\\"[prod, dev\\\"]\"}";
 
-        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"messages\":[\"Update failed . AWS Role does not exist \"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Update failed . AWS Role does not exist\"]}");
         when(reqProcessor.process("/auth/aws/roles", "{\"role\":\"" + roleName + "\"}", token)).thenReturn(responseError);
 
         when(JSONUtil.getJSON(awsLoginRole)).thenReturn(jsonStr);
@@ -376,12 +386,22 @@ public class AWSAuthServiceTest {
         Response response = getMockResponse(HttpStatus.NO_CONTENT, true, "");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
 
-        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Role deleted \"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role deleted \"]}");
         when(reqProcessor.process("/auth/aws/roles/delete", "{\"role\":\"mytestawsrole\"}", token)).thenReturn(response);
         UserDetails userDetails = getMockUser(false);
+        Response readResponse = getMockResponse(HttpStatus.OK, true, "{\"path\":\"metadata/awsrole/mytestawsrole\", \"data\":{\"name\": \"mytestawsrole\", \"createdBy\":\"normaluser\"}}");
+        when(reqProcessor.process(eq("/read"),Mockito.any(),eq(token))).thenReturn(readResponse);
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("path", "metadata/awsrole/mytestawsrole");
+        Map<String, Object> responseDetails = new HashMap<>();
+        responseDetails.put("name", "mytestawsrole");
+        responseDetails.put("createdBy", "normaluser");
+        responseMap.put("data", responseDetails);
+        when(ControllerUtil.parseJson(Mockito.any())).thenReturn(responseMap);
+
         String metadatajson = "{ \"path\": \"metadata/awsrole/mytestawsrole\", \"data\": {\"createdBy\":\"normaluser\"}}";
         when(ControllerUtil.populateAWSMetaJson("mytestawsrole", userDetails.getUsername())).thenReturn(metadatajson);
-        when(reqProcessor.process("/delete",metadatajson,token)).thenReturn(response);
+        when(reqProcessor.process(eq("/delete"),Mockito.any(),eq(token))).thenReturn(response);
         Response permissonResponse = getMockResponse(HttpStatus.OK, true, "");
         when(ControllerUtil.canDeleteRole("mytestawsrole", token, userDetails, TVaultConstants.AWSROLE_METADATA_MOUNT_PATH)).thenReturn(permissonResponse);
         ResponseEntity<String> responseEntity = awsAuthService.deleteRole(token, "mytestawsrole", userDetails);

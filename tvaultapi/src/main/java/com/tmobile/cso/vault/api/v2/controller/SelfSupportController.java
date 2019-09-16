@@ -457,7 +457,7 @@ public class SelfSupportController {
 	}
 	
 	/**
-	 * Create AppRole
+	 * Update AppRole
 	 * @param request
 	 * @param token
 	 * @param appRole
@@ -479,7 +479,7 @@ public class SelfSupportController {
 	@GetMapping(value="/v2/ss/roles",produces="application/json")
 	public ResponseEntity<String> listRoles(HttpServletRequest request, @RequestHeader(value="vault-token") String token){
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
-		return selfSupportService.listRoles(token, userDetails);
+		return selfSupportService.listAWSRoles(token, userDetails);
 	}
 
 	/**
@@ -490,9 +490,9 @@ public class SelfSupportController {
 	 */
 	@ApiOperation(value = "${SelfSupportController.fetchRole.value}", notes = "${SelfSupportController.fetchRole.notes}")
 	@GetMapping(value="/v2/ss/aws/role/{role}",produces="application/json")
-	public ResponseEntity<String> fetchRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @PathVariable("role") String role){
+	public ResponseEntity<String> fetchAWSRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @PathVariable("role") String role){
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
-		return selfSupportService.fetchRole(token, role, userDetails);
+		return selfSupportService.fetchAWSRole(token, role, userDetails);
 	}
 
 	/**
@@ -504,8 +504,8 @@ public class SelfSupportController {
 	 */
 	@ApiOperation(value = "${SelfSupportController.deleteRole.value}", notes = "${SelfSupportController.deleteRole.notes}")
 	@DeleteMapping(value="/v2/ss/auth/aws/role/{role}",produces="application/json")
-	public ResponseEntity<String> deleteRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @PathVariable("role" ) String role){
+	public ResponseEntity<String> deleteAWSRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @PathVariable("role" ) String role){
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
-		return selfSupportService.deleteRole(token, role, userDetails);
+		return selfSupportService.deleteAWSRole(token, role, userDetails);
 	}
 }

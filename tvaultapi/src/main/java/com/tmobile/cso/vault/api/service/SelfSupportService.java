@@ -585,7 +585,7 @@ public class  SelfSupportService {
 	 * @param userDetails
 	 * @return
 	 */
-	public ResponseEntity<String> listRoles(String token, UserDetails userDetails) {
+	public ResponseEntity<String> listAWSRoles(String token, UserDetails userDetails) {
 		return awsAuthService.listRoles(token, userDetails);
 	}
 
@@ -595,7 +595,7 @@ public class  SelfSupportService {
 	 * @param role
 	 * @return
 	 */
-	public ResponseEntity<String> fetchRole(String token, String role, UserDetails userDetails){
+	public ResponseEntity<String> fetchAWSRole(String token, String role, UserDetails userDetails){
 		if (userDetails.isAdmin()) {
 			return awsAuthService.fetchRole(token, role, userDetails);
 		}
@@ -817,7 +817,14 @@ public class  SelfSupportService {
 		return appRoleService.updateAppRole(userToken, appRole, userDetails);
 	}
 
-	public ResponseEntity<String> deleteRole(String token, String role, UserDetails userDetails) {
+	/**
+	 * Delete AWS role
+	 * @param token
+	 * @param role
+	 * @param userDetails
+	 * @return
+	 */
+	public ResponseEntity<String> deleteAWSRole(String token, String role, UserDetails userDetails) {
 		if (!userDetails.isAdmin()) {
 			token = userDetails.getSelfSupportToken();
 		}

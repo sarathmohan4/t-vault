@@ -161,7 +161,7 @@ public class  AWSAuthService {
 					put(LogMessage.MESSAGE, String.format("Unable to read AWS role information. AWS role [%s] doesn't exist", roleName)).
 					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 					build()));
-			return ResponseEntity.status(HttpStatus.OK).body("{\"errors\":[\"Update failed . AWS Role does not exist\"]}");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Update failed . AWS Role does not exist\"]}");
 
 		}
 		awsLoginRole.setPolicies(existingAWSRole.getPolicies());

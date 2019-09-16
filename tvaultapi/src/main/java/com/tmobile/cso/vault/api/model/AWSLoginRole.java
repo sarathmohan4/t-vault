@@ -78,7 +78,7 @@ public class AWSLoginRole implements Serializable {
 	/**
 	 * @return the bound_ami_id
 	 */
-	@ApiModelProperty(example="ami-fce3c696", position=3)
+	@ApiModelProperty(example="[\"ami-fce3c696\"]", position=3)
 	public String[] getBound_ami_id() {
 		return bound_ami_id;
 	}
@@ -86,7 +86,7 @@ public class AWSLoginRole implements Serializable {
 	/**
 	 * @return the bound_account_id
 	 */
-	@ApiModelProperty(example="1234567890123", position=4)
+	@ApiModelProperty(example="[\"1234567890123\"]", position=4)
 	public String[] getBound_account_id() {
 		return bound_account_id;
 	}
@@ -94,7 +94,7 @@ public class AWSLoginRole implements Serializable {
 	/**
 	 * @return the bound_region
 	 */
-	@ApiModelProperty(example="us-east-2", position=5)
+	@ApiModelProperty(example="[\"us-east-2\"]", position=5)
 	public String[] getBound_region() {
 		return bound_region;
 	}
@@ -102,7 +102,7 @@ public class AWSLoginRole implements Serializable {
 	/**
 	 * @return the bound_vpc_id
 	 */
-	@ApiModelProperty(example="vpc-2f09a348", position=6)
+	@ApiModelProperty(example="[\"vpc-2f09a348\"]", position=6)
 	public String[] getBound_vpc_id() {
 		return bound_vpc_id;
 	}
@@ -110,7 +110,7 @@ public class AWSLoginRole implements Serializable {
 	/**
 	 * @return the bound_subnet_id
 	 */
-	@ApiModelProperty(example="subnet-1122aabb", position=7)
+	@ApiModelProperty(example="[\"subnet-1122aabb\"]", position=7)
 	public String[] getBound_subnet_id() {
 		return bound_subnet_id;
 	}
@@ -118,7 +118,7 @@ public class AWSLoginRole implements Serializable {
 	/**
 	 * @return the bound_iam_role_arn
 	 */
-	@ApiModelProperty(example="arn:aws:iam::8987887:role/test-role", position=8)
+	@ApiModelProperty(example="[\"arn:aws:iam::8987887:role/test-role\"]", position=8)
 	public String[] getBound_iam_role_arn() {
 		return bound_iam_role_arn;
 	}
@@ -126,7 +126,7 @@ public class AWSLoginRole implements Serializable {
 	/**
 	 * @return the bound_iam_instance_profile_arn
 	 */
-	@ApiModelProperty(example="arn:aws:iam::877677878:instance-profile/exampleinstanceprofile", position=9)
+	@ApiModelProperty(example="[\"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile\"]", position=9)
 	public String[] getBound_iam_instance_profile_arn() {
 		return bound_iam_instance_profile_arn;
 	}
@@ -134,7 +134,7 @@ public class AWSLoginRole implements Serializable {
 	/**
 	 * @return the policies
 	 */
-	@ApiModelProperty(example="\"[prod, dev\"]", position=10, hidden=true)
+	@ApiModelProperty(example="[\"prod\", \"dev\"]", position=10, hidden=true)
 	public String[] getPolicies() {
 		return policies;
 	}

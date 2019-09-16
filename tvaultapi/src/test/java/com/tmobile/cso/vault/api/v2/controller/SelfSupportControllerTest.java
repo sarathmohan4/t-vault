@@ -678,4 +678,97 @@ public class SelfSupportControllerTest {
         		.andExpect(status().isOk())
         		.andExpect(content().string(containsString(responseMessage.toString())));
     }
+
+    @Test
+    public void test_updateAppRole() throws Exception {
+        String vaultToken = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String role_id_response = "{\"messages\":[\"AppRole updated successfully.\"]}";
+        StringBuilder responseMessage = new StringBuilder(role_id_response);
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseMessage.toString());
+        when(selfSupportService.updateAppRole(eq(vaultToken), Mockito.any(), Mockito.any())).thenReturn(responseEntityExpected);
+        String [] policies = {"default"};
+        AppRole appRole = new AppRole("approle1", policies, true, 1, 100, 0);
+        String inputJson =new ObjectMapper().writeValueAsString(appRole);
+        mockMvc.perform(MockMvcRequestBuilders.put("/v2/ss/approle")
+                .header("vault-token", vaultToken)
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .content(inputJson))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(responseMessage.toString())));
+    }
+
+    @Test
+    public void test_listAWSRoles() throws Exception {
+        String vaultToken = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String role_id_response = "{\n" +
+                "  \"keys\": [\n" +
+                "    \"role1\"\n" +
+                "  ]\n" +
+                "}";
+        StringBuilder responseMessage = new StringBuilder(role_id_response);
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseMessage.toString());
+        when(selfSupportService.listAWSRoles(eq(vaultToken), Mockito.any())).thenReturn(responseEntityExpected);
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/ss/roles")
+                .header("vault-token", vaultToken)
+                .header("Content-Type", "application/json;charset=UTF-8"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(responseMessage.toString())));
+    }
+
+    @Test
+    public void test_fetchAWSRole() throws Exception {
+        String role_name = "role1";
+        String vaultToken = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String role_id_response = "{\n" +
+                "  \"auth_type\": \"ec2\",\n" +
+                "  \"bound_account_id\": [\n" +
+                "    \"1234567890123\"\n" +
+                "  ],\n" +
+                "  \"bound_ami_id\": [\n" +
+                "    \"ami-fce3c696\"\n" +
+                "  ],\n" +
+                "  \"bound_iam_instance_profile_arn\": [\n" +
+                "    \"arn:aws:iam::877677878:instance-profile/exampleinstanceprofile\"\n" +
+                "  ],\n" +
+                "  \"bound_iam_principal_arn\": [],\n" +
+                "  \"bound_iam_role_arn\": [\n" +
+                "    \"arn:aws:iam::8987887:role/test-role\"\n" +
+                "  ],\n" +
+                "  \"bound_vpc_id\": [\n" +
+                "    \"vpc-2f09a348\"\n" +
+                "  ],\n" +
+                "  \"bound_subnet_id\": [\n" +
+                "    \"subnet-1122aabb\"\n" +
+                "  ],\n" +
+                "  \"bound_region\": [\n" +
+                "    \"us-east-2\"\n" +
+                "  ],\n" +
+                "  \"policies\": [\n" +
+                "    \"\\\\\\\"[prod\",\n" +
+                "    \"dev\\\\\\\"]\"\n" +
+                "  ]\n" +
+                "}";
+        StringBuilder responseMessage = new StringBuilder(role_id_response);
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseMessage.toString());
+        when(selfSupportService.fetchAWSRole(eq(vaultToken), Mockito.any(), Mockito.any())).thenReturn(responseEntityExpected);
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/ss/aws/role/"+role_name)
+                .header("vault-token", vaultToken)
+                .header("Content-Type", "application/json;charset=UTF-8"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(responseMessage.toString())));
+    }
+
+    @Test
+    public void test_deleteAWSRole() throws Exception {
+        String responseJson = "{\"messages\":[\"AWS Role deleted \"]}";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);
+        UserDetails userDetails = getMockUser(false);
+        when(selfSupportService.deleteAWSRole(eq("5PDrOhsy4ig8L3EpsJZSLAMg"), Mockito.any(), eq(userDetails))).thenReturn(responseEntityExpected);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/v2/ss/auth/aws/role/role1").requestAttr("UserDetails", userDetails)
+                .header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
+                .header("Content-Type", "application/json;charset=UTF-8"))
+                .andExpect(status().isOk());
+    }
+
 }

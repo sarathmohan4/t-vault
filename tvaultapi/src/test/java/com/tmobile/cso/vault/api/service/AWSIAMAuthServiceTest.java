@@ -16,6 +16,8 @@
 // =========================================================================
 package com.tmobile.cso.vault.api.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.tmobile.cso.vault.api.controller.ControllerUtil;
 import com.tmobile.cso.vault.api.exception.TVaultValidationException;
@@ -43,6 +45,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -230,7 +233,7 @@ public class AWSIAMAuthServiceTest {
         String[] policies = {"default"};
         awsiamRole.setPolicies(policies);
         awsiamRole.setResolve_aws_unique_ids(true);
-        awsiamRole.setRole("string");
+        awsiamRole.setRole("mytestawsrole");
 
         String jsonStr = "{\"auth_type\": \"iam\",\"bound_iam_principal_arn\":" +
                 " [\"arn:aws:iam::123456789012:user/tst\"],\"policies\": " +
@@ -244,16 +247,41 @@ public class AWSIAMAuthServiceTest {
                 "false,\"allow_instance_migration\": false}";
         Response getResponse = getMockResponse(HttpStatus.OK, true, jsonGetStr);
 
-        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS Role updated \"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AWS IAM Role updated \"]}");
 
         when(JSONUtil.getJSON(awsiamRole)).thenReturn(jsonStr);
-        when(reqProcessor.process("/auth/aws/iam/roles","{\"role\":\"mytestawsrole\"}",token)).thenReturn(getResponse);
-        when(reqProcessor.process("/auth/aws/roles/delete",jsonStr,token)).thenReturn(response);
+
+        Response readResponse = getMockResponse(HttpStatus.OK, true, jsonStr);
+        String jsoninput = "{\"role\":\"mytestawsrole\"}";
+        when(reqProcessor.process("/auth/aws/roles", jsoninput, token)).thenReturn(readResponse);
+
+        Map<String, Object> responseMap = null;
+        try {
+            responseMap = new ObjectMapper().readValue(jsonStr, new TypeReference<Map<String, Object>>(){});
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        when(ControllerUtil.parseJson(readResponse.getResponse())).thenReturn(responseMap);
+
+        when(reqProcessor.process(eq("/auth/aws/roles/delete"),Mockito.any(),eq(token))).thenReturn(response);
         when(reqProcessor.process("/auth/aws/iam/roles/update",jsonStr,token)).thenReturn(response);
         when(ControllerUtil.updateMetaDataOnConfigChanges(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(updateResponse);
+
+        String responseStr = "{\"path\":\"metadata/awsrole/mytestawsrole\", \"data\":{\"name\": \"mytestawsrole\", \"createdBy\":\"normaluser\"}}";
+        Response readMetaResponse = getMockResponse(HttpStatus.OK, true, responseStr);
+        when(reqProcessor.process("/read", "{\"path\":\"metadata/awsrole/mytestawsrole\"}",token)).thenReturn(readMetaResponse);
+
+        Map<String, Object> metaResponseMap = new HashMap<>();
+        try {
+            metaResponseMap = new ObjectMapper().readValue(responseStr, new TypeReference<Map<String, Object>>(){});
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        when(ControllerUtil.parseJson(readMetaResponse.getResponse())).thenReturn(metaResponseMap);
+
         try {
             when(ControllerUtil.areAWSIAMRoleInputsValid(awsiamRole)).thenReturn(true);
-            ResponseEntity<String> responseEntity = awsIamAuthService.updateIAMRole(token, awsiamRole,Mockito.any());
+            ResponseEntity<String> responseEntity = awsIamAuthService.updateIAMRole(token, awsiamRole, getMockUser(false));
             assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
             assertEquals(responseEntityExpected, responseEntity);
         } catch (TVaultValidationException e) {
@@ -273,21 +301,21 @@ public class AWSIAMAuthServiceTest {
         String[] policies = {"default"};
         awsiamRole.setPolicies(policies);
         awsiamRole.setResolve_aws_unique_ids(true);
-        awsiamRole.setRole("string");
+        awsiamRole.setRole("mytestawsrole");
 
         String jsonStr = "{\"auth_type\": \"iam\",\"bound_iam_principal_arn\":" +
                 " [\"arn:aws:iam::123456789012:user/tst\"],\"policies\": " +
                 "[\"string\"],\"resolve_aws_unique_ids\": true,\"role\": \"mytestawsrole\"}";
         Response getResponse = getMockResponse(HttpStatus.NOT_FOUND, false, "");
 
-        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"messages\":[\"Update failed . AWS Role does not exist \"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Update failed . AWS IAM Role does not exist\"]}");
 
         when(JSONUtil.getJSON(awsiamRole)).thenReturn(jsonStr);
-        when(reqProcessor.process("/auth/aws/iam/roles","{\"role\":\"mytestawsrole\"}",token)).thenReturn(getResponse);
+        when(reqProcessor.process("/auth/aws/roles","{\"role\":\"mytestawsrole\"}",token)).thenReturn(getResponse);
 
         try {
             when(ControllerUtil.areAWSIAMRoleInputsValid(awsiamRole)).thenReturn(true);
-            ResponseEntity<String> responseEntity = awsIamAuthService.updateIAMRole(token, awsiamRole,Mockito.any());
+            ResponseEntity<String> responseEntity = awsIamAuthService.updateIAMRole(token, awsiamRole,getMockUser(true));
             assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
             assertEquals(responseEntityExpected, responseEntity);
         } catch (TVaultValidationException e) {
