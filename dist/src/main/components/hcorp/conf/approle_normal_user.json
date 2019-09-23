@@ -1,7 +1,0 @@
-{
-    "name": "approle-normaluser",
-    "path":{
-	    "auth/*":{"policy":"write"},
-        "auth/approle/role/approle-poweruser/role-id":{"capabilities":["read"]}
-	}
-}

@@ -1,6 +1,0 @@
-{
-    "name": "approle-vaultadmin",
-    "path":{
-    		"auth/approle/*":{"policy":"write"}
-	}
-}

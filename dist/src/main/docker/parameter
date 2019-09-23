@@ -21,56 +21,11 @@
 
 # Allowed values for AUTH_BACKEND are userpass, ldap
 AUTH_BACKEND=userpass
-ENABLE_AWS=yes
-
-###########################################################################
-#                      LDAP Credentials                                   #
-###########################################################################
-
-#LDAP_URL='ldap://---'
-#LDAP_GROUP_ATTR_NAME='cn'
-#LDAP_USR_ATTR_NAME='---'
-#USER_DN=''
-#GROUP_DN=''
-#BIND_DN='---'
-#BIND_DN_PASS='---'
-#TLS_ENABLED='false'
-#VAULT_ADMIN_GROUP='---'
-#SAFE_ADMIN_GROUP='---'
-
-## The value for USE_UPNDOMAIN is either 'yes' or 'no'
-#USE_UPNDOMAIN='yes'
-#UPN_DOMAIN_URL='---'
-
-##########################################################################
-#                        Storage Backend                                 #
-##########################################################################
-# The possible values are 'File System' or 'Consul'
-BACKEND='File System'
-
-
-##########################################################################
-#                         Consul Parameters                              #
-##########################################################################
-
-CONSUL_DATACENTER='dc1'
-#CONSUL_ENCRYPT=''
-CONSUL_RETRY_JOIN=''
-
-CONSUL_STORAGE_ADDRESS='ipaddress:8500'
-CONSUL_STORAGE_PATH='t-vault/t-vault'
-CONSUL_STORAGE_SERVICE_NAME='t-vault'
 
 ##########################################################################
 #                       Global                                           #
 ##########################################################################
 SELF_SIGNED='y'
-##########################################################################
-#                         DynamoDB Parameters                            #
-##########################################################################
-
-#AWS_DYNAMODB_TABLE='t-vault'
-#AWS_DEFAULT_REGION='us-west-2'
 
 ##########################################################################
 #                             EMAIL IDs                                  #

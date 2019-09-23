@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+set -x
 # =========================================================================
 # Copyright 2019 T-Mobile, US
 # 
@@ -202,9 +202,9 @@ if [[ "$PKG_TYPE" == "tar"  || "$PKG_TYPE" == "docker" ]]; then
    echo "-----------------------------------------------------"
    cd $BASEDIR
    
-   echo "Extracting vault.zip"
-   unzip $COMPONENTS_DIR/hcorp/bin/vault.zip -d $COMPONENTS_DIR/hcorp/bin/
-   rm -f $COMPONENTS_DIR/hcorp/bin/vault.zip
+   #echo "Extracting vault.zip"
+   #unzip $COMPONENTS_DIR/hcorp/bin/vault.zip -d $COMPONENTS_DIR/hcorp/bin/
+   #rm -f $COMPONENTS_DIR/hcorp/bin/vault.zip
    
    mkdir -p $TVAULT_TAR_DIR
    cp -rf $COMPONENTS_DIR/ $TVAULT_TAR_DIR/
