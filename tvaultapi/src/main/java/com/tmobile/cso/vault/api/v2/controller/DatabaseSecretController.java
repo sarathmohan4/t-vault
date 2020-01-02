@@ -75,4 +75,15 @@ public class DatabaseSecretController {
 		return databaseSecretService.createStaticRole(token, databaseRole);
 	}
 
+	/**
+	 * Get static credentials
+	 * @param token
+	 * @param role_name
+	 * @return
+	 */
+	@ApiOperation(value = "${DatabaseSecretController.getStaticCredentials.value}", notes = "${DatabaseSecretController.getStaticCredentials.notes}")
+	@GetMapping(value="/v2/database/static-creds/{role_name}",produces="application/json")
+	public ResponseEntity<String> getStaticCredentials(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
+		return databaseSecretService.getStaticCredentials(role_name, token);
+	}
 }

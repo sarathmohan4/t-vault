@@ -115,4 +115,15 @@ public class DatabaseSecretService {
 			return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 		}
 	}
+
+	/**
+	 * Get static credentials
+	 * @param role_name
+	 * @param token
+	 * @return
+	 */
+	public ResponseEntity<String> getStaticCredentials(String role_name, String token) {
+		Response response = reqProcessor.process("/database/static-creds/","{\"role_name\":\""+role_name+"\"}",token);
+		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
+	}
 }

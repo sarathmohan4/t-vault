@@ -874,6 +874,16 @@
 			{"name":"rotation_statements"}
 		]
 	},
+	{"#" : "**** get static credentials for database****** ",
+
+		"apiEndPoint":"/database/static-creds/",
+		"vaultEndPoint":"/database/static-creds/<role_name>",
+		"method":"GET",
+		"params":[
+			{"name":"role_name","required":true, "appendToPath":true}
+		],
+		"outparams":["data/username","data/password","data/last_vault_rotation","data/rotation_period","data/ttl"]
+	},
 
 	{"#":"Okta Login ",
 
