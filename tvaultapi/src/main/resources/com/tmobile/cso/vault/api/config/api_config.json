@@ -847,7 +847,7 @@
 	},
 	{"#" : "**** create dynamic database role****** ",
 
-		"apiEndPoint":"/database/roles/",
+		"apiEndPoint":"/database/roles/create/",
 		"vaultEndPoint":"/database/roles/<role_name>",
 		"method":"POST",
 		"params":[
@@ -863,7 +863,7 @@
 	},
 	{"#" : "**** create static database role****** ",
 
-		"apiEndPoint":"/database/static-roles/",
+		"apiEndPoint":"/database/static-roles/create/",
 		"vaultEndPoint":"/database/static-roles/<name>",
 		"method":"POST",
 		"params":[
@@ -884,7 +884,42 @@
 		],
 		"outparams":["data/username","data/password","data/last_vault_rotation","data/rotation_period","data/ttl"]
 	},
+	{"#" : "**** Read database role ****** ",
 
+		"apiEndPoint":"/database/roles/",
+		"vaultEndPoint":"/database/roles/<role_name>",
+		"method":"GET",
+		"params":[
+			{"name":"role_name","required":true, "appendToPath":true}
+		],
+		"outparams":["data"]
+	},
+	{"#" : "**** List database roles ****** ",
+
+		"apiEndPoint":"/database/roles/list/",
+		"vaultEndPoint":"/database/roles?list=true",
+		"method":"GET",
+		"outparams":["auth","data","lease_duration","lease_id","renewable"]
+	},
+	{"#":"**** Delete database role *******",
+
+		"apiEndPoint":"/database/roles/delete/",
+		"vaultEndPoint":"/database/roles/<role_name>",
+		"method":"DELETE",
+		"params":[
+			{"name":"role_name", "required":true, "appendToPath":true}
+		]
+	},
+	{"#" : "**** Read static database role ****** ",
+
+		"apiEndPoint":"/database/static-roles/",
+		"vaultEndPoint":"/database/static-roles/<role_name>",
+		"method":"GET",
+		"params":[
+			{"name":"role_name","required":true, "appendToPath":true}
+		],
+		"outparams":["data"]
+	},
 	{"#":"Okta Login ",
 
 		"apiEndPoint":"/auth/okta/login",

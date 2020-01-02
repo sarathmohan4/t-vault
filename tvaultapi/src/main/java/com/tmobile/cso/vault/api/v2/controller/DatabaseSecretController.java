@@ -86,4 +86,50 @@ public class DatabaseSecretController {
 	public ResponseEntity<String> getStaticCredentials(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
 		return databaseSecretService.getStaticCredentials(role_name, token);
 	}
+
+	/**
+	 * Read database role
+	 * @param token
+	 * @param role_name
+	 * @return
+	 */
+	@ApiOperation(value = "${DatabaseSecretController.readRole.value}", notes = "${DatabaseSecretController.readRole.notes}")
+	@GetMapping(value="/v2/database/roles/{role_name}",produces="application/json")
+	public ResponseEntity<String> readRole(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
+		return databaseSecretService.readRole(role_name, token);
+	}
+
+	/**
+	 * List database roles
+	 * @param token
+	 * @return
+	 */
+	@ApiOperation(value = "${DatabaseSecretController.listRoles.value}", notes = "${DatabaseSecretController.listRoles.notes}")
+	@GetMapping(value="/v2/database/roles/",produces="application/json")
+	public ResponseEntity<String> listRoles(@RequestHeader(value="vault-token") String token){
+		return databaseSecretService.listRoles(token);
+	}
+
+	/**
+	 * Delete database role
+	 * @param token
+	 * @return
+	 */
+	@ApiOperation(value = "${DatabaseSecretController.deleteRole.value}", notes = "${DatabaseSecretController.deleteRole.notes}")
+	@DeleteMapping(value="/v2/database/roles/{role_name}",produces="application/json")
+	public ResponseEntity<String> deleteRole(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
+		return databaseSecretService.deleteRole(role_name, token);
+	}
+
+	/**
+	 * Read static role
+	 * @param token
+	 * @param role_name
+	 * @return
+	 */
+	@ApiOperation(value = "${DatabaseSecretController.readStaticRole.value}", notes = "${DatabaseSecretController.readStaticRole.notes}")
+	@GetMapping(value="/v2/database/static-roles/{role_name}",produces="application/json")
+	public ResponseEntity<String> readStaticRole(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
+		return databaseSecretService.readStaticRole(role_name, token);
+	}
 }

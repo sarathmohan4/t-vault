@@ -66,7 +66,7 @@ public class DatabaseSecretService {
 				put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 				build()));
 
-		Response response = reqProcessor.process("/database/roles/", jsonStr,token);
+		Response response = reqProcessor.process("/database/roles/create/", jsonStr,token);
 		if(response.getHttpstatus().equals(HttpStatus.NO_CONTENT) || response.getHttpstatus().equals(HttpStatus.OK)) {
 			return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Database role created successfully\"]}");
 		}
@@ -99,7 +99,7 @@ public class DatabaseSecretService {
 				put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 				build()));
 
-		Response response = reqProcessor.process("/database/static-roles/", jsonStr,token);
+		Response response = reqProcessor.process("/database/static-roles/create/", jsonStr,token);
 		if(response.getHttpstatus().equals(HttpStatus.NO_CONTENT) || response.getHttpstatus().equals(HttpStatus.OK)) {
 			return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Static database role created successfully\"]}");
 		}
@@ -124,6 +124,49 @@ public class DatabaseSecretService {
 	 */
 	public ResponseEntity<String> getStaticCredentials(String role_name, String token) {
 		Response response = reqProcessor.process("/database/static-creds/","{\"role_name\":\""+role_name+"\"}",token);
+		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
+	}
+
+	/**
+	 * Read database role
+	 * @param role_name
+	 * @param token
+	 * @return
+	 */
+	public ResponseEntity<String> readRole(String role_name, String token) {
+		Response response = reqProcessor.process("/database/roles/","{\"role_name\":\""+role_name+"\"}",token);
+		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
+	}
+
+	/**
+	 * List database roles
+	 * @param token
+	 * @return
+	 */
+	public ResponseEntity<String> listRoles(String token) {
+		Response response = reqProcessor.process("/database/roles/list/","{}",token);
+		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
+	}
+
+	/**
+	 * Delete database role
+	 * @param role_name
+	 * @param token
+	 * @return
+	 */
+	public ResponseEntity<String> deleteRole(String role_name, String token) {
+		Response response = reqProcessor.process("/database/roles/delete/","{\"role_name\":\""+role_name+"\"}",token);
+		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
+	}
+
+	/**
+	 * Read static role
+	 * @param role_name
+	 * @param token
+	 * @return
+	 */
+	public ResponseEntity<String> readStaticRole(String role_name, String token) {
+		Response response = reqProcessor.process("/database/static-roles/","{\"role_name\":\""+role_name+"\"}",token);
 		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 	}
 }
