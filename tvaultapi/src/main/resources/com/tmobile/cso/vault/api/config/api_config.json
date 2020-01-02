@@ -936,6 +936,15 @@
 			{"name":"role_name", "required":true, "appendToPath":true}
 		]
 	},
+	{"#" : "**** Rotate static role credentials ****** ",
+
+		"apiEndPoint":"/database/rotate-role/",
+		"vaultEndPoint":"/database/rotate-role/<name>",
+		"method":"POST",
+		"params":[
+			{"name":"name","required":true, "appendToPath":true}
+		]
+	},
 	{"#":"Okta Login ",
 
 		"apiEndPoint":"/auth/okta/login",

@@ -155,4 +155,16 @@ public class DatabaseSecretController {
 	public ResponseEntity<String> deleteStaticRole(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
 		return databaseSecretService.deleteStaticRole(role_name, token);
 	}
+
+	/**
+	 * Rotate static role credentials
+	 * @param token
+	 * @param role_name
+	 * @return
+	 */
+	@ApiOperation(value = "${DatabaseSecretController.rotateStaticRole.value}", notes = "${DatabaseSecretController.rotateStaticRole.notes}")
+	@PostMapping(value="/v2/database/rotate-role", produces="application/json")
+	public ResponseEntity<String> rotateStaticRoleCredential(@RequestHeader(value="vault-token") String token, @RequestParam("role_name" ) String role_name){
+		return databaseSecretService.rotateStaticRoleCredential(token, role_name);
+	}
 }

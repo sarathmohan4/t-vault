@@ -190,4 +190,15 @@ public class DatabaseSecretService {
 		Response response = reqProcessor.process("/database/static-roles/delete/","{\"role_name\":\""+role_name+"\"}",token);
 		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 	}
+
+	/**
+	 * Rotate static role credentials
+	 * @param token
+	 * @param role_name
+	 * @return
+	 */
+	public ResponseEntity<String> rotateStaticRoleCredential(String token, String role_name) {
+		Response response = reqProcessor.process("/database/rotate-role/","{\"name\":\""+role_name+"\"}",token);
+		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
+	}
 }
