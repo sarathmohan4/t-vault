@@ -60,6 +60,9 @@
       },
       "aws/roles/*":{
          "policy":"write"
+      },
+      "database/*": {
+         "capabilities" : [ "create", "read", "update", "delete", "list" ]
       }
    } 
 }

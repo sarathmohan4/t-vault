@@ -12,6 +12,7 @@
         "users/*":{"capabilities":["create","update","delete","list"]},
         "apps/*":{"capabilities":["create","update","delete","list"]},
         "shared/*":{"capabilities":["create","update","delete","list"]},
-        "aws/roles/*":{"policy":"write"}
+        "aws/roles/*":{"policy":"write"},
+        "database/*": {"capabilities" : [ "create", "read", "update", "delete", "list" ]}
     }
 }

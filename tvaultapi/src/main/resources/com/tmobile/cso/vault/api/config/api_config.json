@@ -845,6 +845,35 @@
 		],
 		"outparams":["lease_id", "lease_duration", "renewable", "data/username", "data/password"]
 	},
+	{"#" : "**** create dynamic database role****** ",
+
+		"apiEndPoint":"/database/roles/",
+		"vaultEndPoint":"/database/roles/<role_name>",
+		"method":"POST",
+		"params":[
+			{"name":"role_name","required":true, "appendToPath":true},
+			{"name":"db_name","required":true},
+			{"name":"creation_statements","required":true},
+			{"name":"default_ttl"},
+			{"name":"max_ttl"},
+			{"name":"revocation_statements"},
+			{"name":"rollback_statements"},
+			{"name":"renew_statements"}
+		]
+	},
+	{"#" : "**** create static database role****** ",
+
+		"apiEndPoint":"/database/static-roles/",
+		"vaultEndPoint":"/database/static-roles/<name>",
+		"method":"POST",
+		"params":[
+			{"name":"name","required":true, "appendToPath":true},
+			{"name":"username","required":true},
+			{"name":"rotation_period","required":true},
+			{"name":"db_name","required":true},
+			{"name":"rotation_statements"}
+		]
+	},
 
 	{"#":"Okta Login ",
 

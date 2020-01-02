@@ -17,12 +17,17 @@
 
 package com.tmobile.cso.vault.api.v2.controller;
 
+import com.tmobile.cso.vault.api.model.DatabaseRole;
+import com.tmobile.cso.vault.api.model.DatabaseStaticRole;
 import com.tmobile.cso.vault.api.service.DatabaseSecretService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 
 @RestController
@@ -44,4 +49,30 @@ public class DatabaseSecretController {
 	public ResponseEntity<String> getTemporaryCredentials(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
 		return databaseSecretService.getTemporaryCredentials(role_name, token);
 	}
+
+	/**
+	 * Create database role
+	 * @param token
+	 * @param databaseRole
+	 * @return
+	 */
+	@ApiOperation(value = "${DatabaseSecretController.createRole.value}", notes = "${DatabaseSecretController.createRole.notes}")
+	@PostMapping(value="/v2/database/roles", consumes="application/json", produces="application/json")
+	public ResponseEntity<String> createRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @Valid @RequestBody DatabaseRole databaseRole){
+		return databaseSecretService.createRole(token, databaseRole);
+	}
+
+	/**
+	 * Create static database role
+	 * @param request
+	 * @param token
+	 * @param databaseRole
+	 * @return
+	 */
+	@ApiOperation(value = "${DatabaseSecretController.createStaticRole.value}", notes = "${DatabaseSecretController.createStaticRole.notes}")
+	@PostMapping(value="/v2/database/static-roles", consumes="application/json", produces="application/json")
+	public ResponseEntity<String> createStaticRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @Valid @RequestBody DatabaseStaticRole databaseRole){
+		return databaseSecretService.createStaticRole(token, databaseRole);
+	}
+
 }
