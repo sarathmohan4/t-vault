@@ -132,4 +132,27 @@ public class DatabaseSecretController {
 	public ResponseEntity<String> readStaticRole(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
 		return databaseSecretService.readStaticRole(role_name, token);
 	}
+
+	/**
+	 * List static database roles
+	 * @param token
+	 * @return
+	 */
+	@ApiOperation(value = "${DatabaseSecretController.listStaticRoles.value}", notes = "${DatabaseSecretController.listStaticRoles.notes}")
+	@GetMapping(value="/v2/database/static-roles/",produces="application/json")
+	public ResponseEntity<String> listStaticRoles(@RequestHeader(value="vault-token") String token){
+		return databaseSecretService.listStaticRoles(token);
+	}
+
+	/**
+	 * Delete static database role
+	 * @param token
+	 * @param role_name
+	 * @return
+	 */
+	@ApiOperation(value = "${DatabaseSecretController.deleteStaticRole.value}", notes = "${DatabaseSecretController.deleteStaticRole.notes}")
+	@DeleteMapping(value="/v2/database/static-roles/{role_name}",produces="application/json")
+	public ResponseEntity<String> deleteStaticRole(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
+		return databaseSecretService.deleteStaticRole(role_name, token);
+	}
 }

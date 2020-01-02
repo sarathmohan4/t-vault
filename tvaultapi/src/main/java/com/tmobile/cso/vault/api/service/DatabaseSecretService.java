@@ -169,4 +169,25 @@ public class DatabaseSecretService {
 		Response response = reqProcessor.process("/database/static-roles/","{\"role_name\":\""+role_name+"\"}",token);
 		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 	}
+
+	/**
+	 * List static database roles
+	 * @param token
+	 * @return
+	 */
+	public ResponseEntity<String> listStaticRoles(String token) {
+		Response response = reqProcessor.process("/database/static-roles/list/","{}",token);
+		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
+	}
+
+	/**
+	 * Delete static database role
+	 * @param role_name
+	 * @param token
+	 * @return
+	 */
+	public ResponseEntity<String> deleteStaticRole(String role_name, String token) {
+		Response response = reqProcessor.process("/database/static-roles/delete/","{\"role_name\":\""+role_name+"\"}",token);
+		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
+	}
 }

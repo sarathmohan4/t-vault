@@ -920,6 +920,22 @@
 		],
 		"outparams":["data"]
 	},
+	{"#" : "**** List static database roles ****** ",
+
+		"apiEndPoint":"/database/static-roles/list/",
+		"vaultEndPoint":"/database/static-roles?list=true",
+		"method":"GET",
+		"outparams":["auth","data"]
+	},
+	{"#":"**** Delete static database role *******",
+
+		"apiEndPoint":"/database/static-roles/delete/",
+		"vaultEndPoint":"/database/static-roles/<role_name>",
+		"method":"DELETE",
+		"params":[
+			{"name":"role_name", "required":true, "appendToPath":true}
+		]
+	},
 	{"#":"Okta Login ",
 
 		"apiEndPoint":"/auth/okta/login",
