@@ -58,20 +58,19 @@ public class DatabaseSecretController {
 	 */
 	@ApiOperation(value = "${DatabaseSecretController.createRole.value}", notes = "${DatabaseSecretController.createRole.notes}")
 	@PostMapping(value="/v2/database/roles", consumes="application/json", produces="application/json")
-	public ResponseEntity<String> createRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @Valid @RequestBody DatabaseRole databaseRole){
+	public ResponseEntity<String> createRole(@RequestHeader(value="vault-token") String token, @Valid @RequestBody DatabaseRole databaseRole){
 		return databaseSecretService.createRole(token, databaseRole);
 	}
 
 	/**
 	 * Create static database role
-	 * @param request
 	 * @param token
 	 * @param databaseRole
 	 * @return
 	 */
 	@ApiOperation(value = "${DatabaseSecretController.createStaticRole.value}", notes = "${DatabaseSecretController.createStaticRole.notes}")
 	@PostMapping(value="/v2/database/static-roles", consumes="application/json", produces="application/json")
-	public ResponseEntity<String> createStaticRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @Valid @RequestBody DatabaseStaticRole databaseRole){
+	public ResponseEntity<String> createStaticRole(@RequestHeader(value="vault-token") String token, @Valid @RequestBody DatabaseStaticRole databaseRole){
 		return databaseSecretService.createStaticRole(token, databaseRole);
 	}
 
