@@ -57,7 +57,7 @@ public class DatabaseSecretController {
 	 * @return
 	 */
 	@ApiOperation(value = "${DatabaseSecretController.createRole.value}", notes = "${DatabaseSecretController.createRole.notes}")
-	@PostMapping(value="/v2/database/roles", consumes="application/json", produces="application/json")
+	@PostMapping(value="/v2/database/role", consumes="application/json", produces="application/json")
 	public ResponseEntity<String> createRole(@RequestHeader(value="vault-token") String token, @Valid @RequestBody DatabaseRole databaseRole){
 		return databaseSecretService.createRole(token, databaseRole);
 	}
@@ -69,7 +69,7 @@ public class DatabaseSecretController {
 	 * @return
 	 */
 	@ApiOperation(value = "${DatabaseSecretController.createStaticRole.value}", notes = "${DatabaseSecretController.createStaticRole.notes}")
-	@PostMapping(value="/v2/database/static-roles", consumes="application/json", produces="application/json")
+	@PostMapping(value="/v2/database/static-role", consumes="application/json", produces="application/json")
 	public ResponseEntity<String> createStaticRole(@RequestHeader(value="vault-token") String token, @Valid @RequestBody DatabaseStaticRole databaseRole){
 		return databaseSecretService.createStaticRole(token, databaseRole);
 	}
@@ -93,7 +93,7 @@ public class DatabaseSecretController {
 	 * @return
 	 */
 	@ApiOperation(value = "${DatabaseSecretController.readRole.value}", notes = "${DatabaseSecretController.readRole.notes}")
-	@GetMapping(value="/v2/database/roles/{role_name}",produces="application/json")
+	@GetMapping(value="/v2/database/role/{role_name}",produces="application/json")
 	public ResponseEntity<String> readRole(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
 		return databaseSecretService.readRole(role_name, token);
 	}
@@ -115,7 +115,7 @@ public class DatabaseSecretController {
 	 * @return
 	 */
 	@ApiOperation(value = "${DatabaseSecretController.deleteRole.value}", notes = "${DatabaseSecretController.deleteRole.notes}")
-	@DeleteMapping(value="/v2/database/roles/{role_name}",produces="application/json")
+	@DeleteMapping(value="/v2/database/role/{role_name}",produces="application/json")
 	public ResponseEntity<String> deleteRole(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
 		return databaseSecretService.deleteRole(role_name, token);
 	}
@@ -127,7 +127,7 @@ public class DatabaseSecretController {
 	 * @return
 	 */
 	@ApiOperation(value = "${DatabaseSecretController.readStaticRole.value}", notes = "${DatabaseSecretController.readStaticRole.notes}")
-	@GetMapping(value="/v2/database/static-roles/{role_name}",produces="application/json")
+	@GetMapping(value="/v2/database/static-role/{role_name}",produces="application/json")
 	public ResponseEntity<String> readStaticRole(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
 		return databaseSecretService.readStaticRole(role_name, token);
 	}
@@ -150,7 +150,7 @@ public class DatabaseSecretController {
 	 * @return
 	 */
 	@ApiOperation(value = "${DatabaseSecretController.deleteStaticRole.value}", notes = "${DatabaseSecretController.deleteStaticRole.notes}")
-	@DeleteMapping(value="/v2/database/static-roles/{role_name}",produces="application/json")
+	@DeleteMapping(value="/v2/database/static-role/{role_name}",produces="application/json")
 	public ResponseEntity<String> deleteStaticRole(@RequestHeader(value="vault-token") String token, @PathVariable String role_name){
 		return databaseSecretService.deleteStaticRole(role_name, token);
 	}

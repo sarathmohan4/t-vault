@@ -1,5 +1,5 @@
 // =========================================================================
-// Copyright 2019 T-Mobile, US
+// Copyright 2020 T-Mobile, US
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class DatabaseSecretControllerTest {
 
         when(databaseSecretService.createRole(eq("5PDrOhsy4ig8L3EpsJZSLAMg"), Mockito.any())).thenReturn(responseEntityExpected);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/v2/database/roles")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v2/database/role")
                 .header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .content(inputJson))
@@ -102,7 +102,7 @@ public class DatabaseSecretControllerTest {
 
         when(databaseSecretService.createStaticRole(eq("5PDrOhsy4ig8L3EpsJZSLAMg"), Mockito.any())).thenReturn(responseEntityExpected);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/v2/database/static-roles")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v2/database/static-role")
                 .header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .content(inputJson))
@@ -169,7 +169,7 @@ public class DatabaseSecretControllerTest {
 
         when(databaseSecretService.readRole("rolename1", "5PDrOhsy4ig8L3EpsJZSLAMg")).thenReturn(responseEntityExpected);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/v2/database/roles/rolename1")
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/database/role/rolename1")
                 .header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
                 .header("Content-Type", "application/json;charset=UTF-8"))
                 .andExpect(status().isOk())
@@ -208,7 +208,7 @@ public class DatabaseSecretControllerTest {
 
         when(databaseSecretService.deleteRole("rolename1", "5PDrOhsy4ig8L3EpsJZSLAMg")).thenReturn(responseEntityExpected);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/v2/database/roles/rolename1")
+        mockMvc.perform(MockMvcRequestBuilders.delete("/v2/database/role/rolename1")
                 .header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
                 .header("Content-Type", "application/json;charset=UTF-8"))
                 .andExpect(status().isOk())
@@ -230,7 +230,7 @@ public class DatabaseSecretControllerTest {
 
         when(databaseSecretService.readStaticRole("rolename1", "5PDrOhsy4ig8L3EpsJZSLAMg")).thenReturn(responseEntityExpected);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/v2/database/static-roles/rolename1")
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/database/static-role/rolename1")
                 .header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
                 .header("Content-Type", "application/json;charset=UTF-8"))
                 .andExpect(status().isOk())
@@ -266,7 +266,7 @@ public class DatabaseSecretControllerTest {
 
         when(databaseSecretService.deleteStaticRole("rolename1", "5PDrOhsy4ig8L3EpsJZSLAMg")).thenReturn(responseEntityExpected);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/v2/database/static-roles/rolename1")
+        mockMvc.perform(MockMvcRequestBuilders.delete("/v2/database/static-role/rolename1")
                 .header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
                 .header("Content-Type", "application/json;charset=UTF-8"))
                 .andExpect(status().isOk())
