@@ -310,7 +310,19 @@ readTextFile("../apiUrls.json");
             name: 'transferSvcaccOwner',
             url: '/v2/serviceaccounts/transfer?',
             method: 'POST'
-        },{
+        }, {
+            name: 'getCertificates',
+            url: '/v2/nclm/certificates?',
+            method: 'GET'
+        }, {
+            name: 'getTargetSystems',
+            url: '/v2/nclm/targetsystems?',
+            method: 'GET'
+        }, {
+            name: 'getTargetSystemsServices',
+            url: '/v2/nclm/services?',
+            method: 'GET'
+        }, {
             name: 'unseal',
             url: '/v2/unseal',
             method: 'POST'
