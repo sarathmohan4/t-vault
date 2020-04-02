@@ -500,7 +500,14 @@
                 if (UtilityService.ifAPIRequestSuccessful(response)) {
                     $scope.isLoadingData = false;
                     $scope.certificateData = response.data;
-                    $scope.numOfCertificates = $scope.certificateData.certificates.length;
+                    if ($scope.certificateData != undefined && $scope.certificateData != "") {
+                        $scope.numOfCertificates = $scope.certificateData.certificates.length;
+                    }
+                    else {
+                        $scope.certificateData = {
+                            certificates: []
+                        }
+                    }
                     $scope.certificatesLoaded =  true;
                 }
                 else {

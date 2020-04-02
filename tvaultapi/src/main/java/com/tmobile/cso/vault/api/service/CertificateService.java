@@ -67,6 +67,11 @@ public class CertificateService {
 	 * @return
 	 */
 	public ResponseEntity<String> getCertificates(String token, UserDetails userDetails, String freeText, String limit, String offset) {
+		if (!userDetails.isAdmin()) {
+			// get certificates with owner permission
+			return ResponseEntity.status(HttpStatus.OK).body("");
+		}
+		// Load certificates for admin
 		String api = nclmEndpoint + "certificates?containerId="+nclmContainerId;
 		if (freeText!=null) {
 			api = api + "&freeText="+freeText;
