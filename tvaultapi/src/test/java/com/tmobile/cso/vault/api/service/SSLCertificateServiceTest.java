@@ -9,6 +9,13 @@ import com.tmobile.cso.vault.api.process.Response;
 import com.tmobile.cso.vault.api.utils.JSONUtil;
 import com.tmobile.cso.vault.api.utils.TVaultSSLCertificateException;
 import com.tmobile.cso.vault.api.utils.ThreadLocalContext;
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -24,11 +31,17 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,12 +50,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
 @ComponentScan(basePackages = {"com.tmobile.cso.vault.api"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@PrepareForTest({ControllerUtil.class, JSONUtil.class})
-@PowerMockIgnore({"javax.management.*"})
+@PrepareForTest({ControllerUtil.class, JSONUtil.class, EntityUtils.class, HttpClientBuilder.class})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class SSLCertificateServiceTest {
 
     private MockMvc mockMvc;
@@ -61,10 +75,27 @@ public class SSLCertificateServiceTest {
 
     String token;
 
+    @Mock
+    CloseableHttpResponse httpResponse;
+
+    @Mock
+    HttpClientBuilder httpClientBuilder;
+
+    @Mock
+    StatusLine statusLine;
+
+    @Mock
+    HttpEntity mockHttpEntity;
+
+    @Mock
+    CloseableHttpClient httpClient1;
+
     @Before
     public void setUp() {
-        PowerMockito.mockStatic(ControllerUtil.class);
-        PowerMockito.mockStatic(JSONUtil.class);
+        mockStatic(ControllerUtil.class);
+        mockStatic(JSONUtil.class);
+        mockStatic(HttpClientBuilder.class);
+        mockStatic(EntityUtils.class);
 
         Whitebox.setInternalState(ControllerUtil.class, "log", LogManager.getLogger(ControllerUtil.class));
         when(JSONUtil.getJSON(any(ImmutableMap.class))).thenReturn("log");
@@ -1011,5 +1042,460 @@ public class SSLCertificateServiceTest {
         return sSLCertificateRequest;
     }
 
+    UserDetails getMockUser(boolean isAdmin) {
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        UserDetails userDetails = new UserDetails();
+        userDetails.setUsername("normaluser");
+        userDetails.setAdmin(isAdmin);
+        userDetails.setClientToken(token);
+        userDetails.setSelfSupportToken(token);
+        return userDetails;
+    }
+
+    void mockNclmLogin() throws Exception, TVaultSSLCertificateException {
+        String jsonStr = "{  \"username\": \"testusername1\",  \"password\": \"testpassword1\"}";
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("access_token", "12345");
+        requestMap.put("token_type", "type");
+        when(ControllerUtil.parseJson(jsonStr)).thenReturn(requestMap);
+
+        CertManagerLogin certManagerLogin = new CertManagerLogin();
+        certManagerLogin.setToken_type("token type");
+        certManagerLogin.setAccess_token("1234");
+
+        CertResponse certResponse = new CertResponse();
+        certResponse.setHttpstatus(HttpStatus.OK);
+        certResponse.setResponse(jsonStr);
+        certResponse.setSuccess(true);
+
+        when(reqProcessor.processCert(eq("/auth/certmanager/login"), any(), any(), any())).thenReturn(certResponse);
+    }
+
+    @Test
+    public void test_downloadCertificateWithPrivateKey_success() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+
+        CertificateDownloadRequest certificateDownloadRequest = new CertificateDownloadRequest("42142",
+                "abc.com", "password", "pembundle");
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+        when(httpResponse.getEntity()).thenReturn(mockHttpEntity);
+        String responseString = "teststreamdata";
+        when(EntityUtils.toString(mockHttpEntity, "UTF-8")).thenReturn(responseString);
+
+        byte[] decodedBytes = Base64.getDecoder().decode(responseString);
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(decodedBytes));
+        ResponseEntity<InputStreamResource> responseEntityExpected = ResponseEntity.status(HttpStatus.OK)
+                .contentLength(10).header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"abc.com.pem\"")
+                .contentType(MediaType.parseMediaType("application/x-pkcs12;charset=utf-8")).body(resource);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificateWithPrivateKey(certificateDownloadRequest);
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
+    public void test_downloadCertificateWithPrivateKey_success_pkcs12pem() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+
+        CertificateDownloadRequest certificateDownloadRequest = new CertificateDownloadRequest("42142",
+                "abc.com", "password", "pkcs12pem");
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+        when(httpResponse.getEntity()).thenReturn(mockHttpEntity);
+        String responseString = "teststreamdata";
+        when(EntityUtils.toString(mockHttpEntity, "UTF-8")).thenReturn(responseString);
+
+        byte[] decodedBytes = Base64.getDecoder().decode(responseString);
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(decodedBytes));
+        ResponseEntity<InputStreamResource> responseEntityExpected = ResponseEntity.status(HttpStatus.OK)
+                .contentLength(10).header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"abc.com.pfx\"")
+                .contentType(MediaType.parseMediaType("application/x-pkcs12;charset=utf-8")).body(resource);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificateWithPrivateKey(certificateDownloadRequest);
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
+    public void test_downloadCertificateWithPrivateKey_success_default() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+
+        CertificateDownloadRequest certificateDownloadRequest = new CertificateDownloadRequest("42142",
+                "abc.com", "password", "default");
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+        when(httpResponse.getEntity()).thenReturn(mockHttpEntity);
+        String responseString = "teststreamdata";
+        when(EntityUtils.toString(mockHttpEntity, "UTF-8")).thenReturn(responseString);
+
+        byte[] decodedBytes = Base64.getDecoder().decode(responseString);
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(decodedBytes));
+        ResponseEntity<InputStreamResource> responseEntityExpected = ResponseEntity.status(HttpStatus.OK)
+                .contentLength(10).header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"abc.com.pfx\"")
+                .contentType(MediaType.parseMediaType("application/x-pkcs12;charset=utf-8")).body(resource);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificateWithPrivateKey(certificateDownloadRequest);
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
+    public void test_downloadCertificateWithPrivateKey_failure() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+
+        CertificateDownloadRequest certificateDownloadRequest = new CertificateDownloadRequest("42142",
+                "abc.com", "password", "pembundle");
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+        when(httpResponse.getEntity()).thenReturn(null);
+
+        InputStreamResource resource = null;
+        ResponseEntity<InputStreamResource> responseEntityExpected =
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificateWithPrivateKey(certificateDownloadRequest);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
+    public void test_downloadCertificateWithPrivateKey_post_failure() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+
+        CertificateDownloadRequest certificateDownloadRequest = new CertificateDownloadRequest("42142",
+                "abc.com", "password", "pkcs12der");
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(400);
+
+        InputStreamResource resource = null;
+        ResponseEntity<InputStreamResource> responseEntityExpected =
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificateWithPrivateKey(certificateDownloadRequest);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+
+    @Test
+    public void test_downloadCertificateWithPrivateKey_failure_httpClient() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+
+        CertificateDownloadRequest certificateDownloadRequest = new CertificateDownloadRequest("42142",
+                "abc.com", "password", "pkcs12der");
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenThrow(new IOException());
+
+        InputStreamResource resource = null;
+        ResponseEntity<InputStreamResource> responseEntityExpected =
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificateWithPrivateKey(certificateDownloadRequest);
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
+    public void test_downloadCertificates_success() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+
+
+        CertificateDownloadRequest certificateDownloadRequest = new CertificateDownloadRequest("42142",
+                "abc.com", "password", "pembundle");
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+        when(httpResponse.getEntity()).thenReturn(mockHttpEntity);
+        String responseString = "teststreamdata";
+        when(EntityUtils.toString(mockHttpEntity, "UTF-8")).thenReturn(responseString);
+
+        byte[] decodedBytes = Base64.getDecoder().decode(responseString);
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(decodedBytes));
+        ResponseEntity<InputStreamResource> responseEntityExpected = ResponseEntity.status(HttpStatus.OK)
+                .contentLength(10).header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"abc.com.pem\"")
+                .contentType(MediaType.parseMediaType("application/x-pkcs12;charset=utf-8")).body(resource);
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        UserDetails userDetails = getMockUser(false);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificateWithPrivateKey(token, certificateDownloadRequest, userDetails);
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
+    public void test_downloadCertificateWithoutPrivateKey_success() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+        when(httpResponse.getEntity()).thenReturn(mockHttpEntity);
+        String responseString = "teststreamdata";
+        when(EntityUtils.toString(mockHttpEntity, "UTF-8")).thenReturn(responseString);
+
+        byte[] decodedBytes = Base64.getDecoder().decode(responseString);
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(decodedBytes));
+        ResponseEntity<InputStreamResource> responseEntityExpected = ResponseEntity.status(HttpStatus.OK)
+                .contentLength(10).header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"1234\"")
+                .contentType(MediaType.parseMediaType("application/x-pem-file;charset=utf-8")).body(resource);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificate(token, getMockUser(true), "1234", "pem");
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
+    public void test_downloadCertificateWithoutPrivateKey_success_der() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+        when(httpResponse.getEntity()).thenReturn(mockHttpEntity);
+        String responseString = "teststreamdata";
+        when(EntityUtils.toString(mockHttpEntity, "UTF-8")).thenReturn(responseString);
+
+        byte[] decodedBytes = Base64.getDecoder().decode(responseString);
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(decodedBytes));
+        ResponseEntity<InputStreamResource> responseEntityExpected = ResponseEntity.status(HttpStatus.OK)
+                .contentLength(10).header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"1234\"")
+                .contentType(MediaType.parseMediaType("application/pkix-cert;charset=utf-8")).body(resource);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificate(token, getMockUser(true), "1234", "der");
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
+    public void test_downloadCertificateWithoutPrivateKey_failed() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(400);
+        String responseString = "teststreamdata";
+        when(EntityUtils.toString(mockHttpEntity, "UTF-8")).thenReturn(responseString);
+
+        byte[] decodedBytes = Base64.getDecoder().decode(responseString);
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(decodedBytes));
+        ResponseEntity<InputStreamResource> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(null);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificate(token, getMockUser(true), "1234", "pem");
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+
+    @Test
+    public void test_downloadCertificateWithoutPrivateKey_failed_entity_null() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+        when(httpResponse.getEntity()).thenReturn(null);
+
+        ResponseEntity<InputStreamResource> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(null);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificate(token, getMockUser(true), "1234", "pem");
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
+    public void test_downloadCertificateWithoutPrivateKey_failed_httpClient() throws Exception, TVaultSSLCertificateException {
+
+        Response response = new Response();
+        response.setHttpstatus(HttpStatus.OK);
+        response.setSuccess(true);
+        response.setResponse(null);
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+
+        mockNclmLogin();
+
+        when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setSSLContext(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.setRedirectStrategy(Mockito.any())).thenReturn(httpClientBuilder);
+        when(httpClientBuilder.build()).thenReturn(httpClient1);
+        when(httpClient1.execute(Mockito.any())).thenThrow(new IOException());
+
+        ResponseEntity<InputStreamResource> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(null);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificate(token, getMockUser(true), "1234", "pem");
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
 
 }

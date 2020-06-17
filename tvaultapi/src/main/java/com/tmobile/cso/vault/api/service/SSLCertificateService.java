@@ -37,7 +37,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
@@ -139,9 +139,6 @@ public class SSLCertificateService {
     @Value("${sslcertmanager.targetsystemgroup.public_multi_san.ts_gp_id}")
     private int public_multi_san_ts_gp_id;
 
-    @Value("${nclm.endpoint}")
-    private String nclmEndpoint;
-
     private static Logger log = LogManager.getLogger(SSLCertificateService.class);
 
 
@@ -204,7 +201,7 @@ public class SSLCertificateService {
             log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                     put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
                     put(LogMessage.ACTION, "CertManager Login").
-                    put(LogMessage.MESSAGE, "CertManager Authentication Successful").
+                    put(LogMessage.MESSAGE, "CertManager Authenticaresponse.getResponse()tion Successful").
                     put(LogMessage.STATUS, response.getHttpstatus().toString()).
                     put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
                     build()));
@@ -1124,7 +1121,7 @@ public class SSLCertificateService {
         InputStreamResource resource = null;
 
         String nclmToken = getNclmToken();
-        if (StringUtils.isEmpty(nclmToken)) {
+         if (StringUtils.isEmpty(nclmToken)) {
             log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                     put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                     put(LogMessage.ACTION, "downloadCertificateWithPrivateKey").
@@ -1143,7 +1140,7 @@ public class SSLCertificateService {
         }
         String downloadFileName = certificateDownloadRequest.getCertificateName()+fileType;
         HttpClient httpClient;
-        String api = nclmEndpoint + "certificates/"+certificateDownloadRequest.getCertificateId()+"/privatekeyexport";
+        String api = certManagerDomain + "certificates/"+certificateDownloadRequest.getCertificateId()+"/privatekeyexport";
         try {
             httpClient = HttpClientBuilder.create().setSSLHostnameVerifier(
                     NoopHostnameVerifier.INSTANCE).
@@ -1258,7 +1255,7 @@ public class SSLCertificateService {
 
         HttpClient httpClient;
 
-        String api = nclmEndpoint + "certificates/"+certificateId+"/"+certificateType;
+        String api = certManagerDomain + "certificates/"+certificateId+"/"+certificateType;
 
         try {
             httpClient = HttpClientBuilder.create().setSSLHostnameVerifier(
