@@ -31,15 +31,38 @@ import com.tmobile.cso.vault.api.utils.TVaultSSLCertificateException;
 import com.tmobile.cso.vault.api.utils.JSONUtil;
 import com.tmobile.cso.vault.api.utils.ThreadLocalContext;
 import org.apache.commons.collections.MapUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 
 @Component
@@ -115,6 +138,9 @@ public class SSLCertificateService {
 
     @Value("${sslcertmanager.targetsystemgroup.public_multi_san.ts_gp_id}")
     private int public_multi_san_ts_gp_id;
+
+    @Value("${nclm.endpoint}")
+    private String nclmEndpoint;
 
     private static Logger log = LogManager.getLogger(SSLCertificateService.class);
 
@@ -1035,5 +1061,265 @@ public class SSLCertificateService {
                 break;
         }
         return ts_gp_id;
+    }
+
+    /**
+     * To get nclm token
+     * @return
+     */
+    public String getNclmToken() {
+        String username = (Objects.nonNull(ControllerUtil.getNclmUsername())) ?
+                (new String(Base64.getDecoder().decode(ControllerUtil.getNclmUsername()))) :
+                (new String(Base64.getDecoder().decode(certManagerUsername)));
+
+        String password = (Objects.nonNull(ControllerUtil.getNclmPassword())) ?
+                (new String(Base64.getDecoder().decode(ControllerUtil.getNclmPassword()))) :
+                (new String(Base64.getDecoder().decode(certManagerPassword)));
+
+        CertManagerLoginRequest certManagerLoginRequest = new CertManagerLoginRequest(username, password);
+        try {
+            CertManagerLogin certManagerLogin = login(certManagerLoginRequest);
+            return certManagerLogin.getAccess_token();
+        } catch (Exception e) {
+            log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "getNclmToken").
+                    put(LogMessage.MESSAGE, "Failed to get nclm token").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+
+        } catch (TVaultSSLCertificateException e) {
+            log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "getNclmToken").
+                    put(LogMessage.MESSAGE, "Failed to get nclm token").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+        }
+        return null;
+    }
+
+    /**
+     * Download certificate.
+     * @param token
+     * @param certificateDownloadRequest
+     * @param userDetails
+     * @return
+     */
+    public ResponseEntity<InputStreamResource> downloadCertificateWithPrivateKey(String token,
+                  CertificateDownloadRequest certificateDownloadRequest, UserDetails userDetails) {
+        // TODO: Check if token is valid. This is in progress in other story
+
+        // TODO: check user permission to download certificate
+
+        return downloadCertificateWithPrivateKey(certificateDownloadRequest);
+    }
+
+    /**
+     * Download certificate.
+     * @param certificateDownloadRequest
+     * @return
+     */
+    public ResponseEntity<InputStreamResource> downloadCertificateWithPrivateKey(CertificateDownloadRequest certificateDownloadRequest) {
+        InputStreamResource resource = null;
+
+        String nclmToken = getNclmToken();
+        if (StringUtils.isEmpty(nclmToken)) {
+            log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "downloadCertificateWithPrivateKey").
+                    put(LogMessage.MESSAGE, "Invalid nclm token").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+        }
+
+        String fileType;
+        switch (certificateDownloadRequest.getFormat()) {
+            case "pkcs12der": fileType=".p12"; break;
+            case "pembundle": fileType=".pem"; break;
+            case "pkcs12pem":
+            default: fileType=".pfx"; break;
+        }
+        String downloadFileName = certificateDownloadRequest.getCertificateName()+fileType;
+        HttpClient httpClient;
+        String api = nclmEndpoint + "certificates/"+certificateDownloadRequest.getCertificateId()+"/privatekeyexport";
+        try {
+            httpClient = HttpClientBuilder.create().setSSLHostnameVerifier(
+                    NoopHostnameVerifier.INSTANCE).
+                    setSSLContext(
+                            new SSLContextBuilder().loadTrustMaterial(null,new TrustStrategy() {
+                                @Override
+                                public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                                    return true;
+                                }
+                            }).build()
+                    ).setRedirectStrategy(new LaxRedirectStrategy()).build();
+        } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e1) {
+            log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "getApiResponse").
+                    put(LogMessage.MESSAGE, "Failed to create hhtpClient").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+        }
+
+        HttpPost postRequest = new HttpPost(api);
+        postRequest.addHeader("Authorization", "Bearer "+ nclmToken);
+        postRequest.addHeader("Content-type", "application/json");
+        postRequest.addHeader("Accept","application/octet-stream");
+        StringEntity stringEntity;
+        try {
+            stringEntity = new StringEntity("{\"format\":\""+certificateDownloadRequest.getFormat()+"\",\"password\":\""+certificateDownloadRequest.getCertificateCred()+"\"}");
+        } catch (UnsupportedEncodingException e) {
+            log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "downloadCertificate").
+                    put(LogMessage.MESSAGE, "Failed to encode request").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+        }
+        postRequest.setEntity(stringEntity);
+
+        try {
+            HttpResponse apiResponse = httpClient.execute(postRequest);
+
+            if (apiResponse.getStatusLine().getStatusCode() != 200) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+            }
+            HttpEntity entity = apiResponse.getEntity();
+            if (entity != null) {
+                String responseString = EntityUtils.toString(entity, "UTF-8");
+                // nclm api will give certificate in base64 encoded format
+                byte[] decodedBytes = Base64.getDecoder().decode(responseString);
+                resource = new InputStreamResource(new ByteArrayInputStream(decodedBytes));
+                return ResponseEntity.status(HttpStatus.OK).contentLength(decodedBytes.length)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+downloadFileName+"\"")
+                        .contentType(MediaType.parseMediaType("application/x-pkcs12;charset=utf-8"))
+                        .body(resource);
+            }
+            log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "downloadCertificate").
+                    put(LogMessage.MESSAGE, "Failed to get api response").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+
+        } catch (IOException e) {
+            log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "downloadCertificate").
+                    put(LogMessage.MESSAGE, "Failed to get api response").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+    }
+
+    /**
+     * Download certificate.
+     * @param token
+     * @param userDetails
+     * @param certificateId
+     * @param certificateType
+     * @return
+     */
+    public ResponseEntity<InputStreamResource> downloadCertificate(String token, UserDetails userDetails, String certificateId, String certificateType) {
+
+        // TODO: Check if token is valid. This is in progress in other story
+
+        // TODO: check if user has permission to download this certificate. This will be done once the permission apis are implemented
+
+        // TODO: get certificate name from metadata to set as the download file name. This can be done once the metadata changes are done.
+
+        InputStreamResource resource = null;
+        String nclmToken = getNclmToken();
+        if (StringUtils.isEmpty(nclmToken)) {
+            log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "downloadCertificate").
+                    put(LogMessage.MESSAGE, "Invalid nclm token").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+        }
+
+        String certificateName = certificateId;
+
+        String contentType;
+        switch (certificateType) {
+            case "der": contentType = "application/pkix-cert"; break;
+            case "pem":
+            default: contentType = "application/x-pem-file"; break;
+        }
+
+        HttpClient httpClient;
+
+        String api = nclmEndpoint + "certificates/"+certificateId+"/"+certificateType;
+
+        try {
+            httpClient = HttpClientBuilder.create().setSSLHostnameVerifier(
+                    NoopHostnameVerifier.INSTANCE).
+                    setSSLContext(
+                            new SSLContextBuilder().loadTrustMaterial(null,new TrustStrategy() {
+                                @Override
+                                public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                                    return true;
+                                }
+                            }).build()
+                    ).setRedirectStrategy(new LaxRedirectStrategy()).build();
+
+
+        } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e1) {
+            log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "downloadCertificate").
+                    put(LogMessage.MESSAGE, "Failed to create hhtpClient").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+        }
+
+        HttpGet getRequest = new HttpGet(api);
+        getRequest.addHeader("accept", "application/json");
+        getRequest.addHeader("Authorization", "Bearer "+ nclmToken);
+
+        try {
+            HttpResponse apiResponse = httpClient.execute(getRequest);
+            if (apiResponse.getStatusLine().getStatusCode() != 200) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+            }
+
+            HttpEntity entity = apiResponse.getEntity();
+            if (entity != null) {
+                String responseString = EntityUtils.toString(entity, "UTF-8");
+                // nclm api will give certificate in base64 encoded format
+                byte[] decodedBytes = Base64.getDecoder().decode(responseString);
+                resource = new InputStreamResource(new ByteArrayInputStream(decodedBytes));
+                return ResponseEntity.status(HttpStatus.OK).contentLength(decodedBytes.length)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+certificateName+"\"")
+                        .contentType(MediaType.parseMediaType(contentType+";charset=utf-8"))
+                        .body(resource);
+            }
+            log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "downloadCertificate").
+                    put(LogMessage.MESSAGE, "Failed to download certificate").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
+
+        } catch (IOException e) {
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "downloadCertificate").
+                    put(LogMessage.MESSAGE, String.format ("Failed to download certificate")).
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resource);
     }
 }

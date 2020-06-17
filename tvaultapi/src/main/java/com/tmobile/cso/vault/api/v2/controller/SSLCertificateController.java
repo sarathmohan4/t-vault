@@ -18,6 +18,7 @@ package com.tmobile.cso.vault.api.v2.controller;
 
 
 import com.tmobile.cso.vault.api.model.CertManagerLoginRequest;
+import com.tmobile.cso.vault.api.model.CertificateDownloadRequest;
 import com.tmobile.cso.vault.api.model.SSLCertificateRequest;
 import com.tmobile.cso.vault.api.model.UserDetails;
 import com.tmobile.cso.vault.api.process.CertResponse;
@@ -26,10 +27,12 @@ import com.tmobile.cso.vault.api.utils.TVaultSSLCertificateException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 @RestController
 @CrossOrigin
@@ -60,6 +63,35 @@ public class SSLCertificateController {
 			"vault-token") String token,@RequestBody SSLCertificateRequest sslCertificateRequest)  {
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
 		return sslCertificateService.generateSSLCertificate(sslCertificateRequest,userDetails,token);
+	}
+
+	/**
+	 * Download certificate with private key.
+	 * @param request
+	 * @param token
+	 * @param certificateDownloadRequest
+	 * @return
+	 */
+	@ApiOperation(value = "${CertificateController.downloadCertificateWithPrivateKey.value}", notes = "${CertificateController.downloadCertificateWithPrivateKey.notes}")
+	@PostMapping(value="/v2/nclm/certificates/download", consumes="application/json")
+	public ResponseEntity<InputStreamResource> downloadCertificateWithPrivateKey(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @Valid @RequestBody CertificateDownloadRequest certificateDownloadRequest) {
+		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
+		return sslCertificateService.downloadCertificateWithPrivateKey(token, certificateDownloadRequest, userDetails);
+	}
+
+	/**
+	 * Download certificate.
+	 * @param request
+	 * @param token
+	 * @param certificateId
+	 * @param certificateType
+	 * @return
+	 */
+	@ApiOperation(value = "${CertificateController.downloadCertificate.value}", notes = "${CertificateController.downloadCertificate.notes}")
+	@GetMapping(value="/v2/nclm/certificates/{certificate_id}/{certificate_type}", produces="application/json")
+	public ResponseEntity<InputStreamResource> downloadCertificate(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @PathVariable("certificate_id") String certificateId, @PathVariable("certificate_type") String certificateType){
+		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
+		return sslCertificateService.downloadCertificate(token, userDetails, certificateId, certificateType);
 	}
 
 }
