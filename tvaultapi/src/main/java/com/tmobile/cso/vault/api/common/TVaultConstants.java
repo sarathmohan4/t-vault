@@ -121,5 +121,5 @@ public class TVaultConstants {
     }
 
     public static final String CERT_POLICY_PREFIX="cert";
-
+    public static final String PATH_DELIMITER="/";
 }
