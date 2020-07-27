@@ -287,9 +287,9 @@ public class SSLCertificateController {
 	 * @param token
 	 * @return
 	 */
-	@ApiOperation(value = "${SSLCertificateController.getAllCertificates.value}", notes = "${SSLCertificateController.getAllCertificates.notes}")
-	@GetMapping(value="/v2/sslcert/list", produces="application/json")
-	public ResponseEntity<String> getAllCertificates(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestParam(name="certificateName", required = false) String certName,@RequestParam(name = "limit", required = false) Integer limit, @RequestParam(name = "offset", required = false) Integer offset)throws Exception{
+	@ApiOperation(value = "${SSLCertificateController.getInternalCertificateMetadata.value}", notes = "${SSLCertificateController.getInternalCertificateMetadata.notes}")
+	@GetMapping(value="/v2/sslcert/internal/list", produces="application/json")
+	public ResponseEntity<String> getInternalCertificateMetadata(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestParam(name="certificateName", required = false) String certName,@RequestParam(name = "limit", required = false) Integer limit, @RequestParam(name = "offset", required = false) Integer offset)throws Exception{
 		return sslCertificateService.getAllCertificates(token, certName, "internal", limit, offset);
 	}
 
@@ -299,9 +299,9 @@ public class SSLCertificateController {
 	 * @param token
 	 * @return
 	 */
-	@ApiOperation(value = "${SSLCertificateController.getAllCertificates.value}", notes = "${SSLCertificateController.getAllCertificates.notes}")
+	@ApiOperation(value = "${SSLCertificateController.getExternalCertificateMetadata.value}", notes = "${SSLCertificateController.getExternalCertificateMetadata.notes}")
 	@GetMapping(value="/v2/sslcert/external/list", produces="application/json")
-	public ResponseEntity<String> getAllExternalCertificates(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestParam(name="certificateName", required = false) String certName,@RequestParam(name = "limit", required = false) Integer limit, @RequestParam(name = "offset", required = false) Integer offset)throws Exception{
+	public ResponseEntity<String> getExternalCertificateMetadata(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestParam(name="certificateName", required = false) String certName,@RequestParam(name = "limit", required = false) Integer limit, @RequestParam(name = "offset", required = false) Integer offset)throws Exception{
 		return sslCertificateService.getAllCertificates(token, certName, "external", limit, offset);
 	}
 }
