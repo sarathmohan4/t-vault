@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.tmobile.cso.vault.api.common.SSLCertificateConstants;
+import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.controller.ControllerUtil;
 import com.tmobile.cso.vault.api.exception.TVaultValidationException;
 import com.tmobile.cso.vault.api.model.*;
@@ -3834,6 +3836,99 @@ public class SSLCertificateServiceTest {
          ResponseEntity<String> responseEntityActual = sSLCertificateService.getListOfCertificates(token, certificateType, user1);
 
          assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
+    @Test
+    public void getAllCertificates_Success()throws Exception{
+        String token = "12345";
+
+        Response response =getMockResponse(HttpStatus.OK, true, "{  \"keys\": [    {      \"akamid\": \"102463\",      \"applicationName\": \"tvs\", "
+                + "     \"applicationOwnerEmailId\": \"abcdef@mail.com\",      \"applicationTag\": \"TVS\",  "
+                + "    \"authority\": \"T-Mobile Issuing CA 01 - SHA2\",      \"certCreatedBy\": \"rob\",     "
+                + " \"certOwnerEmailId\": \"ntest@gmail.com\",      \"certType\": \"internal\",     "
+                + " \"certificateId\": 59480,      \"certificateName\": \"CertificateName.t-mobile.com\",   "
+                + "   \"certificateStatus\": \"Active\",      \"containerName\": \"VenafiBin_12345\",    "
+                + "  \"createDate\": \"2020-06-24T03:16:29-07:00\",      \"expiryDate\": \"2021-06-24T03:16:29-07:00\",  "
+                + "    \"projectLeadEmailId\": \"project@email.com\"    }  ]}");
+        Response certResponse =getMockResponse(HttpStatus.OK, true, "{  \"data\": {  \"keys\": [    \"CertificateName.t-mobile.com\"    ]  }}");
+
+        token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        UserDetails user1 = new UserDetails();
+        user1.setUsername("normaluser");
+        user1.setAdmin(true);
+        user1.setClientToken(token);
+        user1.setSelfSupportToken(token);
+        String certificateType = "internal";
+
+        when(reqProcessor.process(Mockito.eq("/sslcert"),Mockito.anyString(),Mockito.eq(token))).thenReturn(certResponse);
+
+        when(reqProcessor.process("/sslcert", "{\"path\":\"" + SSLCertificateConstants.SSL_CERT_PATH + "\"}", token)).thenReturn(response);
+
+        ResponseEntity<String> responseEntityActual = sSLCertificateService.getAllCertificates(token, "", certificateType, 1, 0);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
+    @Test
+    public void getAllCertificates_failed()throws Exception{
+        String token = "12345";
+
+        Response response =getMockResponse(HttpStatus.OK, true, "{  \"keys\": [    {      \"akamid\": \"102463\",      \"applicationName\": \"tvs\", "
+                + "     \"applicationOwnerEmailId\": \"abcdef@mail.com\",      \"applicationTag\": \"TVS\",  "
+                + "    \"authority\": \"T-Mobile Issuing CA 01 - SHA2\",      \"certCreatedBy\": \"rob\",     "
+                + " \"certOwnerEmailId\": \"ntest@gmail.com\",      \"certType\": \"internal\",     "
+                + " \"certificateId\": 59480,      \"certificateName\": \"CertificateName.t-mobile.com\",   "
+                + "   \"certificateStatus\": \"Active\",      \"containerName\": \"VenafiBin_12345\",    "
+                + "  \"createDate\": \"2020-06-24T03:16:29-07:00\",      \"expiryDate\": \"2021-06-24T03:16:29-07:00\",  "
+                + "    \"projectLeadEmailId\": \"project@email.com\"    }  ]}");
+        Response certResponse =getMockResponse(HttpStatus.NOT_FOUND, true, "");
+
+        token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        UserDetails user1 = new UserDetails();
+        user1.setUsername("normaluser");
+        user1.setAdmin(true);
+        user1.setClientToken(token);
+        user1.setSelfSupportToken(token);
+        String certificateType = "internal";
+
+        when(reqProcessor.process(Mockito.eq("/sslcert"),Mockito.anyString(),Mockito.eq(token))).thenReturn(certResponse);
+
+        when(reqProcessor.process("/sslcert", "{\"path\":\"" + SSLCertificateConstants.SSL_CERT_PATH + "\"}", token)).thenReturn(response);
+
+        ResponseEntity<String> responseEntityActual = sSLCertificateService.getAllCertificates(token, "", certificateType, 1, 0);
+
+        assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+    }
+
+    @Test
+    public void getAllCertificates_failed_500()throws Exception{
+        String token = "12345";
+
+        Response response =getMockResponse(HttpStatus.OK, true, "{  \"keys\": [    {      \"akamid\": \"102463\",      \"applicationName\": \"tvs\", "
+                + "     \"applicationOwnerEmailId\": \"abcdef@mail.com\",      \"applicationTag\": \"TVS\",  "
+                + "    \"authority\": \"T-Mobile Issuing CA 01 - SHA2\",      \"certCreatedBy\": \"rob\",     "
+                + " \"certOwnerEmailId\": \"ntest@gmail.com\",      \"certType\": \"internal\",     "
+                + " \"certificateId\": 59480,      \"certificateName\": \"CertificateName.t-mobile.com\",   "
+                + "   \"certificateStatus\": \"Active\",      \"containerName\": \"VenafiBin_12345\",    "
+                + "  \"createDate\": \"2020-06-24T03:16:29-07:00\",      \"expiryDate\": \"2021-06-24T03:16:29-07:00\",  "
+                + "    \"projectLeadEmailId\": \"project@email.com\"    }  ]}");
+        Response certResponse =getMockResponse(HttpStatus.INTERNAL_SERVER_ERROR, true, "");
+
+        token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        UserDetails user1 = new UserDetails();
+        user1.setUsername("normaluser");
+        user1.setAdmin(true);
+        user1.setClientToken(token);
+        user1.setSelfSupportToken(token);
+        String certificateType = "internal";
+
+        when(reqProcessor.process(Mockito.eq("/sslcert"),Mockito.anyString(),Mockito.eq(token))).thenReturn(certResponse);
+
+        when(reqProcessor.process("/sslcert", "{\"path\":\"" + SSLCertificateConstants.SSL_CERT_PATH + "\"}", token)).thenReturn(response);
+
+        ResponseEntity<String> responseEntityActual = sSLCertificateService.getAllCertificates(token, "", certificateType, 1, 0);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntityActual.getStatusCode());
     }
 
 }

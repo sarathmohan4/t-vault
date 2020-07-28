@@ -350,4 +350,46 @@ public class SSLCertificateControllerTest {
         when(sslCertificateService.getListOfCertificates("5PDrOhsy4ig8L3EpsJZSLAMg","internal" ,userDetails)).thenReturn(new ResponseEntity<>(HttpStatus.OK));
         assertEquals(HttpStatus.OK, sslCertificateService.getListOfCertificates("5PDrOhsy4ig8L3EpsJZSLAMg","internal", userDetails).getStatusCode());
     }
+
+    @Test
+    public void test_getInternalCertificateMetadata() throws Exception {
+
+        String response  = "{  \"keys\": [    {      \"akamid\": \"102463\",      \"applicationName\": \"tvs\", "
+                + "     \"applicationOwnerEmailId\": \"abcdef@mail.com\",      \"applicationTag\": \"TVS\",  "
+                + "    \"authority\": \"T-Mobile Issuing CA 01 - SHA2\",      \"certCreatedBy\": \"rob\",     "
+                + " \"certOwnerEmailId\": \"ntest@gmail.com\",      \"certType\": \"internal\",     "
+                + " \"certificateId\": 59480,      \"certificateName\": \"CertificateName.t-mobile.com\",   "
+                + "   \"certificateStatus\": \"Active\",      \"containerName\": \"VenafiBin_12345\",    "
+                + "  \"createDate\": \"2020-06-24T03:16:29-07:00\",      \"expiryDate\": \"2021-06-24T03:16:29-07:00\",  "
+                + "    \"projectLeadEmailId\": \"project@email.com\"    }  ]}";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(response);
+
+        when(sslCertificateService.getAllCertificates(eq("5PDrOhsy4ig8L3EpsJZSLAMg"), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(responseEntityExpected);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/sslcert/internal/list")
+                .header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
+                .header("Content-Type", "application/json;charset=UTF-8"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void test_getExternalCertificateMetadata() throws Exception {
+
+        String response  = "{  \"keys\": [    {      \"akamid\": \"102463\",      \"applicationName\": \"tvs\", "
+                + "     \"applicationOwnerEmailId\": \"abcdef@mail.com\",      \"applicationTag\": \"TVS\",  "
+                + "    \"authority\": \"T-Mobile Issuing CA 01 - SHA2\",      \"certCreatedBy\": \"rob\",     "
+                + " \"certOwnerEmailId\": \"ntest@gmail.com\",      \"certType\": \"external\",     "
+                + " \"certificateId\": 59480,      \"certificateName\": \"CertificateName.t-mobile.com\",   "
+                + "   \"certificateStatus\": \"Active\",      \"containerName\": \"VenafiBin_12345\",    "
+                + "  \"createDate\": \"2020-06-24T03:16:29-07:00\",      \"expiryDate\": \"2021-06-24T03:16:29-07:00\",  "
+                + "    \"projectLeadEmailId\": \"project@email.com\"    }  ]}";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(response);
+
+        when(sslCertificateService.getAllCertificates(eq("5PDrOhsy4ig8L3EpsJZSLAMg"), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(responseEntityExpected);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/sslcert/external/list")
+                .header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
+                .header("Content-Type", "application/json;charset=UTF-8"))
+                .andExpect(status().isOk());
+    }
 }
