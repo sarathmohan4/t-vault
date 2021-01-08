@@ -442,7 +442,6 @@ public class SecretServiceTest {
     public void test_getSecretCount_successfully() {
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String responsejson = "{\"id\":\"5PDrOhsy4ig8L3EpsJZSLAMg\",\"policies\":[\"root\"]}";
-        ReflectionTestUtils.setField(secretService, "safeVersionFolderPrefix", "$_versions_");
 
         Response response = getMockResponse(HttpStatus.OK, true, responsejson);
 
@@ -588,7 +587,6 @@ public class SecretServiceTest {
     public void test_getSecretCount_failed_403() {
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String responsejson = "{\"id\":\"5PDrOhsy4ig8L3EpsJZSLAMg\",\"policies\":[\"root\"]}";
-        ReflectionTestUtils.setField(secretService, "safeVersionFolderPrefix", "$_versions_");
 
         Response response = getMockResponse(HttpStatus.OK, true, responsejson);
 

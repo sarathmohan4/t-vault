@@ -104,6 +104,19 @@ public class SecretControllerV2 {
 	public ResponseEntity<String> getSecretCount(@RequestHeader(value="vault-token") String token){
 		return secretService.getSecretCount(token);
 	}
+
+	/**
+	 * To get folder last change details
+	 * @param token
+	 * @param path
+	 * @return
+	 */
+	@ApiOperation(value = "${SecretControllerV2.getFolderVersionInfo.value}", notes = "${SecretControllerV2.getFolderVersionInfo.notes}")
+	@GetMapping(value="/v2/safes/folders/versioninfo",produces="application/json")
+	public ResponseEntity<String> getFolderVersionInfo(@RequestHeader(value="vault-token") String token, @RequestParam("path") String path){
+		return secretService.getFolderVersionInfo(token, path);
+	}
+
 }
 
 enum FetchOption {
