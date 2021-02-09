@@ -139,7 +139,7 @@ public class SDBControllerV2 {
 	 * @param path
 	 * @return
 	 */
-	@ApiOperation(value = "${SafesController.getSafe.value}", notes = "${SafesController.getSafe.notes}")
+	@ApiOperation(value = "${SafesController.getSafe.value}", notes = "${SafesController.getSafe.notes}", hidden = true)
 	@GetMapping(value="/v2/sdb",produces="application/json")
 	public ResponseEntity<String> getSafe(@RequestHeader(value="vault-token") String token, @RequestParam("path") String path){
 		return safesService.getSafe(token, path);

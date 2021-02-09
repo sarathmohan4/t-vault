@@ -6536,6 +6536,123 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
     }
 
 	/**
+	 * Method to delete all permissions added to the certificate.
+	 * @param certificateMetaData
+	 * @param certificatePath
+	 * @param authToken
+	 * @param userDetails
+	 * @return
+	 */
+	private boolean deleteAllPermissionAddedToCertificate(SSLCertificateMetadataDetails certificateMetaData,
+			String certificatePath, String authToken, UserDetails userDetails) {
+		boolean permissionRemoved = true;
+		try {
+			Response response = getCertificateDetailsByMatadataPath(certificatePath, authToken);
+			JsonParser jsonParser = new JsonParser();
+			JsonObject object = ((JsonObject) jsonParser.parse(response.getResponse())).getAsJsonObject("data");
+
+			//remove user permissions
+			deleteUserPermissionForCertificate(certificateMetaData.getCertType(), certificateMetaData.getCertificateName(), userDetails, jsonParser, object);
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+			        .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+			        .put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG)
+			        .put(LogMessage.MESSAGE, String.format("DeleteUserPermissionForCertificate Completed for certificate = [%s]", certificateMetaData.getCertificateName()))
+			        .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+
+			//remove group permissions
+			removeGroupPermissionsToCertificate(certificateMetaData.getCertType(), certificateMetaData.getCertificateName(), userDetails, jsonParser, object);
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+			        .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+			        .put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG)
+			        .put(LogMessage.MESSAGE, String.format("RemoveGroupPermissionsToCertificate Completed for certificate = [%s]", certificateMetaData.getCertificateName()))
+			        .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+
+			//remove AWS role permissions
+			deleteAwsRoleOnCertificateDelete(certificateMetaData.getCertificateName(), authToken, jsonParser, object);
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+			        .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+			        .put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG)
+			        .put(LogMessage.MESSAGE, String.format("DeleteAwsRoleOnCertificate Completed for certificate = [%s]", certificateMetaData.getCertificateName()))
+			        .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			//remove App role permissions
+			deleteApprolePolicyAssociationOnCertificate(certificateMetaData.getCertificateName(), authToken, jsonParser, object);
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+			        .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+			        .put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG)
+			        .put(LogMessage.MESSAGE, String.format("DeleteApprolePolicyAssociationOnCertificate Completed for certificate = [%s]", certificateMetaData.getCertificateName()))
+			        .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+
+			// remove Sudo permissions
+			removeSudoPermissionForPreviousOwner(certificateMetaData.getCertOwnerNtid().toLowerCase(),
+					certificateMetaData.getCertificateName(), userDetails,
+					certificateMetaData.getCertType());
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+			        .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+			        .put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG)
+			        .put(LogMessage.MESSAGE, String.format("RemoveSudoPermissionForPreviousOwner Completed for certificate = [%s]", certificateMetaData.getCertificateName()))
+			        .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+
+		} catch (JsonSyntaxException e) {
+			permissionRemoved = false;
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+					put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG).
+					put(LogMessage.MESSAGE, "Remove permissions to the certificate failed").
+					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+					build()));
+		}
+
+		return permissionRemoved;
+	}
+
+    /**
+     * Approle policy delete as part of certificate delete
+     * @param certificateName
+     * @param token
+     * @param jsonParser
+     * @param object
+     */
+    private void deleteApprolePolicyAssociationOnCertificate(String certificateName, String token, JsonParser jsonParser,
+			JsonObject object) {
+        log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+                put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG).
+                put(LogMessage.MESSAGE, "Trying delete ApprolePolicyAssociationOnCertificate").
+                put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+                build()));
+        Map<String, String> appRoleParams = new HashMap<>();
+		if (object.get("app-roles") != null) {
+			JsonObject appRoleObj = ((JsonObject) jsonParser.parse(object.get("app-roles").toString()));
+			appRoleParams = new Gson().fromJson(appRoleObj.toString(), Map.class);
+			if (!appRoleParams.isEmpty()) {
+				for (Map.Entry<String, String> entry : appRoleParams.entrySet()) {
+					ResponseEntity<String> response = checkPolicyDetailsAndRemoveApproleFromCertificate(token,
+			entry.getKey(), certificateName, entry.getValue(), object.get(SSLCertificateConstants.CERT_TYPE).getAsString());
+					if (response.getStatusCode().equals(HttpStatus.OK)) {
+						log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+								.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+								.put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG)
+								.put(LogMessage.MESSAGE,
+										String.format("%s, App role is deleted as part of deleting certificate.",
+												entry.getKey()))
+								.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
+								.build()));
+					} else {
+						log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+								.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+								.put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG)
+								.put(LogMessage.MESSAGE,
+										String.format("%s, App Role deletion as part of deleting certificate failed.",
+												entry.getKey()))
+								.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
+								.build()));
+					}
+				}
+			}
+		}
+    }
+
+	/**
 	 * @param certificatePath
 	 * @param authToken
 	 * @param certificateMetaData
@@ -7479,6 +7596,23 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
             JsonArray jsonArrayExt = jsonObjectExt.getAsJsonObject("data").getAsJsonArray("keys");
             certNamesExt = geMatchCertificates(jsonArrayExt,certName);            
             certNames.addAll(certNamesExt);
+            }
+            
+            if (ObjectUtils.isEmpty(certNames)) {
+                log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                        put(LogMessage.ACTION, "getAllCertificate").
+                        put(LogMessage.MESSAGE, "Retrieved empty certificate list from metadata").
+                        put(LogMessage.STATUS, response.getHttpstatus().toString()).
+                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                        build()));
+                return ResponseEntity.status(HttpStatus.OK).body(certListStr);
+            }
+            else if(!ObjectUtils.isEmpty(certNames)){
+            Collections.sort(certNames);
+            
+            if(limit == null) {
+                limit = certNames.size();
             }
             
             if (ObjectUtils.isEmpty(certNames)) {
