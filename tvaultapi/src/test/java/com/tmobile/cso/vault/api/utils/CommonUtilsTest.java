@@ -17,6 +17,7 @@
 package com.tmobile.cso.vault.api.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.tmobile.cso.vault.api.model.UserDetails;
 import com.tmobile.cso.vault.api.process.RequestProcessor;
 import com.tmobile.cso.vault.api.process.Response;
@@ -27,16 +28,27 @@ import org.junit.runners.MethodSorters;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.junit.Before;
 
 @RunWith(PowerMockRunner.class)
 @ComponentScan(basePackages={"com.tmobile.cso.vault.api"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@PrepareForTest({ JSONUtil.class})
 @PowerMockIgnore({"javax.management.*"})
 public class CommonUtilsTest {
 
@@ -45,7 +57,29 @@ public class CommonUtilsTest {
 
     @Mock
     RequestProcessor reqProcessor;
+    @Before
+    public void setUp() {
 
+		PowerMockito.mockStatic(JSONUtil.class);
+		when(JSONUtil.getJSON(Mockito.any(ImmutableMap.class))).thenReturn("log");
+
+		Map<String, String> currentMap = new HashMap<>();
+		currentMap.put("apiurl", "http://localhost:8080/vault/v2/sdb");
+		currentMap.put("user", "");
+		ThreadLocalContext.setCurrentMap(currentMap);
+	}
+
+	Response getMockResponse(HttpStatus status, boolean success, String expectedBody) {
+		Response response = new Response();
+		response.setHttpstatus(status);
+		response.setSuccess(success);
+		if (expectedBody != "") {
+			response.setResponse(expectedBody);
+		}
+		return response;
+	}
+
+    
 	@Test
     public void test_getPoliciesAsArray() throws Exception {
         ObjectMapper objMapper = new ObjectMapper();
@@ -125,5 +159,36 @@ public class CommonUtilsTest {
         String modifiedBy = commonUtils.getModifiedByInfo(userDetails);
         assertEquals("AWS Role", modifiedBy);
     }
+    
+    @Test
+	public void test_isAuthorizedToken_sucessfully() {
 
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+
+		String responsejson = "{\"id\":\"5PDrOhsy4ig8L3EpsJZSLAMg\",\"policies\":[\"root\"],\"username\":null,\"identity_policies\":null,\"display_name\":\"root\"}";
+
+		Response response = getMockResponse(HttpStatus.OK, true, responsejson);
+		when(reqProcessor.process(Mockito.eq("/auth/tvault/lookup"), Mockito.eq("{}"), Mockito.eq(token)))
+				.thenReturn(response);
+
+		boolean responseEntity = commonUtils.isAuthorizedToken(token);
+
+		assertEquals(Boolean.TRUE, responseEntity);
+	}
+
+	@Test
+	public void test_sAuthorizedToken_failed() {
+
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+
+		String responsejson = "{\"id\":\"5PDrOhsy4ig8L3EpsJZSLAMg\",\"policies\":[\"default\"],\"username\":null,\"identity_policies\":null,\"display_name\":\"root\"}";
+
+		Response response = getMockResponse(HttpStatus.OK, false, responsejson);
+		when(reqProcessor.process(Mockito.eq("/auth/tvault/lookup"), Mockito.eq("{}"), Mockito.eq(token)))
+				.thenReturn(response);
+
+		boolean responseEntity = commonUtils.isAuthorizedToken(token);
+
+		assertEquals(Boolean.FALSE, responseEntity);
+	}
 }

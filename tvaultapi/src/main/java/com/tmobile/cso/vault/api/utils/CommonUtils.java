@@ -19,7 +19,9 @@ package com.tmobile.cso.vault.api.utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
@@ -142,5 +144,44 @@ public class CommonUtils {
 			}
 		}
 		return modifiedBy;
+	}
+	
+	/**
+	 * check for authentication of Initial Root token
+	 * @param token
+	 * @return
+	 */
+	
+	public  boolean isAuthorizedToken(String token) {
+		ObjectMapper objectMapper = new ObjectMapper();
+		List<String> currentPolicies;
+		Response response = reqProcessor.process("/auth/tvault/lookup", "{}", token);
+		if (HttpStatus.OK.equals(response.getHttpstatus())) {
+			String responseJson = response.getResponse();
+			try {
+				currentPolicies = Arrays.asList(getPoliciesAsArray(objectMapper, responseJson));
+				if (currentPolicies.contains(TVaultConstants.ROOT_POLICY)) {
+					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+							.put(LogMessage.ACTION, "isAuthorizedToken")
+							.put(LogMessage.MESSAGE, "The Token has required policies to get authorizedtoken.")
+							.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
+							.build()));
+					return true;
+				} 
+			} catch (IOException e) { 
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+						.put(LogMessage.ACTION, "isAuthorizedToken")
+						.put(LogMessage.MESSAGE, "Failed to parse policies from token")
+						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			}
+		}
+		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+				.put(LogMessage.ACTION, "isAuthorizedToken")
+				.put(LogMessage.MESSAGE, "The Token does not have required policies to get authorizedtoken.")
+				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+		return false;
 	}
 }

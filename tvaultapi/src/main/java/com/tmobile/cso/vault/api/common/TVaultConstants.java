@@ -114,6 +114,7 @@ public class TVaultConstants {
     public static final String EMAIL_TEMPLATE_NAME_EXTERNAL_CERT = "ExteralCertCreateTemplate";
     public static final String EMAIL_TEMPLATE_NAME_DELETE_CERT = "CertDeleteTemplate";
     public static final String EMAIL_TEMPLATE_NAME_TRANSFER = "TransferTemplate";
+    public static final String UIMES_SAFES_METADATA = "metadata/message";
 
     public static final Map<String, String> EMAIL_TEMPLATE_IMAGE_IDS;
     static {

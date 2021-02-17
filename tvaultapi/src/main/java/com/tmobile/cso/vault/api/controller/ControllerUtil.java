@@ -147,12 +147,12 @@ public final class ControllerUtil {
 	
 	private static OIDCUtil oidcUtil;
 	private static final String ERROR_STRING= "{\"errors\":[\"Unexpected error :\"";
-	
+
 	@Value("${vault.pagination.limit}")
 	private Integer approlePaginationLimit;
-	
+
 	private static Integer paginationLimit;
-	
+
 
 	@PostConstruct
 	private void initStatic () {
@@ -2972,13 +2972,13 @@ public final class ControllerUtil {
         if (null != requestMap.get("keys")) {
 			List<String> policyList = new ArrayList<>(Arrays.asList((String[]) requestMap.get("keys")));
 			policyList.removeAll(Arrays.asList(TVaultConstants.MASTER_APPROLES));
-	
+
 			limit = (limit == null || limit > paginationLimit)?paginationLimit:limit;
 			offset = (offset == null)?0:offset;
 			List<String> policyListResponse = new ArrayList<String>();
 			int maxVal = policyList.size() > (limit+offset)?limit+offset : policyList.size();
 			for (int i = offset; i < maxVal; i++) {
-				policyListResponse.add(policyList.get(i));	
+				policyListResponse.add(policyList.get(i));
 			}
 			String policies = policyListResponse.stream().collect(Collectors.joining("\", \""));
 			if (StringUtils.isEmpty(policies)) {
@@ -2986,7 +2986,7 @@ public final class ControllerUtil {
 			}
 			else {
 				response.setResponse("{\"keys\": [\"" + policies + "\"]}");
-			}	
+			}
 		}
         return response;
     }
@@ -3355,5 +3355,20 @@ public final class ControllerUtil {
 			}
 		}
 		return access;
+	}
+
+	/**
+	 * check whether folder is exist or not
+	 * @param token
+	 * @param path
+	 * @return
+	 */
+
+	public static boolean isFolderExisting(String path, String token) {
+		Response response = reqProcessor.process("/read", "{\"path\":\"" + path + "\"}", token);
+		if (HttpStatus.OK.equals(response.getHttpstatus())) {
+			return true;
+		}
+		return false;
 	}
 }

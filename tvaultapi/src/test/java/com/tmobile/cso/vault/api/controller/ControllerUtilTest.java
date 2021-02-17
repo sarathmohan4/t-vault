@@ -1225,4 +1225,13 @@ public class ControllerUtilTest {
     	Response actualResponse = ControllerUtil.hideMasterAppRoleFromResponse(response, 25, 1);
         assertEquals(HttpStatus.OK, actualResponse.getHttpstatus());
         }
+    @Test
+    public void test_isFolderExisting()  {
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String path ="metdata/message";
+        Response readResponse = getMockResponse(HttpStatus.OK, true,"{\"data\":{\"message1\":\"value1\",\"message2\":\"value2\"}");
+        when(reqProcessor.process("/read", "{\"path\":\"" + path + "\"}", token)).thenReturn(readResponse);
+        boolean valid = ControllerUtil.isFolderExisting(path, token);
+        assertEquals(Boolean.TRUE, valid);
+    }
 }
