@@ -268,6 +268,39 @@ public class CertificateUtils {
 				certificate.setDnsNames(Collections.singletonList(dataNode.get(SSLCertificateConstants.DNS_NAMES).toString()));
 			}
 		}
-	}	
-	
+	}
+
+
+	/**
+	 * To replace * in certificate name with # for internal usage.
+	 * @param actualCertName
+	 * @return
+	 */
+	public String getVaultCompactibleCertifiacteName(String actualCertName) {
+		if (actualCertName.startsWith("*.")) {
+			return actualCertName.replace("*", "#");
+		}
+		return actualCertName;
+	}
+
+	/**
+	 * To replace # in vault compactible certificate name with *
+	 * @param certName
+	 * @return
+	 */
+	public String getActualCertifiacteName(String certName) {
+		if (certName.startsWith("#.")) {
+			return certName.replace("#", "*");
+		}
+		return certName;
+	}
+
+	/**
+	 * To check if the certificate name starts with *.
+	 * @param actualCertName
+	 * @return
+	 */
+	public boolean isWildcardCertificate(String actualCertName) {
+		return actualCertName.startsWith("*.");
+	}
 }

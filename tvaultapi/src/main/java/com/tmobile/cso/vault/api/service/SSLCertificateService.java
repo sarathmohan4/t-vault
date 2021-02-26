@@ -783,6 +783,14 @@ public class SSLCertificateService {
 					// Policy Creation
 					boolean isPoliciesCreated;
 
+					// To handle wildcard certificate
+                    String actualCertName = sslCertificateRequest.getCertificateName();
+                    String certName = sslCertificateRequest.getCertificateName();
+                    boolean isWildCardCertificate = certificateUtils.isWildcardCertificate(actualCertName);
+                    if (isWildCardCertificate) {
+                        sslCertificateRequest.setCertificateName(certificateUtils.getVaultCompactibleCertifiacteName(actualCertName));
+                    }
+
 					if (userDetails.isAdmin()) {
 						isPoliciesCreated = createPolicies(sslCertificateRequest, token);
 					} else {
@@ -792,7 +800,7 @@ public class SSLCertificateService {
                         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
                                 put(LogMessage.ACTION, String.format("Policies are created for SSL certificate name [%s]",
-                                        sslCertificateRequest.getCertificateName())).
+                                        certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()))).
                                 build()));
                     }
 
@@ -814,7 +822,7 @@ public class SSLCertificateService {
                         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
                                 put(LogMessage.ACTION, String.format("Metadata  created for SSL certificate name [%s]",
-                                        sslCertificateRequest.getCertificateName())).
+                                        certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()))).
                                 build()));
                     }
 
@@ -831,7 +839,7 @@ public class SSLCertificateService {
                         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
                                 put(LogMessage.ACTION, String.format("Certificate details added to Application Metadata for SSL certificate name [%s]",
-                                        sslCertificateRequest.getCertificateName())).
+                                        certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()))).
                                 build()));
                     }
 
@@ -845,7 +853,7 @@ public class SSLCertificateService {
 								.put(LogMessage.ACTION,
 										String.format(
 												"Metadata or Policies failed for SSL certificate name [%s] - metaDataStatus[%s] - policyStatus[%s]",
-												sslCertificateRequest.getCertificateName(), sslMetaDataCreationStatus,
+                                                certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()), sslMetaDataCreationStatus,
 												isPoliciesCreated))
 								.build()));
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ERRORS+enrollResponse.getResponse()+"\"]}");
@@ -865,7 +873,7 @@ public class SSLCertificateService {
                         sslCertificateRequest.getCertificateName(), sslCertificateRequest.getCertType());
                 String responseMessage;
                 if(Objects.nonNull(certMetaDataDetails)) {
-                 responseMessage = sslCertificateRequest.getCertificateName()+" is already" +
+                 responseMessage = certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName())+" is already" +
                         " available  in system and owned  by "+ certMetaDataDetails.getCertOwnerEmailId() +" " +
                         ". Please try with different certificate name";
                 } else {
@@ -881,7 +889,7 @@ public class SSLCertificateService {
                         put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
                         put(LogMessage.ACTION, String.format("Certificate Already Available in  NCLM with Active Status " +
                                 "[%s] = certificate name = [%s]", enrollResponse.toString(),
-                                sslCertificateRequest.getCertificateName())).
+                                certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()))).
                         build()));
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORS+enrollResponse.getResponse()+
                         "\"]}");
@@ -891,7 +899,7 @@ public class SSLCertificateService {
                     put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
                     put(LogMessage.ACTION, String.format("Inside  TVaultValidationException " +
                                     "Exception = [%s] =  Message [%s] = certificate name = [%s]",
-                            Arrays.toString(tex.getStackTrace()), tex.getMessage(),sslCertificateRequest.getCertificateName())).build()));
+                            Arrays.toString(tex.getStackTrace()), tex.getMessage(),certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()))).build()));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ERRORS + tex.getMessage() + "\"]}");
 
         } catch (Exception e) {
@@ -899,7 +907,7 @@ public class SSLCertificateService {
                     put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
                     put(LogMessage.ACTION, String.format("Inside  Exception " +
                                     "Exception = [%s] =  Message [%s] = = certificate name = [%s]", Arrays.toString(e.getStackTrace()),
-                            e.getMessage(),sslCertificateRequest.getCertificateName())).build()));
+                            e.getMessage(),certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()))).build()));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body
                     (ERRORS + SSLCertificateConstants.SSL_CREATE_EXCEPTION + "\"]}");
         }
@@ -908,7 +916,7 @@ public class SSLCertificateService {
                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                 put(LogMessage.ACTION, SSLCertificateConstants.GENERATE_SSL_CERTIFICTAE).
                 put(LogMessage.MESSAGE, String.format ("certificate [%s] before sending an email ",
-                        sslCertificateRequest.getCertificateName())).
+                certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()))).
                 put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                 build()));
         return ResponseEntity.status(HttpStatus.OK).body(MESSAGES+SSLCertificateConstants.SSL_CERT_SUCCESS+"\"]}");
@@ -1335,7 +1343,7 @@ public class SSLCertificateService {
 				enrollResponse.setSuccess(Boolean.TRUE);
 				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String> builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-						.put(LogMessage.ACTION, String.format("Metadata or Policies created for SSL certificate [%s] - metaDataStatus [%s] - policyStatus [%s]", sslCertificateRequest.getCertificateName(), sslMetaDataCreationStatus, isPoliciesCreated))
+						.put(LogMessage.ACTION, String.format("Metadata or Policies created for SSL certificate [%s] - metaDataStatus [%s] - policyStatus [%s]", certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()), sslMetaDataCreationStatus, isPoliciesCreated))
 						.build()));
                 //Send email only in case of creation
                 if (operation != null && operation.equalsIgnoreCase("create")) {
@@ -1345,7 +1353,7 @@ public class SSLCertificateService {
                             .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                             .put(LogMessage.ACTION, String.format("CERTIFICATE [%s] - CREATED SUCCESSFULLY - BY [%s] - " +
                                             "ON- [%s] AND TYPE [%s]",
-                                    sslCertificateRequest.getCertificateName(), sslCertificateRequest.getCertOwnerEmailId(),
+                                    certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()), sslCertificateRequest.getCertOwnerEmailId(),
                                     LocalDateTime.now(), sslCertificateRequest.getCertType())).build()));
                 }
 
@@ -1653,7 +1661,7 @@ public class SSLCertificateService {
             log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                     put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                     put(LogMessage.ACTION, String.format("Certificate Details to  not available for given " +
-                            "certificate= [%s]", sslCertificateRequest.getCertificateName())).
+                    "certificate= [%s]", certificateUtils.getActualCertifiacteName(sslCertificateRequest.getCertificateName()))).
                     build()));
         }
         sslCertificateMetadataDetails.setCertCreatedBy(userDetails.getUsername());
@@ -1834,7 +1842,7 @@ public class SSLCertificateService {
 	private boolean validateCertficateName(String certName) {
 		boolean isValid = true;
 		if (certName.contains(" ") || (certName.endsWith(certificateNameTailText)) || (certName.contains(".-"))
-				|| (certName.contains("-.")) || (certName.contains("..")) || (certName.endsWith("."))) {
+				|| (certName.contains("-.")) || (certName.contains("..")) || (certName.endsWith(".")) || (certName.contains("*") && !certName.startsWith("*."))) {
 			isValid = false;
 		}
 		return isValid;
@@ -2119,7 +2127,7 @@ public class SSLCertificateService {
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
         		.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
         		.put(LogMessage.ACTION, SSLCertificateConstants.GENERATE_SSL_CERTIFICTAE)
-        		.put(LogMessage.MESSAGE, String.format("Trying to get Info for the SSL Certifcate [%s]", certName))
+                .put(LogMessage.MESSAGE, String.format("Trying to get Info for the SSL Certifcate [%s]", certificateUtils.getActualCertifiacteName(certName)))
         		.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
         		.build()));
         CertResponse response = reqProcessor.processCert(findCertificateEndpoint, "", certManagerLogin.getAccess_token(), getCertmanagerEndPoint(targetEndpoint));
