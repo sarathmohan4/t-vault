@@ -646,8 +646,8 @@ const CertificatesDashboard = () => {
     apiService
       .getCertificateDetail(url)
       .then((res) => {
-        if (res?.data?.keys) {
-          setSearchSelected(res?.data?.keys.filter(i=>(i.certificateName === certName)));
+        if (res?.data?.keys && res?.data?.keys.filter(i=>(i.certificateName === certName))[0]) {
+            setSearchSelected(res?.data?.keys.filter(i=>(i.certificateName === certName)));
         } else {
           setSearchSelected([{ certificateName: certName, certType }]);
         }
