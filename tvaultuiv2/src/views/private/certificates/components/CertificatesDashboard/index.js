@@ -565,7 +565,10 @@ const CertificatesDashboard = () => {
     const allSearchCerts = [];
     const onboardCerts = [];
     const allCerts = apiService.searchAllCert(searchText);
-    const pendingCerts = apiService.getOnboardCertificates();
+    let pendingCerts =[];
+    if(admin){
+      pendingCerts = apiService.getOnboardCertificates();
+    }
     Promise.all([allCerts, pendingCerts])
       .then((res) => {
         if (res[0] && res[0].data) {
@@ -595,7 +598,7 @@ const CertificatesDashboard = () => {
         setOnboardCertificates([...onboardCerts]);
       })
       .catch(() => setResponse({ status: 'success' }));
-  }, []);
+  }, [admin]);
 
   useEffect(() => {
     searchAllcertApi();
@@ -643,8 +646,8 @@ const CertificatesDashboard = () => {
     apiService
       .getCertificateDetail(url)
       .then((res) => {
-        if (res?.data?.keys[0]) {
-          setSearchSelected([res?.data?.keys[0]]);
+        if (res?.data?.keys) {
+          setSearchSelected(res?.data?.keys.filter(i=>(i.certificateName === certName)));
         } else {
           setSearchSelected([{ certificateName: certName, certType }]);
         }
@@ -1074,7 +1077,7 @@ const CertificatesDashboard = () => {
                   to={{
                     pathname: `/certificates/${certificateList[0]?.certificateName.replace(
                       '*.',
-                      ''
+                      '$.'
                     )}`,
                     state: { data: certificateList[0] },
                   }}

@@ -6,7 +6,6 @@ const TooltipText = styled.span`
   visibility: hidden;
   background-color: #fff;
   color: #000;
-  white-space: nowrap;
   text-align: center;
   border-radius: 6px;
   padding: 0.5rem 1rem;

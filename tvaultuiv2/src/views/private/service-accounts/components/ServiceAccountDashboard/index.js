@@ -476,13 +476,15 @@ const ServiceAccountDashboard = () => {
       name,
     };
     apiService
-      .offBoardServiceAccount(payload)
+      .offBoardDecomissionedServiceAccount(payload)
       .then(() => {
         fetchData();
         setOffBoardDecomissionedSuccessfull(true);
+        setResponse({ status: 'success' });
       })
-      .catch(() => {
+      .catch((e) => {
         setToastResponse(-1);
+        setResponse({ status: 'error',message:{error : e?.message} });
       });
   };
 
