@@ -8,6 +8,10 @@ const getServiceAccounts = () => api.get('/serviceaccounts');
 const offBoardServiceAccount = (payload) =>
   api.post('/serviceaccounts/offboard', payload);
 
+// Offboard decommissioned service account
+const offBoardDecomissionedServiceAccount = (payload) =>
+  api.post('/serviceaccounts/offboarddecommissioned', payload);
+
 // Transfer owner service account
 const transferOwner = (svcName) =>
   api.post(`/serviceaccounts/transfer?serviceAccountName=${svcName}`);
@@ -72,6 +76,7 @@ export default {
   updateMetaPath,
   getUsersServiceAccounts,
   offBoardServiceAccount,
+ offBoardDecomissionedServiceAccount,  
   addUserPermission,
   deleteUserPermission,
   activateServiceAccount,
