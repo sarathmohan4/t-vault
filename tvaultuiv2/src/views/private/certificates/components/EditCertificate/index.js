@@ -20,6 +20,7 @@ import { getDaysDifference } from '../../../../../services/helper-function';
 import RevokeCertificate from './components/RevokeCertificate';
 import DeleteCertificate from './components/DeleteCertificate';
 import UpdateCertificate from './components/UpdateCertificate';
+import Strings from '../../../../../resources';
 
 const StyledModal = styled(Modal)`
   @-moz-document url-prefix() {
@@ -398,6 +399,18 @@ const EditCertificate = (props) => {
   const onDeleteClicked = () => {
     setOpenModal({ status: 'delete' });
   };
+
+  useEffect(() => {
+    if (certificateData && (!certificateData.certificateStatus || certificateData?.certificateStatus === 'Waiting')) {
+      setOpenModal({ status: 'confirm' });
+      setModalDetail({
+        title: 'Certificate Status',
+        description: Strings.Resources.noTransferOwnerAvailable,
+      });
+      setLoading(false);
+    } 
+  }, [certificateData]);
+
   return (
     <ComponentError>
       <>
