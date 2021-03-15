@@ -173,7 +173,7 @@ const CreateCertificates = (props) => {
   }, [emailError, owner, isValidEmail]);
 
   useEffect(() => {
-    if (!certificateData.certificateStatus) {
+    if (!certificateData.certificateStatus || certificateData?.certificateStatus === 'Waiting') {
       setOpenConfirmationModal(true);
       setModalDetail({
         title: 'Certificate Status',
