@@ -5377,7 +5377,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    		}
 		
 		if(isAuthorized){
-			return checkUserPolicyAndRemoveFromCertificate(userName, certificateName, authToken, certificateType, userDetails);
+			return checkUserPolicyAndRemoveFromCertificate(userName, certificateName, authToken, certificateType, userDetails, false);
 		} else {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
@@ -5399,7 +5399,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 	 * @return
 	 */
 	private ResponseEntity<String> checkUserPolicyAndRemoveFromCertificate(String userName, String certificateName,
-			String authToken, String certificateType, UserDetails userDetails) {
+			String authToken, String certificateType, UserDetails userDetails, boolean isPartOfDelete) {
 		OIDCEntityResponse oidcEntityResponse = new OIDCEntityResponse();
 		String certPrefix=(certificateType.equalsIgnoreCase(SSLCertificateConstants.INTERNAL))?
                 SSLCertificateConstants.INTERNAL_POLICY_NAME :SSLCertificateConstants.EXTERNAL_POLICY_NAME;
@@ -5489,6 +5489,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 			policies.remove(readPolicy);
 			policies.remove(writePolicy);
 			policies.remove(denyPolicy);
+			if (isPartOfDelete) {
+                // Remove sudo permission on certificate delete/unlink
+                policies.remove(sudoPolicy);
+            }
 		}
 		String policiesString = org.apache.commons.lang3.StringUtils.join(policies, ",");
 		String currentpoliciesString = org.apache.commons.lang3.StringUtils.join(currentpolicies, ",");
@@ -8323,7 +8327,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 							String.format("Removed user from certificate - [%s]", certificateUser.toString()))
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 					.build()));
-			return checkUserPolicyAndRemoveFromCertificate(userName, certificateName, authToken, certificateType, userDetails);
+			return checkUserPolicyAndRemoveFromCertificate(userName, certificateName, authToken, certificateType, userDetails, true);
 		} else {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
