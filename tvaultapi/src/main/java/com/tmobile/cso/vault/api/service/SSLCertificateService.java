@@ -11274,14 +11274,14 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 
         if (policies != null) {
             for (String policy : policies) {
-                if (isPolicyOfCertType(policy, SSLCertificateConstants.INTERNAL)) {
+                if (isPolicyOfCertType(policy, SSLCertificateConstants.INTERNAL) && !policy.startsWith("d_")) {
                     // check for internal cert policy
                     String certificateName = certificateUtils.getActualCertifiacteName(extractValidCertificateName(policy));
                     if (!StringUtils.isEmpty(certificateName) && !internalCertificateNames.contains(certificateName)) {
                         internalCertificateNames.add(certificateName);
                     }
                 }
-                else if (isPolicyOfCertType(policy, SSLCertificateConstants.EXTERNAL)) {
+                else if (isPolicyOfCertType(policy, SSLCertificateConstants.EXTERNAL) && !policy.startsWith("d_")) {
                     // check for external cert policy
                     String certificateName = certificateUtils.getActualCertifiacteName(extractValidCertificateName(policy));
                     if (!StringUtils.isEmpty(certificateName) && !externalCertificateNames.contains(certificateName)) {
