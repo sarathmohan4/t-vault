@@ -2150,7 +2150,7 @@ public class SSLCertificateService {
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
         		.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
         		.put(LogMessage.ACTION, SSLCertificateConstants.GENERATE_SSL_CERTIFICTAE)
-                .put(LogMessage.MESSAGE, String.format("Trying to get Info for the SSL Certifcate [%s]", certificateUtils.getActualCertifiacteName(certName)))
+                .put(LogMessage.MESSAGE, String.format("Trying to get Info for the SSL Certifcate [%s]", certName))
         		.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
         		.build()));
         CertResponse response = reqProcessor.processCert(findCertificateEndpoint, "", certManagerLogin.getAccess_token(), getCertmanagerEndPoint(targetEndpoint));
