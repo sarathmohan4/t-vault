@@ -117,7 +117,7 @@ public class CertificateUtils {
 		String metaDataPath = (certificateType.equalsIgnoreCase("internal"))?
 	            SSLCertificateConstants.SSL_CERT_PATH :SSLCertificateConstants.SSL_EXTERNAL_CERT_PATH;
 		
-		String certificatePath = metaDataPath + '/' + certificateName;
+		String certificatePath = metaDataPath + '/' + getVaultCompactibleCertifiacteName(certificateName);
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 				put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 				put(LogMessage.ACTION, "Get Certificate Info").
