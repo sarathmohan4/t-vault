@@ -401,14 +401,18 @@ const EditCertificate = (props) => {
   };
 
   useEffect(() => {
-    if (certificateData && (!certificateData.certificateStatus || certificateData?.certificateStatus === 'Waiting')) {
+    if (
+      certificateData.certificateName &&
+      (!certificateData.certificateStatus ||
+        certificateData?.certificateStatus === 'Waiting')
+    ) {
       setOpenModal({ status: 'confirm' });
       setModalDetail({
         title: 'Certificate Status',
         description: Strings.Resources.noTransferOwnerAvailable,
       });
       setLoading(false);
-    } 
+    }
   }, [certificateData]);
 
   return (
