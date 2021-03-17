@@ -7,6 +7,7 @@ import Link from '@material-ui/core/Link';
 import banner from '../../assets/mob-banner.svg';
 import close from '../../assets/close.svg';
 import UserLogout from '../Header/userLogout';
+import configUrl from '../../config';
 
 const SideMenuWrapper = styled.div`
   width: 33rem;
@@ -108,7 +109,10 @@ const Sidebar = (props) => {
       </NavItems>
       <ProfileIconWrap>
         <EachLink
-          href="https://ccoe.docs.t-mobile.com/t-vault/introduction/"
+          href={`${configUrl.baseUrl.replace(
+            '/vault/v2',
+            ''
+          )}/vault/swagger-ui.html`}
           target="_blank"
           decoration="none"
         >
