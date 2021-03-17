@@ -117,7 +117,7 @@ public class CertificateUtils {
 		String metaDataPath = (certificateType.equalsIgnoreCase("internal"))?
 	            SSLCertificateConstants.SSL_CERT_PATH :SSLCertificateConstants.SSL_EXTERNAL_CERT_PATH;
 		
-		String certificatePath = metaDataPath + '/' + getVaultCompactibleCertifiacteName(certificateName);
+		String certificatePath = metaDataPath + '/' + certificateName;
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 				put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 				put(LogMessage.ACTION, "Get Certificate Info").
@@ -268,39 +268,5 @@ public class CertificateUtils {
 				certificate.setDnsNames(Collections.singletonList(dataNode.get(SSLCertificateConstants.DNS_NAMES).toString()));
 			}
 		}
-	}
-
-
-	/**
-	 * To replace * in certificate name with $ for internal usage.
-	 * @param actualCertName
-	 * @return
-	 */
-	public String getVaultCompactibleCertifiacteName(String actualCertName) {
-		if (actualCertName.startsWith(SSLCertificateConstants.WILDCARD_CERTIFICATE_PREFIX)) {
-			return actualCertName.replace(SSLCertificateConstants.WILDCARD_CHAR, SSLCertificateConstants.WILDCARD_REPLACE_CHAR);
-		}
-		return actualCertName;
-	}
-
-	/**
-	 * To replace $ in vault compactible certificate name with *
-	 * @param certName
-	 * @return
-	 */
-	public String getActualCertifiacteName(String certName) {
-		if (certName.startsWith(SSLCertificateConstants.WILDCARD_CERTIFICATE_VAULT_PREFIX)) {
-			return certName.replace(SSLCertificateConstants.WILDCARD_REPLACE_CHAR, SSLCertificateConstants.WILDCARD_CHAR);
-		}
-		return certName;
-	}
-
-	/**
-	 * To check if the certificate name starts with *.
-	 * @param actualCertName
-	 * @return
-	 */
-	public boolean isWildcardCertificate(String actualCertName) {
-		return actualCertName.startsWith("*.");
 	}
 }
