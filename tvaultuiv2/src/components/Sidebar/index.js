@@ -108,7 +108,7 @@ const Sidebar = (props) => {
       </NavItems>
       <ProfileIconWrap>
         <EachLink
-          href="https://docs.corporate.t-mobile.com/t-vault/introduction/"
+          href="https://ccoe.docs.t-mobile.com/t-vault/introduction/"
           target="_blank"
           decoration="none"
         >
