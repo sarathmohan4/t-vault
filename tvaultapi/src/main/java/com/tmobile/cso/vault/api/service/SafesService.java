@@ -2729,7 +2729,7 @@ public class  SafesService {
 							put(LogMessage.STATUS, metadataResponse.getHttpstatus().toString()).
 							put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 							build()));
-					return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : " + approle + " is successfully associated with SDB\"]}");
+					return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : " + approle + " is successfully associated with safe\"]}");
 				}else{
 					String safeType = ControllerUtil.getSafeType(path);
 					String safeName = ControllerUtil.getSafeName(path);
@@ -2756,7 +2756,7 @@ public class  SafesService {
 								put(LogMessage.STATUS, metadataResponse.getHttpstatus().toString()).
 								put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 								build()));
-						return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : " + approle + " is successfully associated with SDB\"]}");
+						return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : " + approle + " is successfully associated with safe\"]}");
 					}
 					else {
 						log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -2803,7 +2803,7 @@ public class  SafesService {
 						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 						build()));
 				log.error( "Associate Approle" +approle + "to sdb FAILED");
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"messages\":[\"Approle : " + approle + " failed to be associated with SDB\"]}");
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"messages\":[\"Approle : " + approle + " failed to be associated with safe\"]}");
 			}
 		} else {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -2813,7 +2813,7 @@ public class  SafesService {
 					put(LogMessage.RESPONSE, INVALID_PATH).
 					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 					build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"messages\":[\"Approle : " + approle + " failed to be associated with SDB.. Invalid Path specified\"]}");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"messages\":[\"Approle : " + approle + " failed to be associated with safe.. Invalid Path specified\"]}");
 		}
 	}
 

@@ -117,7 +117,7 @@ const EditCertificate = (props) => {
       .then((res) => {
         if (
           res?.data?.messages &&
-          res.data.messages[0] === 'Certifictae is in Revoked status '
+          res.data.messages[0] === 'Certificate is in Revoked status '
         ) {
           setShowRevokeRenewBtn(false);
         } else {
