@@ -678,6 +678,8 @@ const OnboardCertificates = (props) => {
                     options={options.map(
                       (item) =>
                         `${item?.userEmail?.toLowerCase()}, ${
+                          item?.displayName &&
+                          item?.displayName !== '' &&
                           getName(item?.displayName?.toLowerCase()) !== ' '
                             ? `${getName(item?.displayName?.toLowerCase())}, `
                             : ''
