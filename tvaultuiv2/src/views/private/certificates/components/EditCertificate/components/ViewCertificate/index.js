@@ -556,6 +556,8 @@ const ViewCertificate = (props) => {
                     options={options.map(
                       (item) =>
                         `${item?.userEmail?.toLowerCase()}, ${
+                          item?.displayName &&
+                          item?.displayName !== '' &&
                           getName(item?.displayName?.toLowerCase()) !== ' '
                             ? `${getName(item?.displayName?.toLowerCase())}, `
                             : ''
@@ -592,6 +594,8 @@ const ViewCertificate = (props) => {
                     options={projectLeadOptions.map(
                       (item) =>
                         `${item?.userEmail?.toLowerCase()}, ${
+                          item?.displayName &&
+                          item?.displayName !== '' &&
                           getName(item?.displayName?.toLowerCase()) !== ' '
                             ? `${getName(item?.displayName?.toLowerCase())}, `
                             : ''
