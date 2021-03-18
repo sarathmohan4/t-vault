@@ -1638,7 +1638,7 @@ public class SafesServiceTest {
     public void test_AssociateAppRole_succssfully() throws Exception {
 
         Response response = getMockResponse(HttpStatus.OK, true, "");
-        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : approle1 is successfully associated with SDB\"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : approle1 is successfully associated with safe\"]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String jsonStr = "{\"role_name\":\"approle1\",\"path\":\"shared/mysafe01\",\"access\":\"write\"}";
         Map<String, Object> requestMap = new ObjectMapper().readValue(jsonStr, new TypeReference<Map<String, Object>>(){});
@@ -1683,7 +1683,7 @@ public class SafesServiceTest {
     public void test_AssociateAppRole_succssfully_new_meta() throws Exception {
 
         Response response = getMockResponse(HttpStatus.OK, true, "");
-        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : approle1 is successfully associated with SDB\"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : approle1 is successfully associated with safe\"]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String jsonStr = "{\"role_name\":\"approle1\",\"path\":\"shared/mysafe01\",\"access\":\"write\"}";
         Map<String, Object> requestMap = new ObjectMapper().readValue(jsonStr, new TypeReference<Map<String, Object>>(){});
@@ -1776,7 +1776,7 @@ public class SafesServiceTest {
     public void test_AssociateAppRole_failed() throws Exception {
 
         Response response = getMockResponse(HttpStatus.OK, true, "");
-        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"messages\":[\"Approle : approle1 failed to be associated with SDB\"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"messages\":[\"Approle : approle1 failed to be associated with safe\"]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String jsonStr = "{\"role_name\":\"approle1\",\"path\":\"shared/mysafe01\",\"access\":\"write\"}";
         Map<String, Object> requestMap = new ObjectMapper().readValue(jsonStr, new TypeReference<Map<String, Object>>(){});
@@ -2631,7 +2631,7 @@ public class SafesServiceTest {
 	    public void test_AssociateAppRole_succssfully_read_access() throws Exception {
 
 	        Response response = getMockResponse(HttpStatus.OK, true, "");
-	        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : approle1 is successfully associated with SDB\"]}");
+	        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : approle1 is successfully associated with safe\"]}");
 	        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
 	        String jsonStr = "{\"role_name\":\"approle1\",\"path\":\"shared/mysafe01\",\"access\":\"read\"}";
 	        Map<String, Object> requestMap = new ObjectMapper().readValue(jsonStr, new TypeReference<Map<String, Object>>(){});
@@ -2661,7 +2661,7 @@ public class SafesServiceTest {
 	    public void test_AssociateAppRole_succssfully_deny_access() throws Exception {
 
 	        Response response = getMockResponse(HttpStatus.OK, true, "");
-	        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : approle1 is successfully associated with SDB\"]}");
+	        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle : approle1 is successfully associated with safe\"]}");
 	        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
 	        String jsonStr = "{\"role_name\":\"approle1\",\"path\":\"shared/mysafe01\",\"access\":\"deny\"}";
 	        Map<String, Object> requestMap = new ObjectMapper().readValue(jsonStr, new TypeReference<Map<String, Object>>(){});
