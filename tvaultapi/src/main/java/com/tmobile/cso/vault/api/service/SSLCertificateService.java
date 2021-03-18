@@ -6707,7 +6707,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                 }
             }
 			CertificateData certificateData = getExternalCertificate(certificateMetaData);
-			if(!ObjectUtils.isEmpty(certificateData)) {
+			if(certificateData != null && !ObjectUtils.isEmpty(certificateData)) {
 				return processCertificateDataAndUpdateMetadata(certificatePath, authToken, certificateMetaData,
 						certificateData);
 			}else {
@@ -6726,7 +6726,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					put(LogMessage.MESSAGE, String.format("Failed to verify the certificate = [%s] approval status", certificateMetaData.getCertificateName())).
 					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 					build()));
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Failed to verify the certificate approval status \"]}");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ERRORS + nclmErrorMessage + "\"]}");
 		}
 	}
 
