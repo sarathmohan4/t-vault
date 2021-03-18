@@ -8102,7 +8102,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 	            	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)	
 	    					.body(ERRORS + nclmErrorMessage + "\"]}");
 	            }	
-				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Certifictae is in Revoked status \"]}");	
+				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Certificate is in Revoked status \"]}");
 			}	
 		} else {	
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()	
