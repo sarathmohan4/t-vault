@@ -120,13 +120,22 @@ const CertificateSelectionTabs = (props) => {
   const getAllCertificateDetail = () => {
     setResponse({ status: 'loading' });
     setUserDetails([]);
+    const certName = certificateDetail.certificateName;
     const url = `/sslcert?certificateName=${certificateDetail.certificateName}&certType=${certificateDetail.certType}`;
     apiService
       .getCertificateDetail(url)
       .then(async (res) => {
-        if (res.data.keys && res.data.keys[0]) {
-          await getEachUser(res.data.keys[0].users);
-          setCertificateMetaData({ ...res.data.keys[0] });
+        if (
+          res.data.keys &&
+          res?.data?.keys.filter((i) => i.certificateName === certName)[0]
+        ) {
+          await getEachUser(
+            res?.data?.keys.filter((i) => i.certificateName === certName)[0]
+              .users
+          );
+          setCertificateMetaData({
+            ...res?.data?.keys.filter((i) => i.certificateName === certName)[0],
+          });
         } else if (res.data) {
           await getEachUser(res.data);
           setCertificateMetaData({ ...res.data });
@@ -249,16 +258,18 @@ const CertificateSelectionTabs = (props) => {
               <Tab label="Permissions" {...a11yProps(1)} />
             )}
           </Tabs>
-          {value === 0 && certificateMetaData.applicationName && certificateMetaData?.certificateStatus === 'Active' && (
-            <DownLoadWrap>
-              <Download
-                certificateMetaData={certificateMetaData}
-                onDownloadChange={(status, val) =>
-                  onDownloadChange(status, val)
-                }
-              />
-            </DownLoadWrap>
-          )}
+          {value === 0 &&
+            certificateMetaData.applicationName &&
+            certificateMetaData?.certificateStatus === 'Active' && (
+              <DownLoadWrap>
+                <Download
+                  certificateMetaData={certificateMetaData}
+                  onDownloadChange={(status, val) =>
+                    onDownloadChange(status, val)
+                  }
+                />
+              </DownLoadWrap>
+            )}
         </AppBar>
         <TabContentsWrap>
           <TabPanel value={value} index={0}>
