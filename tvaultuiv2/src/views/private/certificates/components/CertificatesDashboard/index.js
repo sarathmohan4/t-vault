@@ -535,8 +535,10 @@ const CertificatesDashboard = () => {
    * based on that value display left and right side.
    */
   const onLinkClicked = (cert) => {
-    console.log(allCertificates.filter((i) => i === cert.certificateName)[0]);
-    if (!allCertificates.filter((i) => i === cert.certificateName)[0]) {
+    const certificatePermision = allCertificates.filter(
+      (i) => i === cert.certificateName
+    )[0];
+    if (!certificatePermision && !admin) {
       cert.isDeny = true;
     }
     setListItemDetails(cert);

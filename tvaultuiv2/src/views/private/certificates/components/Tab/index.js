@@ -101,6 +101,26 @@ const CertificateSelectionTabs = (props) => {
   const [hasPermission, setHasPermission] = useState(false);
   const [toastResponse, setToastResponse] = useState(null);
   const [userDetails, setUserDetails] = useState([]);
+  const [isDownloadEnabled, setIsDownloadEnabled] = useState(false);
+
+  useEffect(() => {
+    if (certificateMetaData.applicationName) {
+      if (
+        certificateMetaData?.certificateStatus === 'Active' ||
+        certificateMetaData?.certificateStatus === 'Revoked'
+      ) {
+        if (certificateMetaData?.isDeny === true) {
+          setIsDownloadEnabled(false);
+        } else {
+          setIsDownloadEnabled(true);
+        }
+      } else {
+        setIsDownloadEnabled(false);
+      }
+    } else {
+      setIsDownloadEnabled(false);
+    }
+  }, [certificateMetaData]);
 
   const [state] = useStateValue();
   // const contextObj = useContext(UserContext);
@@ -258,19 +278,16 @@ const CertificateSelectionTabs = (props) => {
               <Tab label="Permissions" {...a11yProps(1)} />
             )}
           </Tabs>
-          {value === 0 &&
-            certificateMetaData.applicationName &&
-            !certificateMetaData?.isDeny &&
-            certificateMetaData?.certificateStatus === 'Active' && (
-              <DownLoadWrap>
-                <Download
-                  certificateMetaData={certificateMetaData}
-                  onDownloadChange={(status, val) =>
-                    onDownloadChange(status, val)
-                  }
-                />
-              </DownLoadWrap>
-            )}
+          {value === 0 && isDownloadEnabled && (
+            <DownLoadWrap>
+              <Download
+                certificateMetaData={certificateMetaData}
+                onDownloadChange={(status, val) =>
+                  onDownloadChange(status, val)
+                }
+              />
+            </DownLoadWrap>
+          )}
         </AppBar>
         <TabContentsWrap>
           <TabPanel value={value} index={0}>
