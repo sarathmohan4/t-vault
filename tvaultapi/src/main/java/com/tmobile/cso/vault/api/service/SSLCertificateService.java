@@ -11261,25 +11261,40 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
     private Map<String, List<String>> extractCertificateNameFromPoilcies(String[] policies) {
         List<String> internalCertificateNames = new ArrayList<>();
         List<String> externalCertificateNames = new ArrayList<>();
+        List<String> deniedInternalCertificates = new ArrayList<>();
+        List<String> deniedExternalCertificates = new ArrayList<>();
 
         if (policies != null) {
             for (String policy : policies) {
-                if (isPolicyOfCertType(policy, SSLCertificateConstants.INTERNAL) && !policy.startsWith("d_")) {
-                    // check for internal cert policy
+                if (isPolicyOfCertType(policy, SSLCertificateConstants.INTERNAL)) {
                     String certificateName = extractValidCertificateName(policy);
-                    if (!StringUtils.isEmpty(certificateName) && !internalCertificateNames.contains(certificateName)) {
-                        internalCertificateNames.add(certificateName);
+                    if (!policy.startsWith("d_")) {
+                        // check for internal cert policy
+                        if (!StringUtils.isEmpty(certificateName) && !internalCertificateNames.contains(certificateName)) {
+                            internalCertificateNames.add(certificateName);
+                        }
+                    }
+                    else {
+                        deniedInternalCertificates.add(certificateName);
                     }
                 }
-                else if (isPolicyOfCertType(policy, SSLCertificateConstants.EXTERNAL) && !policy.startsWith("d_")) {
-                    // check for external cert policy
+                else if (isPolicyOfCertType(policy, SSLCertificateConstants.EXTERNAL)) {
                     String certificateName = extractValidCertificateName(policy);
-                    if (!StringUtils.isEmpty(certificateName) && !externalCertificateNames.contains(certificateName)) {
-                        externalCertificateNames.add(certificateName);
+                    if (!policy.startsWith("d_")) {
+                        // check for external cert policy
+                        if (!StringUtils.isEmpty(certificateName) && !externalCertificateNames.contains(certificateName)) {
+                            externalCertificateNames.add(certificateName);
+                        }
+                    }
+                    else {
+                        deniedExternalCertificates.add(certificateName);
                     }
                 }
             }
         }
+        internalCertificateNames.removeAll(deniedInternalCertificates);
+        externalCertificateNames.removeAll(deniedExternalCertificates);
+
         Map<String, List<String>> certificateList = new HashMap<>();
         certificateList.put(SSLCertificateConstants.INTERNAL, internalCertificateNames);
         certificateList.put(SSLCertificateConstants.EXTERNAL, externalCertificateNames);
