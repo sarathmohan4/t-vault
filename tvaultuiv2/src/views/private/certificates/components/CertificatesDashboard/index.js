@@ -215,8 +215,7 @@ const CertificatesDashboard = () => {
   const [searchSelected, setSearchSelected] = useState([]);
   const [options, setOptions] = useState([]);
   const [onboardCertificates, setOnboardCertificates] = useState([]);
-  const [onBoardStatus,setOnboardStatus] = useState({});
-  
+  const [onBoardStatus, setOnboardStatus] = useState({});
 
   const compareCertificates = (array1, array2, type) => {
     if (array2.length > 0) {
@@ -536,6 +535,10 @@ const CertificatesDashboard = () => {
    * based on that value display left and right side.
    */
   const onLinkClicked = (cert) => {
+    console.log(allCertificates.filter((i) => i === cert.certificateName)[0]);
+    if (!allCertificates.filter((i) => i === cert.certificateName)[0]) {
+      cert.isDeny = true;
+    }
     setListItemDetails(cert);
     if (isMobileScreen) {
       setCertificateClicked(true);
@@ -577,62 +580,68 @@ const CertificatesDashboard = () => {
           });
         }
         setOnboardCertificates([...onboardCertArray]);
-        setOnboardStatus({status: 'success'});
+        setOnboardStatus({ status: 'success' });
       })
       .catch((e) => {
         setOnboardCertificates([]);
-        setOnboardStatus({status: 'error', message: e?.response?.data?.errors[0]})
+        setOnboardStatus({
+          status: 'error',
+          message: e?.response?.data?.errors[0],
+        });
       });
     // eslint-disable-next-line
   }, []);
 
   const searchAllcertApi = useCallback(() => {
     const allSearchCerts = [];
-    apiService.searchAllCert().then((res) => {
-      if (res && res?.data) {
-        res.data.internal.map((item) =>
-          allSearchCerts.push({
-            name: item,
-            type: 'internal',
-          })
-        );
-        res.data.external.map((item) =>
-          allSearchCerts.push({
-            name: item,
-            type: 'external',
-          })
-        );
-      }
-      if (allSearchCerts.length === 0) {
-        setNoResultFound('No records found');
-      } else {
-        setNoResultFound('');
-      }
-      setSearchCertList([...allSearchCerts]);
-    }).catch(()=>{
-      setSearchCertList([]);
-    });
+    apiService
+      .searchAllCert()
+      .then((res) => {
+        if (res && res?.data) {
+          res.data.internal.map((item) =>
+            allSearchCerts.push({
+              name: item,
+              type: 'internal',
+            })
+          );
+          res.data.external.map((item) =>
+            allSearchCerts.push({
+              name: item,
+              type: 'external',
+            })
+          );
+        }
+        if (allSearchCerts.length === 0) {
+          setNoResultFound('No records found');
+        } else {
+          setNoResultFound('');
+        }
+        setSearchCertList([...allSearchCerts]);
+      })
+      .catch(() => {
+        setSearchCertList([]);
+      });
   }, []);
 
   useEffect(() => {
     searchAllcertApi();
-    if(admin){
-      setOnboardStatus({status: 'loading'});
+    if (admin) {
+      setOnboardStatus({ status: 'loading' });
       fetchOnboardCertificates();
     }
     // eslint-disable-next-line
   },[])
 
-  useEffect(()=>{
-    if(certificateType === 'Onboard'){
+  useEffect(() => {
+    if (certificateType === 'Onboard') {
       if (onBoardStatus?.status === 'error') {
         setErrorMsg(onBoardStatus?.message);
         setResponse({ status: 'failed' });
-      }else{
-        setResponse({...onBoardStatus});
+      } else {
+        setResponse({ ...onBoardStatus });
       }
     }
-  },[onBoardStatus,certificateType])
+  }, [onBoardStatus, certificateType]);
   useEffect(() => {
     if (onboardCertificates.length > 0 && certificateType === 'Onboard') {
       setCertificateList([...onboardCertificates]);
@@ -648,7 +657,9 @@ const CertificatesDashboard = () => {
   const onSearchChange = (value) => {
     if (certificateType !== 'Onboard') {
       if (value?.length > 2) {
-        const filteredList = searchCertList.filter((i) => i.name.includes(value));
+        const filteredList = searchCertList.filter((i) =>
+          i.name.includes(value)
+        );
         setOptions([...filteredList]);
         if (filteredList.length > 0) {
           setNoResultFound('');
@@ -687,30 +698,33 @@ const CertificatesDashboard = () => {
     // eslint-disable-next-line
   }, [inputSearchValue]);
 
-  const fetchCertificateDetail = (certType, certName) =>{
+  const fetchCertificateDetail = (certType, certName) => {
     const url2 = `/sslcert/certificate/${certType}?certificate_name=${certName}`;
-    apiService
-      .getCertificateDetail(url2)
-      .then((res) => {
-        if (res?.data) {
-          setSearchSelected([res?.data]);
-        } else {
-          setSearchSelected([{ certificateName: certName, certType }]);
-        }
-        setResponse({ status: 'success' });
-      })
-  }
+    apiService.getCertificateDetail(url2).then((res) => {
+      if (res?.data) {
+        setSearchSelected([res?.data]);
+      } else {
+        setSearchSelected([{ certificateName: certName, certType }]);
+      }
+      setResponse({ status: 'success' });
+    });
+  };
 
   const fetchAllCertificateDetail = (certType, certName) => {
     const url = `/sslcert?certificateName=${certName}&certType=${certType}`;
     apiService
       .getCertificateDetail(url)
       .then((res) => {
-        if (res?.data?.keys && res?.data?.keys.filter(i=>(i.certificateName === certName))[0]) {
-            setSearchSelected(res?.data?.keys.filter(i=>(i.certificateName === certName)));
-            setResponse({ status: 'success' });
+        if (
+          res?.data?.keys &&
+          res?.data?.keys.filter((i) => i.certificateName === certName)[0]
+        ) {
+          setSearchSelected(
+            res?.data?.keys.filter((i) => i.certificateName === certName)
+          );
+          setResponse({ status: 'success' });
         } else {
-          fetchCertificateDetail(certType,certName);
+          fetchCertificateDetail(certType, certName);
         }
       })
       .catch(() => {

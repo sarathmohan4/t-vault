@@ -260,6 +260,7 @@ const CertificateSelectionTabs = (props) => {
           </Tabs>
           {value === 0 &&
             certificateMetaData.applicationName &&
+            !certificateMetaData?.isDeny &&
             certificateMetaData?.certificateStatus === 'Active' && (
               <DownLoadWrap>
                 <Download
