@@ -306,6 +306,7 @@ const CertificateSelectionTabs = (props) => {
               userDetails={userDetails}
               username={state.username}
               selectedParentTab={value}
+              certificateDetail={certificateDetail}
             />
           </TabPanel>
         </TabContentsWrap>
