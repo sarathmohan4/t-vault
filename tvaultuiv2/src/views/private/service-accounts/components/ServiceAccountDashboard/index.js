@@ -369,7 +369,7 @@ const ServiceAccountDashboard = () => {
 
   const validateNonDecomissioned = (name) => {
     return apiService
-      .callServiceAccount(name)
+      .getServiceAccountPassword(name)
       .then((res) => {
         if (res) {
           return true;
@@ -484,7 +484,7 @@ const ServiceAccountDashboard = () => {
       })
       .catch((e) => {
         setToastResponse(-1);
-        setResponse({ status: 'error',message:{error : e?.message} });
+        setResponse({ status: 'error', message: { error: e?.message } });
       });
   };
 

@@ -76,7 +76,7 @@ export default {
   updateMetaPath,
   getUsersServiceAccounts,
   offBoardServiceAccount,
- offBoardDecomissionedServiceAccount,  
+  offBoardDecomissionedServiceAccount,
   addUserPermission,
   deleteUserPermission,
   activateServiceAccount,
