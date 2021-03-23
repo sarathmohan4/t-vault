@@ -368,6 +368,7 @@ const ServiceAccountDashboard = () => {
   };
 
   const validateNonDecomissioned = (name) => {
+    setOffboardDecomissionedConfirmation(false);
     return apiService
       .getServiceAccountPassword(name)
       .then((res) => {
@@ -447,12 +448,6 @@ const ServiceAccountDashboard = () => {
         setResponse({ status: 'success' });
       });
   };
-
-  useEffect(() => {
-    if (offBoardDecomissionedSuccessfull) {
-      setOffboardDecomissionedConfirmation(true);
-    }
-  }, [offBoardDecomissionedSuccessfull]);
 
   useEffect(() => {
     if (offBoardSuccessfull) {
