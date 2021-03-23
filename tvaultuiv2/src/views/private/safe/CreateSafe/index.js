@@ -392,6 +392,7 @@ const CreateModal = (props) => {
         if (res) {
           setResponseType(1);
           trackEvent({ category: 'safe-creation', action: 'click-event' });
+          setToastMessage('Safe is created successfully!');
           setTimeout(() => {
             setOpen(false);
             history.goBack();

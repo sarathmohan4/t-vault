@@ -22,6 +22,7 @@ const AzurePermission = (props) => {
     azureMetaData,
     userDetails,
     refresh,
+    getAzureServiceAllDetails,
     permissionResponse,
     azureDetail,
     selectedParentTab,
@@ -148,7 +149,7 @@ const AzurePermission = (props) => {
             <TabPanel value={value} index={2}>
               <AwsApplications
                 azureMetaData={azureMetaData}
-                refresh={refresh}
+                refresh={getAzureServiceAllDetails}
                 newAwsApplication={newAwsApplication}
                 onNewAwsChange={() => setNewAwsApplication(false)}
                 updateToastMessage={(res, message) =>
@@ -161,7 +162,7 @@ const AzurePermission = (props) => {
             <TabPanel value={value} index={3}>
               <AppRoles
                 azureMetaData={azureMetaData}
-                refresh={refresh}
+                refresh={getAzureServiceAllDetails}
                 newAppRole={newAppRole}
                 onNewAppRoleChange={() => setNewAppRole(false)}
                 updateToastMessage={(res, message) =>
@@ -199,6 +200,7 @@ AzurePermission.propTypes = {
   azureDetail: PropTypes.objectOf(PropTypes.any).isRequired,
   userDetails: PropTypes.arrayOf(PropTypes.any),
   refresh: PropTypes.func.isRequired,
+  getAzureServiceAllDetails: PropTypes.func.isRequired,
   permissionResponse: PropTypes.objectOf(PropTypes.any).isRequired,
   selectedParentTab: PropTypes.number.isRequired,
 };

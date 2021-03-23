@@ -19,6 +19,7 @@ const PermissionTabsWrapper = styled('div')`
 
 const CertificatePermission = (props) => {
   const {
+    certificateDetail,
     certificateMetaData,
     responseStatus,
     fetchDetail,
@@ -70,7 +71,7 @@ const CertificatePermission = (props) => {
 
   useEffect(() => {
     setValue(0);
-  }, [certificateMetaData]);
+  }, [certificateDetail]);
 
   useEffect(() => {
     if (selectedParentTab === 0) {
@@ -197,6 +198,7 @@ const CertificatePermission = (props) => {
 
 CertificatePermission.propTypes = {
   certificateMetaData: PropTypes.objectOf(PropTypes.any).isRequired,
+  certificateDetail: PropTypes.objectOf(PropTypes.any).isRequired,
   fetchDetail: PropTypes.func.isRequired,
   responseStatus: PropTypes.string.isRequired,
   username: PropTypes.string.isRequired,

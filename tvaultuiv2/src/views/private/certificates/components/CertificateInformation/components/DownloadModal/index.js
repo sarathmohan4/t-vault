@@ -243,7 +243,7 @@ const DownloadModal = (props) => {
                   <ButtonComponent
                     label="Download"
                     color="secondary"
-                    disabled={password?.length < 7}
+                    disabled={password?.length < 8}
                     onClick={() => onPriDownload()}
                     width={isMobileScreen ? '100%' : ''}
                   />

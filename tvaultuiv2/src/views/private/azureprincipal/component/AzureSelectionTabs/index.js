@@ -196,6 +196,10 @@ const AzureSelectionTabs = (props) => {
     }
   }, [getAzureDataSecrets, azureDetail, getAzureServiceAllDetails]);
 
+  useEffect(() => {
+    setValue(0);
+  }, [azureDetail]);
+
   return (
     <ComponentError>
       <div className={classes.root}>
@@ -226,7 +230,8 @@ const AzureSelectionTabs = (props) => {
             <AzurePermission
               azureMetaData={azureMetaData}
               userDetails={userDetails}
-              refresh={() => getAzureServiceAllDetails()}
+              refresh={refresh}
+              getAzureServiceAllDetails={() => getAzureServiceAllDetails()}
               permissionResponse={permissionResponse}
               azureDetail={azureDetail}
               selectedParentTab={value}
