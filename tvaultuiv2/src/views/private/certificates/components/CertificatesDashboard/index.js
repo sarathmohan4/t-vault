@@ -632,7 +632,7 @@ const CertificatesDashboard = () => {
       fetchOnboardCertificates();
     }
     // eslint-disable-next-line
-  },[])
+  }, []);
 
   useEffect(() => {
     if (certificateType === 'Onboard') {
@@ -932,6 +932,7 @@ const CertificatesDashboard = () => {
         }
         setSuccessErrorModal(true);
         onCloseAllModal(true);
+        searchAllcertApi();
       })
       .catch((e) => {
         setSuccessErrorModal(true);
@@ -1211,6 +1212,7 @@ const CertificatesDashboard = () => {
                 <CreateCertificates
                   refresh={() => {
                     clearDataAndLoad();
+                    searchAllcertApi();
                   }}
                 />
               )}

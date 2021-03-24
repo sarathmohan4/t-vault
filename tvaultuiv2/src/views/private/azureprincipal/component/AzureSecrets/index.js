@@ -447,8 +447,8 @@ const AzureSecrets = (props) => {
           description={modalDetail.desc}
           cancelButton={
             <ButtonComponent
-              label="Cancel"
-              color="primary"
+              label={activateAction.response ? 'Close' : 'Cancel'}
+              color={activateAction.response ? 'secondary' : 'primary'}
               onClick={() => handleClose()}
               width={isMobileScreen ? '100%' : '45%'}
             />

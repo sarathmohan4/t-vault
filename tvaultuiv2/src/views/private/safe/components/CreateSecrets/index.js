@@ -109,6 +109,7 @@ const CreateSecret = (props) => {
       keyErrorMessage ||
       valueErrorMessage ||
       existingKey ||
+      keyId?.length < 3 ||
       (Object.keys(secretprefilledData).length > 0 &&
         Object.keys(secretprefilledData)[0] === keyId &&
         Object.values(secretprefilledData)[0] === secret)

@@ -329,7 +329,7 @@ const AppRoleDetails = (props) => {
           open={downloadSecretModal}
           handleClose={() => setDownloadSecretModal(false)}
           title="Save the Secret ID and Accessor ID"
-          description={`<p><strong>Secret Id</strong> -${secretIdInfo?.secret_id}</br><strong>Accessor Id</strong>-${secretIdInfo?.secret_id_accessor}</br></br>Please click on "Download" to download the Secret ID and Accessor ID</p>`}
+          description={`<p><strong>Secret Id</strong>-${secretIdInfo?.secret_id}</br><strong>Accessor Id</strong>-${secretIdInfo?.secret_id_accessor}</br></br>Please click on "Download" to download the Secret ID and Accessor ID</p>`}
           cancelButton={
             <ButtonComponent
               label="Close"
