@@ -21,37 +21,41 @@ const TransferConfirmationModal = (props) => {
 
   return (
     <ComponentError>
-      <ConfirmationModal
-        size={isMobileScreen ? 'large' : ''}
-        open={transferSvcAccountConfirmation}
-        handleClose={onTransferOwnerCancelClicked}
-        title="Transfer service account owner"
-        description={
-          transferResponse
-            ? transferResponseDesc
-            : Strings.Resources.transferConfirmation
-        }
-        cancelButton={
-          !transferResponse && (
-            <ButtonComponent
-              label="Cancel"
-              color="primary"
-              onClick={() => onTransferOwnerCancelClicked()}
-            />
-          )
-        }
-        confirmButton={
-          <ButtonComponent
-            label={transferResponse ? 'Close' : 'Confirm'}
-            color="secondary"
-            onClick={() =>
+      <>
+        {transferSvcAccountConfirmation && (
+          <ConfirmationModal
+            size={isMobileScreen ? 'large' : ''}
+            open={transferSvcAccountConfirmation}
+            handleClose={onTransferOwnerCancelClicked}
+            title="Transfer service account owner"
+            description={
               transferResponse
-                ? onTransferOwnerCancelClicked()
-                : onTranferConfirmationClicked()
+                ? transferResponseDesc
+                : Strings.Resources.transferConfirmation
+            }
+            cancelButton={
+              !transferResponse && (
+                <ButtonComponent
+                  label="Cancel"
+                  color="primary"
+                  onClick={() => onTransferOwnerCancelClicked()}
+                />
+              )
+            }
+            confirmButton={
+              <ButtonComponent
+                label={transferResponse ? 'Close' : 'Confirm'}
+                color="secondary"
+                onClick={() =>
+                  transferResponse
+                    ? onTransferOwnerCancelClicked()
+                    : onTranferConfirmationClicked()
+                }
+              />
             }
           />
-        }
-      />
+        )}
+      </>
     </ComponentError>
   );
 };

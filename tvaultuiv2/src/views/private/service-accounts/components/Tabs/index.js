@@ -189,8 +189,12 @@ const AccountSelectionTabs = (props) => {
     setValue(0);
     setHasSvcAccountAcitve(true);
     if (accountDetail?.name) {
-      fetchPermission();
-      getSecrets();
+      // eslint-disable-next-line no-inner-declarations
+      async function fetchData() {
+        await fetchPermission();
+        getSecrets();
+      }
+      fetchData();
     } else {
       setDisabledPermission(true);
       setSecretResStatus({ status: 'no-data' });
