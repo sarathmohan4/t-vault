@@ -416,29 +416,34 @@ const OnBoardForm = (props) => {
       ]);
       allApiResponse
         .then((res) => {
-          setStatus({});
-          setIsAutoExpand(true);
-          setIsActiveServiceAccount(res[2]?.data?.data?.initialPasswordReset);
-          setIsSwitchOn(
-            res[1]?.data?.ttl <= res[0]?.data?.data?.values[0]?.maxPwdAge
-          );
-          let inputVal = '';
-          if (res[1]?.data?.ttl <= res[0]?.data?.data?.values[0]?.maxPwdAge) {
-            inputVal = res[1]?.data?.ttl;
+          if (res[0].data.data.values.length === 0) {
+            setStatus({});
+            setOffBoardDecommissionedModal(true);
           } else {
-            inputVal = '';
+            setStatus({});
+            setIsAutoExpand(true);
+            setIsActiveServiceAccount(res[2]?.data?.data?.initialPasswordReset);
+            setIsSwitchOn(
+              res[1]?.data?.ttl <= res[0]?.data?.data?.values[0]?.maxPwdAge
+            );
+            let inputVal = '';
+            if (res[1]?.data?.ttl <= res[0]?.data?.data?.values[0]?.maxPwdAge) {
+              inputVal = res[1]?.data?.ttl;
+            } else {
+              inputVal = '';
+            }
+            dispatch({
+              type: 'UPDATE_FORM_FIELDS',
+              payload: {
+                inputServiceName: res[0]?.data?.data?.values[0]?.userId,
+                inputAdGroupName: res[2]?.data?.data?.adGroup,
+                inputApplicationName: `${res[2]?.data?.data?.appName} (AppId:${res[2]?.data?.data?.appID},AppTag:${res[2]?.data?.data?.appTag})`,
+                inputExpiryTime: inputVal,
+                selectedApplication: res[2]?.data?.data,
+                serviceAccountDetails: res[0]?.data?.data?.values[0],
+              },
+            });
           }
-          dispatch({
-            type: 'UPDATE_FORM_FIELDS',
-            payload: {
-              inputServiceName: res[0]?.data?.data?.values[0]?.userId,
-              inputAdGroupName: res[2]?.data?.data?.adGroup,
-              inputApplicationName: `${res[2]?.data?.data?.appName} (AppId:${res[2]?.data?.data?.appID},AppTag:${res[2]?.data?.data?.appTag})`,
-              inputExpiryTime: inputVal,
-              selectedApplication: res[2]?.data?.data,
-              serviceAccountDetails: res[0]?.data?.data?.values[0],
-            },
-          });
         })
         .catch((err) => {
           setStatus({

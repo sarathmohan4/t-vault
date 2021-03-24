@@ -13,7 +13,7 @@ import SuccessAndErrorModal from '../../../../../../../components/SuccessAndErro
 
 const OffboardDecomissionedConfirmationModal = (props) => {
   const {
-    offBoardSvcAccountConfirmation,
+    offboardDecomissionedConfirmation,
     handleSuccessfullConfirmation,
     offBoardSuccessfull,
     handleConfirmationModalClose,
@@ -37,10 +37,11 @@ const OffboardDecomissionedConfirmationModal = (props) => {
           />
         )}
         {!offBoardSuccessfull &&
-          Object.keys(serviceAccountMetaData).length > 0 && (
+          (Object.keys(serviceAccountMetaData).length > 0 ||
+            Admin === 'true') && (
             <ConfirmationModal
               size={isMobileScreen ? 'large' : ''}
-              open={offBoardSvcAccountConfirmation}
+              open={offboardDecomissionedConfirmation}
               handleClose={handleConfirmationModalClose}
               title="Service Account Decommissioned!"
               description={
@@ -74,7 +75,7 @@ const OffboardDecomissionedConfirmationModal = (props) => {
 };
 
 OffboardDecomissionedConfirmationModal.propTypes = {
-  offBoardSvcAccountConfirmation: PropTypes.bool.isRequired,
+  offboardDecomissionedConfirmation: PropTypes.bool.isRequired,
   handleSuccessfullConfirmation: PropTypes.func.isRequired,
   offBoardSuccessfull: PropTypes.bool.isRequired,
   onServiceAccountOffBoard: PropTypes.func.isRequired,

@@ -368,10 +368,10 @@ const ServiceAccountDashboard = () => {
   };
 
   const validateNonDecomissioned = (name) => {
-    setOffboardDecomissionedConfirmation(false);
     return apiService
       .getServiceAccountPassword(name)
       .then((res) => {
+        setOffboardDecomissionedConfirmation(false);
         if (res) {
           return true;
         }
@@ -382,6 +382,7 @@ const ServiceAccountDashboard = () => {
           setOffboardDecomissionedConfirmation(true);
           return false;
         }
+        setOffboardDecomissionedConfirmation(false);
         return true;
       });
   };
@@ -393,16 +394,8 @@ const ServiceAccountDashboard = () => {
    * @param {string} name service acc name to be deleted.
    */
   const onDeleteClicked = (name) => {
-    setVerifyingDecomissioned('loading');
-    validateNonDecomissioned(name).then((res) => {
-      if (res === true) {
-        setVerifyingDecomissioned('success');
-        setOffBoardSvcAccountConfirmation(true);
-        setDeleteAccName(name);
-      } else {
-        setVerifyingDecomissioned('success');
-      }
-    });
+    setOffBoardSvcAccountConfirmation(true);
+    setDeleteAccName(name);
   };
 
   const onServiceAccountEdit = (name) => {
@@ -444,8 +437,8 @@ const ServiceAccountDashboard = () => {
         setOffBoardSuccessfull(true);
       })
       .catch(() => {
-        setToastResponse(-1);
         setResponse({ status: 'success' });
+        setToastResponse(-1);
       });
   };
 
@@ -505,16 +498,9 @@ const ServiceAccountDashboard = () => {
    * @description function open transfer owner modal.
    */
   const onTransferOwnerClicked = (name) => {
-    setVerifyingDecomissioned('loading');
-    validateNonDecomissioned(name).then((res) => {
-      if (res === true) {
-        setVerifyingDecomissioned('success');
-        setTransferSvcAccountConfirmation(true);
-        setTransferName(name);
-      } else {
-        setVerifyingDecomissioned('success');
-      }
-    });
+    setTransferSvcAccountConfirmation(true);
+    setTransferName(name);
+    setOffboardDecomissionedConfirmation(false);
   };
 
   /**
@@ -526,9 +512,7 @@ const ServiceAccountDashboard = () => {
     setTransferResponse(false);
   };
 
-  const onTranferConfirmationClicked = () => {
-    setResponse({ status: 'loading' });
-    setTransferSvcAccountConfirmation(false);
+  const callTransferOwnerApi = () => {
     apiService
       .transferOwner(transferName)
       .then(async (res) => {
@@ -539,10 +523,35 @@ const ServiceAccountDashboard = () => {
         }
         await fetchData();
       })
-      .catch(() => {
-        setToastResponse(-1);
+      .catch((err) => {
         setResponse({ status: 'success' });
+        if (err?.response?.status === 404) {
+          setOffboardDecomissionedConfirmation(true);
+        } else {
+          setToastResponse(-1);
+        }
       });
+  };
+
+  const onTranferConfirmationClicked = () => {
+    setResponse({ status: 'loading' });
+    setTransferSvcAccountConfirmation(false);
+    if (serviceAccountMetaData.name === transferName) {
+      callTransferOwnerApi();
+    } else {
+      apiService
+        .updateMetaPath(transferName)
+        .then(async (res) => {
+          if (res?.data?.data) {
+            setServiceAccountMetaData(res.data.data);
+            await callTransferOwnerApi();
+          }
+        })
+        .catch(() => {
+          setResponse({ status: 'success' });
+          setToastResponse(-1);
+        });
+    }
   };
 
   /**
@@ -553,6 +562,7 @@ const ServiceAccountDashboard = () => {
   const onLinkClicked = (item) => {
     setListItemDetails(item);
     setVerifyingDecomissioned('loading');
+    setOffboardDecomissionedConfirmation(false);
     validateNonDecomissioned(item.name).then((res) => {
       if (res === true) {
         setServiceAccountMetaData({});
@@ -633,7 +643,7 @@ const ServiceAccountDashboard = () => {
           onServiceAccountOffBoard={onServiceAccountOffBoard}
         />
         <OffboardDecomissionedConfirmationModal
-          offBoardSvcAccountConfirmation={offboardDecomissionedConfirmation}
+          offboardDecomissionedConfirmation={offboardDecomissionedConfirmation}
           offBoardSuccessfull={offBoardDecomissionedSuccessfull}
           handleSuccessfullConfirmation={handleDecomissionedOffBoardSuccessful}
           handleConfirmationModalClose={handleDecommissionedOffboardModalClose}
