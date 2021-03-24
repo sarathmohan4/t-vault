@@ -143,11 +143,8 @@ public class  DirectoryService {
 			@Override
 			public DirectoryUser mapFromAttributes(Attributes attr) throws NamingException {
 				DirectoryUser person = new DirectoryUser();
-				if (attr != null) {
-					String mail = ""; 
-					if(attr.get("mail") != null) {
-						mail = ((String) attr.get("mail").get());
-					}
+				if (attr != null && attr.get("mail") != null) {
+					String mail = ((String) attr.get("mail").get());
 					String userId = ((String) attr.get("name").get());
 					// Assign first part of the email id for use with UPN authentication
 					if (!StringUtils.isEmpty(mail)) {
@@ -160,10 +157,7 @@ public class  DirectoryService {
 					if (attr.get(GIVENNAME) != null) {
 						person.setGivenName(((String) attr.get(GIVENNAME).get()));
 					}
-
-					if (attr.get("mail") != null) {
-						person.setUserEmail(((String) attr.get("mail").get()));
-					}
+					person.setUserEmail(((String) attr.get("mail").get()));
 
 					if (attr.get("name") != null) {
 						person.setUserName(((String) attr.get("name").get()));
@@ -345,11 +339,8 @@ public class  DirectoryService {
 			@Override
 			public DirectoryUser mapFromAttributes(Attributes attr) throws NamingException {
 				DirectoryUser person = new DirectoryUser();
-				if (attr != null) {
-					String mail = "";
-					if(attr.get("mail") != null) {
-						mail = ((String) attr.get("mail").get());
-					}
+				if (attr != null && attr.get("mail") != null) {
+					String mail = ((String) attr.get("mail").get());
 					String userId = ((String) attr.get("name").get());
 					// Assign first part of the email id for use with UPN authentication
 					if (!StringUtils.isEmpty(mail)) {
@@ -363,9 +354,7 @@ public class  DirectoryService {
 						person.setGivenName(((String) attr.get(GIVENNAME).get()));
 					}
 
-					if (attr.get("mail") != null) {
-						person.setUserEmail(((String) attr.get("mail").get()));
-					}
+					person.setUserEmail(((String) attr.get("mail").get()));
 
 					if (attr.get("name") != null) {
 						person.setUserName(((String) attr.get("name").get()));
