@@ -525,15 +525,22 @@ public class SSLCertificateService {
                         build()));	
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\" :[\"" + nclmErrorMessage + "\"]}");
             }
+            int containerId = getContainerId(sslCertificateRequest);
             //Added mocking config
             CertificateData certificateDetails = (!isMockingEnabled(sslCertificateRequest.getCertType())) ?
-                    getCertificate(sslCertificateRequest, certManagerLogin):null;
+                    getCertificateFromNCLM(sslCertificateRequest.getCertificateName(),containerId, certManagerLogin):null;
             log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                     put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                     put(LogMessage.ACTION, String.format("Details for Certificate name =[%s] = Certificate Details " +
                                     "[%s]", sslCertificateRequest.getCertificateName(), certificateDetails)).
                     build()));
 
+            // Check for external certificate duplicate in other container also
+            if (sslCertificateRequest.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) &&
+                    Objects.isNull(certificateDetails) && !isMockingEnabled(sslCertificateRequest.getCertType())) {
+                containerId = (containerId==public_single_san_ts_gp_id)?public_multi_san_ts_gp_id:public_single_san_ts_gp_id;
+                certificateDetails = getCertificateFromNCLM(sslCertificateRequest.getCertificateName(),containerId, certManagerLogin);
+            }
             token = (userDetails.isAdmin() || userDetails.isCertAdmin())?token : userDetails.getSelfSupportToken();
 
             if (Objects.isNull(certificateDetails)) {
@@ -2137,24 +2144,23 @@ public class SSLCertificateService {
 	}
 
     /**
-     * THis method will be responsible to check the whether given certificate exists or not
-     * @param sslCertificateRequest
+     * This method will be responsible to check the whether given certificate exists or not in NCLM
+     * @param certName
+     * @param containerId
      * @param certManagerLogin
      * @return
      * @throws Exception
      */
-    private CertificateData getCertificate(SSLCertificateRequest sslCertificateRequest, CertManagerLogin certManagerLogin) throws Exception {
+    private CertificateData getCertificateFromNCLM(String certName, int containerId, CertManagerLogin certManagerLogin) throws Exception {
         CertificateData certificateData=null;
-        String certName = sslCertificateRequest.getCertificateName();
-        int containerId = getContainerId(sslCertificateRequest);
         String findCertificateEndpoint = "/certmanager/findCertificate";
         String targetEndpoint = findCertificate.replace("certname", String.valueOf(certName)).replace("cid", String.valueOf(containerId));
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-        		.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-        		.put(LogMessage.ACTION, SSLCertificateConstants.GENERATE_SSL_CERTIFICTAE)
+                .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                .put(LogMessage.ACTION, SSLCertificateConstants.GENERATE_SSL_CERTIFICTAE)
                 .put(LogMessage.MESSAGE, String.format("Trying to get Info for the SSL Certifcate [%s]", certName))
-        		.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
-        		.build()));
+                .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
+                .build()));
         CertResponse response = reqProcessor.processCert(findCertificateEndpoint, "", certManagerLogin.getAccess_token(), getCertmanagerEndPoint(targetEndpoint));
         Map<String, Object> responseMap = ControllerUtil.parseJson(response.getResponse());
         if (!MapUtils.isEmpty(responseMap) && (ControllerUtil.parseJson(response.getResponse()).get(SSLCertificateConstants.CERTIFICATES) != null)) {
@@ -2165,7 +2171,20 @@ public class SSLCertificateService {
                 certificateData = setLatestCertificate(certificateData, certName, jsonArray);
             }
         }
-         return certificateData;
+        return certificateData;
+    }
+
+    /**
+     * THis method will be responsible to check the whether given certificate exists or not
+     * @param sslCertificateRequest
+     * @param certManagerLogin
+     * @return
+     * @throws Exception
+     */
+    private CertificateData getCertificate(SSLCertificateRequest sslCertificateRequest, CertManagerLogin certManagerLogin) throws Exception {
+        String certName = sslCertificateRequest.getCertificateName();
+        int containerId = getContainerId(sslCertificateRequest);
+        return getCertificateFromNCLM(certName, containerId, certManagerLogin);
     }
 
     private String validateString(JsonElement jsonElement){
@@ -3069,10 +3088,10 @@ public class SSLCertificateService {
             }	
             else {	
             	log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().	
-                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).	
+                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                         put(LogMessage.ACTION, SSLCertificateConstants.CUSTOMER_LOGIN).	
                         put(LogMessage.MESSAGE, SSLCertificateConstants.NCLM_DOWN_MSG).                        	
-                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).	
+                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                         build()));	
                 return null;	
             }	
@@ -3152,10 +3171,10 @@ public class SSLCertificateService {
         }	
         }else {	
         	log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().	
-                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).	
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                     put(LogMessage.ACTION, "geTargetSystemList").	
                     put(LogMessage.MESSAGE, SSLCertificateConstants.NCLM_DOWN_MSG).
-                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).	
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                     build()));	
         	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)	
 					.body(ERRORS + nclmErrorMessage + "\"]}");
@@ -3246,11 +3265,11 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 	CertResponse revocationReasons = new CertResponse();	
 	try {	
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String> builder()	
-				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))	
+				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, "getRevocationReasons")	
 				.put(LogMessage.MESSAGE,	
 						String.format("Trying to fetch Revocation Reasons for [%s]", certificateId))	
-				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))	
+				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 				.build()));
 
 
@@ -3276,19 +3295,19 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
         }	
 			
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()	
-				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))	
+				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, "Fetch Revocation Reasons")	
 				.put(LogMessage.MESSAGE, "Fetch Revocation Reasons")	
 				.put(LogMessage.STATUS, revocationReasons.getHttpstatus().toString())	
-				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))	
+				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 				.build()));	
 		return ResponseEntity.status(revocationReasons.getHttpstatus()).body(revocationReasons.getResponse());	
 		}else {	
         	log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().	
-                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).	
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                     put(LogMessage.ACTION, "getRevocationeasons").	
                     put(LogMessage.MESSAGE, SSLCertificateConstants.NCLM_DOWN_MSG).                        	
-                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).	
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                     build()));	
         	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)	
 					.body(ERRORS + nclmErrorMessage + "\"]}");
@@ -3296,7 +3315,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 	} catch (TVaultValidationException error) {	
 		log.error(	
 				JSONUtil.getJSON(ImmutableMap.<String, String> builder()	
-						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))	
+						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 						.put(LogMessage.ACTION,	
 								String.format(	
 										"Inside  TVaultValidationException " + "Exception= [%s] =  Message [%s]",	
@@ -3306,7 +3325,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                 "system." + "\"]}");
 	} catch (Exception e) {	
 		log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()	
-				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))	
+				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, String.format("Exception = [%s] =  Message [%s]", 	
 						Arrays.toString(e.getStackTrace()), e.getMessage()))	
 				.build()));	
@@ -3488,10 +3507,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 			}			
 			}else {	
             	log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().	
-                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).	
-                        put(LogMessage.ACTION, SSLCertificateConstants.CERT_REVOCATION_MSG).	
+                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                        put(LogMessage.ACTION, SSLCertificateConstants.CERT_REVOCATION_MSG).
                         put(LogMessage.MESSAGE, SSLCertificateConstants.NCLM_DOWN_MSG).                        	
-                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).	
+                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                         build()));	
             	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)	
     					.body(ERRORS + nclmErrorMessage + "\"]}");
@@ -7385,7 +7404,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
 					"{\"errors\":[\"Access denied. Not authorized to perform SSL certificate deletion.\"]}");
         }
-		
+
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, SSLCertificateConstants.CERT_DELETE_MSG)
@@ -7531,7 +7550,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 			}else {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().	
 					   put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).	
-					   put(LogMessage.ACTION, SSLCertificateConstants.CERT_DELETE_MSG).	
+					   put(LogMessage.ACTION, SSLCertificateConstants.CERT_DELETE_MSG).
 					   put(LogMessage.MESSAGE, SSLCertificateConstants.NCLM_DOWN_MSG).                        	
 					   put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).	
 					   build()));
@@ -8123,7 +8142,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					}	
 				} catch (Exception e) {	
 					log.error(JSONUtil.getJSON(ImmutableMap.<String, String> builder()	
-							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))	
+							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 							.put(LogMessage.ACTION, String.format("Inside  Exception = [%s] =  Message [%s]",	
 									Arrays.toString(e.getStackTrace()), e.getMessage()))	
 							.build()));	
@@ -8132,10 +8151,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 				}	
 				}else {	
 	            	log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().	
-	                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).	
+	                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 	                        put(LogMessage.ACTION, "checkStatus").	
 	                        put(LogMessage.MESSAGE, SSLCertificateConstants.NCLM_DOWN_MSG).                        	
-	                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).	
+	                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 	                        build()));	
 	            	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)	
 	    					.body(ERRORS + nclmErrorMessage + "\"]}");
