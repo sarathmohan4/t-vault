@@ -783,7 +783,8 @@ const CertificatesDashboard = () => {
     setOpenOnboardModal(false);
     setCertificateData({});
     if (actionPerform) {
-      clearDataAndLoad();
+      await clearDataAndLoad();
+      await searchAllcertApi();
     }
   };
 
@@ -816,7 +817,8 @@ const CertificatesDashboard = () => {
     setOpenReleaseModal(false);
     apiService
       .onReleasecertificate(data.name, data.type, data.reason)
-      .then((res) => {
+      .then(async (res) => {
+        await fetchOnboardCertificates();
         if (res?.data?.messages && res?.data?.messages[0]) {
           setSuccessErrorDetails({
             title: 'Certificate Status!',
@@ -867,7 +869,8 @@ const CertificatesDashboard = () => {
     setOpenOnboardModal(false);
     apiService
       .onOnboardcertificate(data)
-      .then(() => {
+      .then(async () => {
+        await fetchOnboardCertificates();
         setResponseType(1);
         onCloseAllModal(true);
         setToastMessage('SSL certificate onboarded successfully!');
@@ -918,7 +921,7 @@ const CertificatesDashboard = () => {
         certificateData.certificateName,
         `${certificateData.certType}`
       )
-      .then((res) => {
+      .then(async (res) => {
         if (res?.data?.messages && res?.data?.messages[0]) {
           setSuccessErrorDetails({
             title: 'Certificate Deletion Successful!',
@@ -932,7 +935,7 @@ const CertificatesDashboard = () => {
         }
         setSuccessErrorModal(true);
         onCloseAllModal(true);
-        searchAllcertApi();
+        await searchAllcertApi();
       })
       .catch((e) => {
         setSuccessErrorModal(true);
