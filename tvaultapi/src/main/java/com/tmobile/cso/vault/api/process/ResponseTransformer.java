@@ -101,6 +101,10 @@ public  class ResponseTransformer {
 		}else{
 			responseparams.put("admin", "no");
 		}
-		
+		if(policies.contains("certadmin")){
+			responseparams.put("certAdmin", "yes");
+		}else{
+			responseparams.put("certAdmin", "no");
+		}
 	}
 }
