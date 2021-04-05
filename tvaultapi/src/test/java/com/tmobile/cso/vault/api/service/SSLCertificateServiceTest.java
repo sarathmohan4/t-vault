@@ -210,6 +210,7 @@ public class SSLCertificateServiceTest {
         token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         userDetails.setUsername("normaluser");
         userDetails.setAdmin(true);
+        userDetails.setCertAdmin(true);
         userDetails.setClientToken(token);
         userDetails.setSelfSupportToken(token);
         when(vaultAuthService.lookup(anyString())).thenReturn(new ResponseEntity<>(HttpStatus.OK));
@@ -1435,6 +1436,12 @@ public class SSLCertificateServiceTest {
         CertManagerLoginRequest certManagerLoginRequest = getCertManagerLoginRequest();
         certManagerLoginRequest.setUsername("username");
         certManagerLoginRequest.setPassword("password");
+        userDetails = new UserDetails();
+        userDetails.setAdmin(true);
+        userDetails.setCertAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setUsername("testusername1");
+        userDetails.setSelfSupportToken(token);
 
         SSLCertificateRequest sslCertificateRequest = getSSLCertificateRequest();
         sslCertificateRequest.setCertificateName("certificatename");
@@ -1497,6 +1504,12 @@ public class SSLCertificateServiceTest {
         CertManagerLoginRequest certManagerLoginRequest = getCertManagerLoginRequest();
         certManagerLoginRequest.setUsername("username");
         certManagerLoginRequest.setPassword("password");
+        userDetails = new UserDetails();
+        userDetails.setAdmin(true);
+        userDetails.setCertAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setUsername("testusername1");
+        userDetails.setSelfSupportToken(token);
 
         SSLCertificateRequest sslCertificateRequest = getSSLCertificateRequest();
         sslCertificateRequest.setCertificateName("certificatename");
@@ -2120,7 +2133,12 @@ public class SSLCertificateServiceTest {
         CertManagerLoginRequest certManagerLoginRequest = getCertManagerLoginRequest();
         certManagerLoginRequest.setUsername("username");
         certManagerLoginRequest.setPassword("password");
-
+        userDetails = new UserDetails();
+        userDetails.setAdmin(true);
+        userDetails.setCertAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setUsername("testusername1");
+        userDetails.setSelfSupportToken(token);
         SSLCertificateRequest sslCertificateRequest = getSSLCertificateRequest();
         sslCertificateRequest.setCertificateName("certificatename");
         sslCertificateRequest.setNotificationEmail("testCert@t-mobile.com");
@@ -2235,7 +2253,12 @@ public class SSLCertificateServiceTest {
         CertManagerLoginRequest certManagerLoginRequest = getCertManagerLoginRequest();
         certManagerLoginRequest.setUsername("username");
         certManagerLoginRequest.setPassword("password");
-
+        userDetails = new UserDetails();
+        userDetails.setAdmin(true);
+        userDetails.setCertAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setUsername("testusername1");
+        userDetails.setSelfSupportToken(token);
         SSLCertificateRequest sslCertificateRequest = getSSLCertificateRequest();
         sslCertificateRequest.setCertificateName("certificatename");
         String[] dnsNames = { };

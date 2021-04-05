@@ -23,7 +23,6 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -39,9 +38,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -1190,7 +1187,12 @@ public class SSLCertificateMockServiceTest {
         CertManagerLoginRequest certManagerLoginRequest = getCertManagerLoginRequest();
         certManagerLoginRequest.setUsername("username");
         certManagerLoginRequest.setPassword("password");
-
+        userDetails = new UserDetails();
+        userDetails.setAdmin(true);
+        userDetails.setCertAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setUsername("testusername1");
+        userDetails.setSelfSupportToken(token);
         SSLCertificateRequest sslCertificateRequest = getSSLCertificateRequest();
         sslCertificateRequest.setCertificateName("certificatename");
         String[] dnsNames = { };
@@ -1252,7 +1254,12 @@ public class SSLCertificateMockServiceTest {
         CertManagerLoginRequest certManagerLoginRequest = getCertManagerLoginRequest();
         certManagerLoginRequest.setUsername("username");
         certManagerLoginRequest.setPassword("password");
-
+        userDetails = new UserDetails();
+        userDetails.setAdmin(true);
+        userDetails.setCertAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setUsername("testusername1");
+        userDetails.setSelfSupportToken(token);
         SSLCertificateRequest sslCertificateRequest = getSSLCertificateRequest();
         sslCertificateRequest.setCertificateName("certificatename");
         String[] dnsNames = { };
@@ -1272,7 +1279,6 @@ public class SSLCertificateMockServiceTest {
         response.setSuccess(true);
 
         when(reqProcessor.processCert(eq("/auth/certmanager/login"), anyObject(), anyString(), anyString())).thenReturn(response);
-
 
         when(reqProcessor.processCert(eq("/certmanager/findCertificate"), anyObject(), anyString(), anyString())).thenReturn(response);
 
@@ -1320,7 +1326,6 @@ public class SSLCertificateMockServiceTest {
         when(ControllerUtil.parseJson(createTargetSystemServiceResponse)).thenReturn(createTargetSystemServiceMap);
         when(reqProcessor.processCert(eq("/certmanager/targetsystemservice/create"), anyObject(), anyString(), anyString())).thenReturn(response2);
 
-
         ResponseEntity<?> enrollResponse =
                 sSLCertificateService.generateSSLCertificate(sslCertificateRequest,userDetails,token,SSLCertificateConstants.UI);
 
@@ -1352,7 +1357,6 @@ public class SSLCertificateMockServiceTest {
         requestMap.put("access_token", "12345");
         requestMap.put("token_type", "type");
         when(ControllerUtil.parseJson(jsonStr)).thenReturn(requestMap);
-
 
         Map<String, Object> requestMap1= new HashMap<>();
         requestMap1.put("certificates", "certificates");
@@ -1414,7 +1418,6 @@ public class SSLCertificateMockServiceTest {
         response.setSuccess(true);
 
         when(reqProcessor.processCert(eq("/auth/certmanager/login"), anyObject(), anyString(), anyString())).thenReturn(response);
-
 
         when(reqProcessor.processCert(eq("/certmanager/findCertificate"), anyObject(), anyString(), anyString())).thenReturn(response);
 
@@ -1556,7 +1559,6 @@ public class SSLCertificateMockServiceTest {
 
         //Create Target System Validation
         when(reqProcessor.processCert(eq("/certmanager/findTargetSystem"), anyObject(), anyString(), anyString())).thenReturn(response1);
-
 
         Map<String, Object> requestMap1= new HashMap<>();
         requestMap1.put("targetSystems", "targetSystems");
@@ -1711,7 +1713,6 @@ public class SSLCertificateMockServiceTest {
         //Create Target System Validation
         when(reqProcessor.processCert(eq("/certmanager/findTargetSystem"), anyObject(), anyString(), anyString())).thenReturn(response1);
 
-
         Map<String, Object> requestMap1= new HashMap<>();
         requestMap1.put("targetSystems", "targetSystems");
         requestMap1.put("name", "Target Name");
@@ -1818,7 +1819,12 @@ public class SSLCertificateMockServiceTest {
         CertManagerLoginRequest certManagerLoginRequest = getCertManagerLoginRequest();
         certManagerLoginRequest.setUsername("username");
         certManagerLoginRequest.setPassword("password");
-
+        userDetails = new UserDetails();
+        userDetails.setAdmin(true);
+        userDetails.setCertAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setUsername("testusername1");
+        userDetails.setSelfSupportToken(token);
         SSLCertificateRequest sslCertificateRequest = getSSLCertificateRequest();
         sslCertificateRequest.setCertificateName("certificatename");
         String[] dnsNames = { };
@@ -1921,18 +1927,18 @@ public class SSLCertificateMockServiceTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, enrollResponse.getStatusCode());
     }
 
-
-
-
-
-
     @Test
     public void generateSSLCertificate_Failure() throws Exception {
         String jsonStr = "{  \"username\": \"testusername1\",  \"password\": \"testpassword1\"}";
         CertManagerLoginRequest certManagerLoginRequest = getCertManagerLoginRequest();
         certManagerLoginRequest.setUsername("username");
         certManagerLoginRequest.setPassword("password");
-
+        userDetails = new UserDetails();
+        userDetails.setAdmin(true);
+        userDetails.setCertAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setUsername("testusername1");
+        userDetails.setSelfSupportToken(token);
         SSLCertificateRequest sslCertificateRequest = getSSLCertificateRequest();
         sslCertificateRequest.setCertificateName("certificatename");
         String[] dnsNames = { };
@@ -1958,7 +1964,6 @@ public class SSLCertificateMockServiceTest {
         //Assert
         assertNotNull(enrollResponse);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, enrollResponse.getStatusCode());
-
     }
 
     @Test
@@ -2011,7 +2016,6 @@ public class SSLCertificateMockServiceTest {
         user1.setAdmin(true);
         user1.setClientToken(token);
         user1.setSelfSupportToken(token);
-
 
         when(reqProcessor.process(Mockito.eq("/sslcert"),Mockito.anyString(),Mockito.eq(token))).thenReturn(certResponse);
 

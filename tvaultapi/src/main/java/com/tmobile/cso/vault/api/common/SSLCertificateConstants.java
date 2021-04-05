@@ -153,4 +153,8 @@ public final class SSLCertificateConstants {
     public static final String APP_NAME_OTHER="Other";
     public static final String API="api";
     public static final String UI="ui";
+    public static final String CERT_RENEW_MSG="Renew certificate";
+    public static final String CERT_REVOCATION_MSG="Issue Revocation Request";
+    public static final String CERT_DELETE_MSG="Delete certificate";
+    public static final String CERT_UNLINK_MSG="Unlink certificate";
 }

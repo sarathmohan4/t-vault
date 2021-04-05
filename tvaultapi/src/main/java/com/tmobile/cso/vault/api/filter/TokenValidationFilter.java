@@ -112,6 +112,7 @@ public class TokenValidationFilter extends GenericFilterBean {
 			}
 			userDetails.setPolicies(vaultTokenLookupDetails.getPolicies());
 			userDetails.setAdmin(vaultTokenLookupDetails.isAdmin());
+			userDetails.setCertAdmin(vaultTokenLookupDetails.isCertAdmin());
 			userDetails.setSudoPolicies(null); //TODO: Pre-flight
 			userDetails.setUsername(vaultTokenLookupDetails.getUsername());
 			userDetails.setLeaseDuration(null); //TODO: Pre-flight
