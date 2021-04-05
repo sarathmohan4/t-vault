@@ -527,6 +527,7 @@ public class SSLCertificateService {
             }
             int containerId = getContainerId(sslCertificateRequest);
             //Added mocking config
+            // Check certificate for duplicate in NCLM
             CertificateData certificateDetails = (!isMockingEnabled(sslCertificateRequest.getCertType())) ?
                     getCertificateFromNCLM(sslCertificateRequest.getCertificateName(),containerId, certManagerLogin):null;
             log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -2157,7 +2158,7 @@ public class SSLCertificateService {
         String targetEndpoint = findCertificate.replace("certname", String.valueOf(certName)).replace("cid", String.valueOf(containerId));
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
                 .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-                .put(LogMessage.ACTION, SSLCertificateConstants.GENERATE_SSL_CERTIFICTAE)
+                .put(LogMessage.ACTION, "getCertificateFromNCLM")
                 .put(LogMessage.MESSAGE, String.format("Trying to get Info for the SSL Certifcate [%s]", certName))
                 .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
                 .build()));
