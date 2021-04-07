@@ -60,7 +60,8 @@ const EditDeletePopper = (props) => {
             horizontal: 'right',
           }}
         >
-          {JSON.parse(sessionStorage.getItem('isAdmin')) && (
+          {(JSON.parse(sessionStorage.getItem('isAdmin')) ||
+            JSON.parse(sessionStorage.getItem('isCertAdmin'))) && (
             <PopperItem onClick={onReleaseClicked}>
               <IconRelease />
               <span>Release</span>

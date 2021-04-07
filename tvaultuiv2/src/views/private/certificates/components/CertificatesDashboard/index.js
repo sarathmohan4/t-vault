@@ -521,7 +521,7 @@ const CertificatesDashboard = () => {
 
   useEffect(() => {
     const array = [{ name: 'Internal' }, { name: 'External' }];
-    if (admin) {
+    if (admin || JSON.parse(sessionStorage.getItem('isCertAdmin'))) {
       array.push({
         name: 'Onboard',
       });
@@ -1133,17 +1133,19 @@ const CertificatesDashboard = () => {
                 )}
               </>
             )}
-            {certificateList.length > 0 && (
-              <FloatBtnWrapper>
-                <FloatingActionButtonComponent
-                  href="/certificates/create-ceritificate"
-                  color="secondary"
-                  icon="add"
-                  tooltipTitle="Create New Certificate"
-                  tooltipPos="left"
-                />
-              </FloatBtnWrapper>
-            )}
+            {certificateList.length > 0 &&
+              (JSON.parse(sessionStorage.getItem('isAdmin')) ||
+                JSON.parse(sessionStorage.getItem('isCertAdmin'))) && (
+                <FloatBtnWrapper>
+                  <FloatingActionButtonComponent
+                    href="/certificates/create-ceritificate"
+                    color="secondary"
+                    icon="add"
+                    tooltipTitle="Create New Certificate"
+                    tooltipPos="left"
+                  />
+                </FloatBtnWrapper>
+              )}
           </LeftColumnSection>
           <RightColumnSection
             mobileViewStyles={isMobileScreen ? MobileViewForListDetailPage : ''}
