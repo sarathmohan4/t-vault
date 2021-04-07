@@ -317,6 +317,7 @@ const OnboardCertificates = (props) => {
         applicationName
       ) ||
         (!JSON.parse(sessionStorage.getItem('isAdmin')) &&
+          !JSON.parse(sessionStorage.getItem('isCertAdmin')) &&
           !selfserviceAppName.includes(selectedApp?.appID)))
     ) {
       setApplicationNameError(true);
@@ -355,7 +356,10 @@ const OnboardCertificates = (props) => {
         state?.applicationNameList !== 'error' &&
         state?.applicationNameList?.length > 0
       ) {
-        if (!JSON.parse(sessionStorage.getItem('isAdmin'))) {
+        if (
+          !JSON.parse(sessionStorage.getItem('isAdmin')) &&
+          !JSON.parse(sessionStorage.getItem('isCertAdmin'))
+        ) {
           const stringVal = sessionStorage.getItem('selfServiceAppNames');
           setSelfserviceAppName(stringVal?.split(','));
         }

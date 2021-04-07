@@ -452,7 +452,7 @@ const CertificatesDashboard = () => {
     if (offset === 0) {
       setResponse({ status: 'loading' });
     }
-    if (admin) {
+    if (admin || JSON.parse(sessionStorage.getItem('isCertAdmin'))) {
       fetchAdminInternalData();
     } else {
       fetchNonAdminInternalData();
@@ -463,7 +463,7 @@ const CertificatesDashboard = () => {
     if (offset === 0) {
       setResponse({ status: 'loading' });
     }
-    if (admin) {
+    if (admin || JSON.parse(sessionStorage.getItem('isCertAdmin'))) {
       fetchAdminExternalData();
     } else {
       fetchNonAdminExternalData();
@@ -538,7 +538,11 @@ const CertificatesDashboard = () => {
     const certificatePermision = allCertificates.filter(
       (i) => i === cert.certificateName
     )[0];
-    if (!certificatePermision && !admin) {
+    if (
+      !certificatePermision &&
+      !admin &&
+      !JSON.parse(sessionStorage.getItem('isCertAdmin'))
+    ) {
       cert.isDeny = true;
     }
     setListItemDetails(cert);
@@ -627,7 +631,7 @@ const CertificatesDashboard = () => {
 
   useEffect(() => {
     searchAllcertApi();
-    if (admin) {
+    if (admin || JSON.parse(sessionStorage.getItem('isCertAdmin'))) {
       setOnboardStatus({ status: 'loading' });
       fetchOnboardCertificates();
     }
