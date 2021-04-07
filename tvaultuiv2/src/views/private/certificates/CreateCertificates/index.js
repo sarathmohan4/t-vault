@@ -408,7 +408,10 @@ const CreateCertificates = (props) => {
         state?.applicationNameList !== 'error' &&
         state?.applicationNameList?.length > 0
       ) {
-        if (!JSON.parse(sessionStorage.getItem('isAdmin'))) {
+        if (
+          !JSON.parse(sessionStorage.getItem('isAdmin')) &&
+          !JSON.parse(sessionStorage.getItem('isCertAdmin'))
+        ) {
           const stringVal = sessionStorage.getItem('selfServiceAppNames');
           setSelfserviceAppName(stringVal?.split(','));
         }
@@ -621,7 +624,10 @@ const CreateCertificates = (props) => {
     setApplicationName(appName);
     setNotificationEmailList([]);
     const selectedApp = allApplication.find((item) => appName === item.appName);
-    if (!JSON.parse(sessionStorage.getItem('isAdmin'))) {
+    if (
+      !JSON.parse(sessionStorage.getItem('isAdmin')) &&
+      !JSON.parse(sessionStorage.getItem('isCertAdmin'))
+    ) {
       if (selfserviceAppName?.includes(selectedApp?.appID)) {
         getNotificationEmailData(selectedApp);
       }
@@ -787,10 +793,12 @@ const CreateCertificates = (props) => {
         applicationName
       ) ||
         (!JSON.parse(sessionStorage.getItem('isAdmin')) &&
+          !JSON.parse(sessionStorage.getItem('isCertAdmin')) &&
           !selfserviceAppName?.includes(selectedApp?.appID)))
     ) {
       if (
         !JSON.parse(sessionStorage.getItem('isAdmin')) &&
+        !JSON.parse(sessionStorage.getItem('isCertAdmin')) &&
         !selfserviceAppName?.includes(selectedApp?.appID)
       ) {
         setApplicationNameErrorMsg(
