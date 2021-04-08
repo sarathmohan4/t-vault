@@ -578,10 +578,13 @@ const CertificatesDashboard = () => {
         const onboardCertArray = [];
         if (result?.data?.keys) {
           result.data.keys.map((ele) => {
-            ele.name = ele.certificateName;
-            ele.isOnboardCert = true;
-            ele.type = 'pending';
-            return onboardCertArray.push(ele);
+            if (ele.certType !== 'external') {
+              ele.name = ele.certificateName;
+              ele.isOnboardCert = true;
+              ele.type = 'pending';
+              return onboardCertArray.push(ele);
+            }
+            return null;
           });
         }
         setOnboardCertificates([...onboardCertArray]);
