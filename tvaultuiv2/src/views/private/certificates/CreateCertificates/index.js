@@ -909,7 +909,7 @@ const CreateCertificates = (props) => {
                       <Tooltip
                         classes={tooltipClasses}
                         arrow
-                        title="Type of Certificate Private(Internal) or Public(External)"
+                        title="Type of Certificate Private(Internal)"
                         placement="right"
                       >
                         <InputLabel>
@@ -925,7 +925,7 @@ const CreateCertificates = (props) => {
                     <RadioButtonComponent
                       menu={
                         configData.SSL_EXT_CERTIFICATE
-                          ? ['internal', 'external']
+                          ? ['internal']
                           : ['internal']
                       }
                       handleChange={(e) => setCertificateType(e.target.value)}
