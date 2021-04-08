@@ -557,7 +557,7 @@ public class SSLCertificateService {
                 containerId = (containerId==public_single_san_ts_gp_id)?public_multi_san_ts_gp_id:public_single_san_ts_gp_id;
                 certificateDetails = getCertificateFromNCLM(sslCertificateRequest.getCertificateName(),containerId, certManagerLogin);
             }
-            token = (userDetails.isAdmin() || userDetails.isCertAdmin())?token : userDetails.getSelfSupportToken();
+            token = (userDetails.isAdmin())?token : userDetails.getSelfSupportToken();
 
             if (Objects.isNull(certificateDetails)) {
                 //Validate the certificate in metadata path  for external certificate
@@ -815,7 +815,7 @@ public class SSLCertificateService {
 					// Policy Creation
 					boolean isPoliciesCreated;
 
-					if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+					if (userDetails.isAdmin()) {
 						isPoliciesCreated = createPolicies(sslCertificateRequest, token);
 					} else {
 						isPoliciesCreated = createPolicies(sslCertificateRequest, userDetails.getSelfSupportToken());
@@ -834,7 +834,7 @@ public class SSLCertificateService {
 
 					boolean sslMetaDataCreationStatus;
 
-					if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+					if (userDetails.isAdmin()) {
 						sslMetaDataCreationStatus = ControllerUtil.createMetadata(metadataJson, token);
 					} else {
 						sslMetaDataCreationStatus = ControllerUtil.createMetadata(metadataJson,
@@ -852,7 +852,7 @@ public class SSLCertificateService {
 
                     boolean sslApplicationMetaDataSaveStatus;
                     //save certificate name into application metadata path
-                    if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+                    if (userDetails.isAdmin()) {
                     	sslApplicationMetaDataSaveStatus = certificateMetadataForApplicationDetails(metadataJson, token, "create");
 					} else {
 						sslApplicationMetaDataSaveStatus = certificateMetadataForApplicationDetails(metadataJson,
@@ -2818,7 +2818,7 @@ public class SSLCertificateService {
        	Response response;
        	String certListStr = "";
 
-		String tokenValue = (userDetails.isAdmin() || userDetails.isCertAdmin()) ? token
+		String tokenValue = (userDetails.isAdmin()) ? token
 				: userDetails.getSelfSupportToken();
         response = getMetadata(tokenValue, metaDataPath);
         if (HttpStatus.OK.equals(response.getHttpstatus())) {
@@ -2890,7 +2890,7 @@ public class SSLCertificateService {
                 SSLCertificateConstants.SSL_CERT_PATH :SSLCertificateConstants.SSL_EXTERNAL_CERT_PATH;
 		Response response;
 		String certListStr = "";
-		String tokenValue = (userDetails.isAdmin() || userDetails.isCertAdmin()) ? token : userDetails.getSelfSupportToken();
+		String tokenValue = (userDetails.isAdmin()) ? token : userDetails.getSelfSupportToken();
 		if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
 			response = getMetadata(tokenValue, metaDataPath);
 			if (HttpStatus.OK.equals(response.getHttpstatus())) {
@@ -3415,7 +3415,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                 SSLCertificateConstants.SSL_CERT_PATH + '/' + endPoint :SSLCertificateConstants.SSL_EXTERNAL_CERT_PATH + '/' + endPoint;
 		Response response = null;
 		try {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}", token);
 			} else {
 				response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}",
@@ -3511,7 +3511,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 	        }
 			boolean sslMetaDataUpdationStatus;
 			metaDataParams.put("certificateStatus", "Revoked");
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams, token);
 			} else {
 				sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams,
@@ -4067,7 +4067,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
         }
 
    		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
    				authToken = userDetails.getClientToken();
    	        }else {
    	        	authToken = userDetails.getSelfSupportToken();
@@ -4100,7 +4100,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 		String certName = certificatename;
 
 		String powerToken = null;
-		if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+		if (userDetails.isAdmin()) {
 			powerToken = userDetails.getClientToken();
 		} else {
 			powerToken = userDetails.getSelfSupportToken();
@@ -4363,7 +4363,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 
         if (!ObjectUtils.isEmpty(userDetails)) {
 
-	        if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+	        if (userDetails.isAdmin()) {
 	        	authToken = userDetails.getClientToken();
 	        }else {
 	        	authToken = userDetails.getSelfSupportToken();
@@ -5115,7 +5115,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 			}
 		}
 		try {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}", token);
 			} else {
 				response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}",
@@ -5276,7 +5276,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 				metaDataParams.put("certificateStatus", certData.getCertificateStatus()!=null?certData.getCertificateStatus():
 					object.get("certificateStatus").getAsString());
 			}
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams, token);
 			} else {
 				sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams,
@@ -5525,7 +5525,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    		boolean isAuthorized = true;
    		
    		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
    				authToken = userDetails.getClientToken();   	            
    	        }else {
    	        	authToken = userDetails.getSelfSupportToken();
@@ -5823,7 +5823,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    		boolean isAuthorized = true;
 
    		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
    				authToken = userDetails.getClientToken();   	            
    	        }else {
    	        	authToken = userDetails.getSelfSupportToken();
@@ -6408,7 +6408,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 			}
 		}
 		try {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}", authToken);
 				dataResponse = reqProcessor.process("/read", "{\"path\":\"" + permissionMetaDataPath + "\"}", authToken);
 			} else {
@@ -6475,7 +6475,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 		certificateRequest.setCertOwnerNtid(certOwnerNtId);
 		
 		try {
-		if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+		if (userDetails.isAdmin()) {
 
 			sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams, authToken);
 			if(dataObject!=null) {
@@ -6641,7 +6641,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 		String certificatePath = metaDataPath + '/' + certName;
 		String authToken = null;
 		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				authToken = userDetails.getClientToken();
 			} else {
 				authToken = userDetails.getSelfSupportToken();
@@ -7453,7 +7453,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 
 			String authToken = "";
 			// Get the token
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				authToken = userDetails.getClientToken();
 			} else {
 				authToken = userDetails.getSelfSupportToken();
@@ -8346,7 +8346,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 
 		String authToken = null;	
 		if (!ObjectUtils.isEmpty(userDetails)) {	
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				authToken = userDetails.getClientToken();	
 			} else {	
 				authToken = userDetails.getSelfSupportToken();	
@@ -8505,7 +8505,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    		boolean isAuthorized = true;
    		
    		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
  				authToken = userDetails.getClientToken();   	            
  	        }else {
    	        	authToken = userDetails.getSelfSupportToken();
@@ -8580,7 +8580,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    		boolean isAuthorized = true;
    		
    		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
    				authToken = userDetails.getClientToken();   	            
    	        }else {
    	        	authToken = userDetails.getSelfSupportToken();
@@ -9621,7 +9621,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
         }
         if (!ObjectUtils.isEmpty(userDetails)) {
 
-	        if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+	        if (userDetails.isAdmin()) {
 	        	authToken = userDetails.getClientToken();
 	        }else {
 	        	authToken = userDetails.getSelfSupportToken();
@@ -10784,7 +10784,7 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 				}
 			}
 			try {
-				if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+				if (userDetails.isAdmin()) {
 					response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}", token);
 				} else {
 					response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}",
@@ -10847,7 +10847,7 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 			metaDataParams.put("notificationEmails", String.join(",", notifEmailLst));
 			}
 		try {
-		if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+		if (userDetails.isAdmin()) {
 			sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams, token);
 
 		} else {

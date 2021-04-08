@@ -93,7 +93,7 @@ public class SSLCertificateAWSRoleService {
 	 */
 	public ResponseEntity<String> createAWSRoleForSSL(UserDetails userDetails, String token, AWSLoginRole awsLoginRole)
 			throws TVaultValidationException {
-		if (!userDetails.isAdmin() && !userDetails.isCertAdmin()) {
+		if (!userDetails.isAdmin()) {
 			token = tokenUtils.getSelfServiceToken();
 		}
 		return awsAuthService.createRole(token, awsLoginRole, userDetails);
@@ -110,7 +110,7 @@ public class SSLCertificateAWSRoleService {
 	 */
 	public ResponseEntity<String> createIAMRoleForSSL(UserDetails userDetails, String token, AWSIAMRole awsiamRole)
 			throws TVaultValidationException {
-		if (!userDetails.isAdmin() && !userDetails.isCertAdmin()) {
+		if (!userDetails.isAdmin()) {
 			token = tokenUtils.getSelfServiceToken();
 		}
 		return awsiamAuthService.createIAMRole(awsiamRole, token, userDetails);
@@ -162,7 +162,7 @@ public class SSLCertificateAWSRoleService {
 
 		boolean isAuthorized = true;
 		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (!userDetails.isAdmin() && !userDetails.isCertAdmin()) {
+			if (!userDetails.isAdmin()) {
 				token = tokenUtils.getSelfServiceToken();
 			}
 
@@ -388,7 +388,7 @@ public class SSLCertificateAWSRoleService {
 
 		boolean isAuthorized = true;
 		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (!userDetails.isAdmin() && !userDetails.isCertAdmin()) {
+			if (!userDetails.isAdmin()) {
 				token = tokenUtils.getSelfServiceToken();
 			}
 
