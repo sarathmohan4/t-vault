@@ -524,7 +524,7 @@ const CertificatesDashboard = () => {
   useEffect(() => {
     // const array = [{ name: 'Internal' }, { name: 'External' }];
     const array = [{ name: 'Internal' }];
-    if (admin) {
+    if (admin || JSON.parse(sessionStorage.getItem('isCertAdmin'))) {
       array.push({
         name: 'Onboard',
       });
