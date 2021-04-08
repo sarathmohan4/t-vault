@@ -184,4 +184,13 @@ public class PolicyUtils {
 		}
 		return currentpolicies;
 	}
+	/**
+	 * To get the list of certificate admin policies
+	 * @return
+	 */
+	public ArrayList<String> getCertAdminPolicies() {
+		ArrayList<String> adminPolicies = new ArrayList<String>();
+		adminPolicies.add("certadmin");
+		return adminPolicies;
+	}
 }

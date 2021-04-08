@@ -366,6 +366,14 @@ const LoginPage = () => {
     }
   };
 
+  const checkCertAdmin = (value) => {
+    if (value === 'yes') {
+      sessionStorage.setItem('isCertAdmin', true);
+    } else {
+      sessionStorage.setItem('isCertAdmin', false);
+    }
+  };
+
   const getOwnerAllDetails = (loggedInUser) => {
     return apiService
       .getOwnerDetails(loggedInUser)
@@ -419,6 +427,7 @@ const LoginPage = () => {
             setResponse({ status: 'loading' });
             sessionStorage.setItem('token', res.data.client_token);
             checkAdmin(res?.data?.admin);
+            checkCertAdmin(res?.data?.certAdmin);
             await getLoggedInUserName();
             await renewToken();
             dispatch({ type: 'CALLBACK_DATA', payload: { ...res.data } });
@@ -464,6 +473,7 @@ const LoginPage = () => {
         if (res?.data) {
           sessionStorage.setItem('token', res.data.client_token);
           checkAdmin(res?.data?.admin);
+          checkCertAdmin(res?.data?.certAdmin);
           sessionStorage.setItem('access', JSON.stringify(res.data.access));
           sessionStorage.setItem('username', payload.username.toLowerCase());
           await getOwnerAllDetails(payload.username.toLowerCase());
@@ -485,6 +495,7 @@ const LoginPage = () => {
       .then(async (res) => {
         sessionStorage.setItem('token', res.data.client_token);
         checkAdmin(res?.data?.admin);
+        checkCertAdmin(res?.data?.certAdmin);
         sessionStorage.setItem('access', JSON.stringify(res.data.access));
         sessionStorage.setItem('username', payload.username.toLowerCase());
         await getOwnerAllDetails(payload.username.toLowerCase());

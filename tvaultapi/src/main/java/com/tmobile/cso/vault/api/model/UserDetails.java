@@ -36,7 +36,7 @@ public class UserDetails implements Serializable {
 	private String access;
 	private Integer leaseDuration;
 	private String email;
-	
+	private boolean certAdmin;
 	/**
 	 * 
 	 */
@@ -171,5 +171,19 @@ public class UserDetails implements Serializable {
 	 */
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	/**
+	 * @return the certAdmin
+	 */
+	public boolean isCertAdmin() {
+		return certAdmin;
+	}
+
+	/**
+	 * @param certAdmin the certAdmin to set
+	 */
+	public void setCertAdmin(boolean certAdmin) {
+		this.certAdmin = certAdmin;
 	}
 }

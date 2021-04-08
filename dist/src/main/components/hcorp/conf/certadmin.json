@@ -1,0 +1,24 @@
+{
+   "name":"certadmin",
+   "path": {
+     "metadata/*": {
+       "policy": "write"
+     },
+     "sslcerts/*": {
+       "capabilities": [
+         "create",
+         "update",
+         "delete",
+         "list"
+       ]
+     },
+     "externalcerts/*": {
+       "capabilities": [
+         "create",
+         "update",
+         "delete",
+         "list"
+       ]
+     }
+   }
+}

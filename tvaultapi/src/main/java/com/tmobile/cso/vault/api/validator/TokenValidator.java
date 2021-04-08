@@ -84,6 +84,7 @@ public class TokenValidator {
 				lookupDetails.setToken(token);
 				lookupDetails.setValid(true);
 				lookupDetails.setAdmin(authorizationUtils.containsAdminPolicies(Arrays.asList(policies),  policyUtils.getAdminPolicies()));
+				lookupDetails.setCertAdmin(authorizationUtils.containsAdminPolicies(Arrays.asList(policies),  policyUtils.getCertAdminPolicies()));
 
 				if (TVaultConstants.OIDC.equals(vaultAuthMethod) && objNode.get("display_name") != null && objNode.get("path") != null ) {
 					String authPath = objNode.get("path").asText();
