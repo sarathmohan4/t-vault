@@ -198,7 +198,7 @@ public class SSLCertificateSchedulerService {
                     internalUpdateCount = updateCertMetadata(token, clmApp, internalCertList, SSLCertificateConstants.SSL_CERT_PATH);
                 }
 
-                // Update metadata for all internal certificates in this application
+                // Update metadata for all external certificates in this application
                 List<String> externalCertList = app.getExternalCertificateList();
                 int noOfExternalCertsToUpdate = (externalCertList != null)?externalCertList.size():0;
                 int externalUpdateCount = 0;
@@ -409,7 +409,7 @@ public class SSLCertificateSchedulerService {
      */
     private String updateNotificationEmailIds(String notificationEmails, String email) {
         if (!StringUtils.isEmpty(notificationEmails)) {
-            if (!notificationEmails.contains(email.toLowerCase())) {
+            if (!notificationEmails.toLowerCase().contains(email.toLowerCase())) {
                 notificationEmails = notificationEmails + "," + email;
             }
         }
