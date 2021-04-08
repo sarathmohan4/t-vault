@@ -139,6 +139,7 @@ public class SSLCertificateAWSRoleServiceTest {
         currentMap.put("user", "");
         ThreadLocalContext.setCurrentMap(currentMap);
         ReflectionTestUtils.setField(sslCertificateAWSRoleService, "certificateNameTailText", ".t-mobile.com");
+        ReflectionTestUtils.setField(sslCertificateAWSRoleService, "isExternalCertEnabled", true);
     }
 
     Response getMockResponse(HttpStatus status, boolean success, String expectedBody) {

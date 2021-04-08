@@ -206,6 +206,7 @@ public class SSLCertificateServiceTest {
         ReflectionTestUtils.setField(sSLCertificateService, "container_name", "VenafiBin_12345");
         ReflectionTestUtils.setField(sSLCertificateService, "private_single_san_ts_gp_id", 29);
         ReflectionTestUtils.setField(sSLCertificateService, "pacbotGetCertEndpoint", "/pacbot/test");
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", true);
 
         token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         userDetails.setUsername("normaluser");
@@ -532,6 +533,35 @@ public class SSLCertificateServiceTest {
         assertEquals(HttpStatus.OK, enrollResponse.getStatusCode());
     }
 
+    @Test
+    public void generateSSLCertificate_external_disabled() throws Exception {
+        String jsonStr = "{  \"username\": \"testusername1\",  \"password\": \"testpassword1\"}";
+
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        userDetails = new UserDetails();
+        userDetails.setAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setUsername("testusername1");
+        userDetails.setSelfSupportToken(token);
+
+        SSLCertificateRequest sslCertificateRequest = getSSLCertificateRequest();
+        sslCertificateRequest.setCertificateName("certificatename");
+        sslCertificateRequest.setCertType(SSLCertificateConstants.EXTERNAL);
+        String[] dnsNames = { };
+        sslCertificateRequest.setDnsList(dnsNames);
+        sslCertificateRequest.setNotificationEmail("test.sample1@t-mobile.com");
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("access_token", "12345");
+        requestMap.put("token_type", "type");
+        when(ControllerUtil.parseJson(jsonStr)).thenReturn(requestMap);
+
+        ResponseEntity<?> enrollResponse =
+                sSLCertificateService.generateSSLCertificate(sslCertificateRequest,userDetails,token,SSLCertificateConstants.UI);
+        //Assert
+        assertNotNull(enrollResponse);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, enrollResponse.getStatusCode());
+    }
 
 
     @Test
@@ -2886,6 +2916,20 @@ public class SSLCertificateServiceTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
+
+    @Test
+    public void testAddUserToCertificate_external_disabled() {
+        CertificateUser certUser = new CertificateUser("testuser2","read", "certificatename.t-mobile.com", "external");
+        UserDetails userDetail = getMockUser(true);
+        userDetail.setUsername("testuser1");
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+
+        ResponseEntity<String> responseEntity = sSLCertificateService.addUserToCertificate(certUser, userDetail, false);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntity.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntity);
+    }
     
     
     @Test
@@ -3165,6 +3209,19 @@ public class SSLCertificateServiceTest {
         ResponseEntity<String> responseEntityActual = sSLCertificateService.getTargetSystemList(token, getMockUser(true), certType);
 
         assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.getBody(), responseEntityActual.getBody());
+    }
+
+    @Test
+    public void test_getgetTargetSystemList_external_disabled()throws Exception{
+        String token = "12345";
+        String certType= "external";
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+        ResponseEntity<String> responseEntityActual = sSLCertificateService.getTargetSystemList(token, getMockUser(true), certType);
+
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntityActual.getStatusCode());
         assertEquals(responseEntityExpected.getBody(), responseEntityActual.getBody());
     }
     
@@ -3460,6 +3517,23 @@ public class SSLCertificateServiceTest {
         assertEquals(responseEntityExpected, responseEntityActual);
 
     }
+
+    @Test
+    public void testAssociateAppRoleToCertificate_external_disabled() {
+
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+        token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        userDetails = getMockUser(false);
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        CertificateApprole certificateApprole = new CertificateApprole("certificatename.t-mobile.com", "role1", "read", "external");
+
+        ResponseEntity<String> responseEntityActual =  sSLCertificateService.associateApproletoCertificate(certificateApprole, userDetails);
+
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+
+    }
 	
 	@Test
     public void testDeleteAppRoleFromCertificateSuccssfully() {
@@ -3483,6 +3557,21 @@ public class SSLCertificateServiceTest {
         ResponseEntity<String> responseEntityActual =  sSLCertificateService.deleteApproleFromCertificate(certificateApprole, userDetails);
 
         assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntityActual);
+
+    }
+
+    @Test
+    public void testDeleteAppRoleFromCertificate_external_disabled() {
+
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+        token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        userDetails = getMockUser(false);
+        CertificateApprole certificateApprole = new CertificateApprole("certificatename.t-mobile.com", "role1", "read", "external");
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+        ResponseEntity<String> responseEntityActual =  sSLCertificateService.deleteApproleFromCertificate(certificateApprole, userDetails);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntityActual.getStatusCode());
         assertEquals(responseEntityExpected, responseEntityActual);
 
     }
@@ -3832,6 +3921,25 @@ public class SSLCertificateServiceTest {
         ResponseEntity<InputStreamResource> responseEntityActual =
                 sSLCertificateService.downloadCertificateWithPrivateKey(token, certificateDownloadRequest, userDetails);
         assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
+    public void test_downloadCertificateWithPrivateKey_external_disabled() throws Exception {
+
+        CertificateDownloadRequest certificateDownloadRequest = new CertificateDownloadRequest(
+                "certname", "password", "pembundle", false,"external");
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+        when(controllerUtil.arecertificateDownloadInputsValid(certificateDownloadRequest)).thenReturn(true);
+
+        InputStreamResource resource = null;
+        ResponseEntity<InputStreamResource> responseEntityExpected =
+                ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(resource);
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificateWithPrivateKey(token, certificateDownloadRequest, userDetails);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntityActual.getStatusCode());
         assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
 
     }
@@ -4327,6 +4435,24 @@ public class SSLCertificateServiceTest {
     }
 
     @Test
+    public void test_downloadCertificates_external_disabled() throws Exception {
+
+        when(controllerUtil.areDownloadInputsValid(any(),any())).thenReturn(true);
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        ResponseEntity<InputStreamResource> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(null);
+
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+
+        ResponseEntity<InputStreamResource> responseEntityActual =
+                sSLCertificateService.downloadCertificate(token, getMockUser(true), "certname", "pem","external");
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),responseEntityActual.toString());
+
+    }
+
+    @Test
     public void test_downloadCertificateWithoutPrivateKey_success_der() throws Exception {
 
         Response response = new Response();
@@ -4683,6 +4809,23 @@ public class SSLCertificateServiceTest {
     }
 
     @Test
+    public void renewCertificate_external_disabled() throws Exception {
+        String certficateName = "testCert.t-mobile.com";
+        String certficateType = "external";
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        String token = "FSR&&%S*";
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+        ResponseEntity<?> renewCertResponse =
+                sSLCertificateService.renewCertificate(certficateType,certficateName, getMockUser(true), token);
+
+        //Assert
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, renewCertResponse.getStatusCode());
+        assertEquals(responseEntityExpected.toString(),renewCertResponse.toString());
+    }
+
+    @Test
     public void renewCertificate_Non_Admin_Success() throws Exception {
     	String certficateName = "testCert.t-mobile.com";
     	String certficateType = "internal";
@@ -4975,6 +5118,21 @@ public class SSLCertificateServiceTest {
     }
 
     @Test
+    public void testRemoveUserFromCertificate_external_disabled() throws IOException {
+        UserDetails userDetail = getMockUser(true);
+        userDetail.setUsername("testuser1");
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+        CertificateUser certUser = new CertificateUser("testuser2","write", "certificatename.t-mobile.com", "external");
+
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+
+        ResponseEntity<String> responseEntity = sSLCertificateService.removeUserFromCertificate(certUser, userDetail);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntity.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntity);
+    }
+
+    @Test
     public void testRemoveUserFromCertificateUserpassAuthSuccess() throws IOException {
     	SSLCertificateMetadataDetails certificateMetadata = getSSLCertificateMetadataDetails();
         UserDetails userDetail = getMockUser(true);
@@ -5159,6 +5317,23 @@ public class SSLCertificateServiceTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected, responseEntity);
     }
+
+    @Test
+    public void testRemoveGroupFromCertificate_external_disabled() throws IOException {
+        SSLCertificateMetadataDetails certificateMetadata = getSSLCertificateMetadataDetails();
+        UserDetails userDetail = getMockUser(true);
+        userDetail.setUsername("testuser1");
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+        CertificateGroup certGroup = new CertificateGroup("certificatename.t-mobile.com", "testgroup","read", "external");
+
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+
+        ResponseEntity<String> responseEntity = sSLCertificateService.removeGroupFromCertificate(certGroup, userDetail);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntity.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntity);
+    }
+
 
     @Test
     public void testRemoveGroupFromCertificateFailureIfNotauthorized() {
@@ -5489,6 +5664,25 @@ public class SSLCertificateServiceTest {
 
          assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
     }
+
+    @Test
+    public void getListOfCertificates_external_disabled()throws Exception{
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        UserDetails user1 = new UserDetails();
+        user1.setUsername("normaluser");
+        user1.setAdmin(true);
+        user1.setClientToken(token);
+        user1.setSelfSupportToken(token);
+        String certificateType = "external";
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+        ResponseEntity<String> responseEntityActual = sSLCertificateService.getListOfCertificates(token, certificateType, 1, 0);
+
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntityActual.getStatusCode());
+        assertEquals(responseEntityExpected.toString(), responseEntityActual.toString());
+    }
     
     @Test
     public void transferSSLCertificate_Success() throws Exception {
@@ -5552,6 +5746,29 @@ public class SSLCertificateServiceTest {
 
         //Assert
         assertNotNull(transferCertResponse);        
+    }
+
+    @Test
+    public void transferSSLCertificate_external_disabled() throws Exception {
+
+        SSLCertificateMetadataDetails sslCertificateRequest = getSSLCertificateMetadataDetails();
+        UserDetails userDetails = new UserDetails();
+        userDetails.setSelfSupportToken("tokentTest");
+        userDetails.setUsername("normaluser");
+        userDetails.setAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setSelfSupportToken(token);
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+
+        ResponseEntity<?> transferCertResponse =
+                sSLCertificateService.updateCertOwner("external","certificatename.t-mobile.com","owneremail@test.com",userDetails);
+
+        //Assert
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntityExpected.getStatusCode());
+        assertEquals(responseEntityExpected.toString(), responseEntityExpected.toString());
     }
 
     @Test
@@ -5984,6 +6201,21 @@ public class SSLCertificateServiceTest {
 		assertNotNull(enrollResponse);
 		assertEquals(HttpStatus.OK, enrollResponse.getStatusCode());
 	}
+
+    @Test
+    public void testValidateApprovalStatusAndGetCertDetails_external_disabled() throws Exception {
+
+        SSLCertificateMetadataDetails certificateMetadata = getSSLExternalCertificateRequest();
+        UserDetails userDetail = getMockUser(true);
+        userDetail.setUsername("testuser1");
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+
+        ResponseEntity<?> enrollResponse = sSLCertificateService
+                .validateApprovalStatusAndGetCertificateDetails("certificatename.t-mobile.com", "external", userDetail);
+        assertNotNull(enrollResponse);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, enrollResponse.getStatusCode());
+    }
 
     @Test
     public void testValidateApprovalStatusAndGetCertDetailsSuccess_Renew_Pending() throws Exception {
@@ -6814,7 +7046,19 @@ public class SSLCertificateServiceTest {
 			assertNotNull(enrollResponse);	
 			assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, enrollResponse.getStatusCode());	
 		}
-	 
+
+    @Test
+    public void testcheckCertificateStatus_external_disabled() throws Exception {
+        UserDetails userDetail = getMockUser(true);
+        userDetail.setUsername("testuser1");
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        ResponseEntity<?> enrollResponse = sSLCertificateService
+                .checkCertificateStatus("CertificateName.t-mobile.com", "external", userDetail);
+        assertNotNull(enrollResponse);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, enrollResponse.getStatusCode());
+    }
+
 	 @Test
 	    public void onboardSSLCertificate_Success() throws Exception {
 	        String jsonStr = "{  \"username\": \"testusername1\",  \"password\": \"testpassword1\"}";
@@ -7083,6 +7327,23 @@ public class SSLCertificateServiceTest {
         ResponseEntity<?> enrollResponse = sSLCertificateService.unLinkCertificate(userInfo,  "test.t-mobile" +
                 ".com", "internal","Test");
         assertEquals(enrollResponse.getStatusCode(), HttpStatus.OK);
+
+    }
+
+    @Test
+    public void unLinkCertificate_external_disabled() throws Exception {
+        when(ControllerUtil.validateInputs(anyString(),anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+        token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        UserDetails userInfo = new UserDetails();
+        userInfo.setUsername("admin");
+        userInfo.setAdmin(true);
+        userInfo.setClientToken(token);
+        userInfo.setSelfSupportToken(token);
+
+        ResponseEntity<?> enrollResponse = sSLCertificateService.unLinkCertificate(userInfo,  "test.t-mobile" +
+                ".com", "external","Test");
+        assertEquals(enrollResponse.getStatusCode(), HttpStatus.UNPROCESSABLE_ENTITY);
 
     }
 
@@ -7378,6 +7639,33 @@ public class SSLCertificateServiceTest {
         //Assert
         assertNotNull(enrollResponse);
         assertEquals(HttpStatus.OK, enrollResponse.getStatusCode());
+    }
+
+    @Test
+    public void testOnboardSSLcertificate_external_disabled() throws Exception {
+
+        userDetails = new UserDetails();
+        userDetails.setAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setUsername("testusername1");
+        userDetails.setSelfSupportToken(token);
+        String userDetailToken = userDetails.getSelfSupportToken();
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        SSLCertificateRequest sslCertificateRequest = getSSLCertificateRequest();
+        SSLCertificateOnboardRequest sslCertOnboardRequest = new SSLCertificateOnboardRequest();
+        BeanUtils.copyProperties(sslCertOnboardRequest, sslCertificateRequest);
+        sslCertOnboardRequest.setCertificateName("certificatename.t-mobile.com");
+        sslCertOnboardRequest.setNotificationEmail("test123@test.com");
+        sslCertOnboardRequest.setCertType("external");
+        String[] dnsNames = { };
+        sslCertificateRequest.setDnsList(dnsNames);
+
+        ResponseEntity<?> enrollResponse =
+                sSLCertificateService.onboardSSLcertificate(userDetails,token, sslCertOnboardRequest);
+        //Assert
+        assertNotNull(enrollResponse);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, enrollResponse.getStatusCode());
     }
 
 	@Test
@@ -8147,6 +8435,25 @@ public class SSLCertificateServiceTest {
 	        //Assert
 	        assertNotNull(transferCertResponse);        
 	    }
+
+    @Test
+    public void updateSSLCertificate_external_disabled() throws Exception {
+        UserDetails userDetails = new UserDetails();
+        userDetails.setSelfSupportToken("tokentTest");
+        userDetails.setUsername("normaluser");
+        userDetails.setAdmin(true);
+        userDetails.setClientToken(token);
+        userDetails.setSelfSupportToken(token);
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        CertificateUpdateRequest certificateUpdateRequest = getCertUpdateRequest();
+        certificateUpdateRequest.setCertType("external");
+        ResponseEntity<?> transferCertResponse =
+                sSLCertificateService.updateSSLCertificate(certificateUpdateRequest, userDetails, token);
+
+        //Assert
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, transferCertResponse.getStatusCode());
+    }
 	 
 	 @Test
 	    public void updateSSLCertificate_Success_fornonadmin() throws Exception {
@@ -8543,6 +8850,20 @@ public class SSLCertificateServiceTest {
 				.deleteCertificate(token, certType, certName, userDetails);
 		assertNotNull(enrollResponse);		
 	}
+
+    @Test
+    public void testdeleteCertDetails_external_disabled() throws Exception {
+
+        String certType = "external";
+        String certName = "certificatename.t-mobile.com";
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        UserDetails userDetail = getMockUser(true);
+        userDetail.setUsername("testuser1");
+        ResponseEntity<?> enrollResponse = sSLCertificateService
+                .deleteCertificate(token, certType, certName, userDetail);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, enrollResponse.getStatusCode());
+    }
 	
 	@Test
 	public void testdeleteCertDetailsfailure2() throws Exception {
@@ -8800,6 +9121,15 @@ public class SSLCertificateServiceTest {
 				"5PDrOhsy4ig8L3EpsJZSLAMg", "external", "certificatename.t-mobile.com", "tvt");
 		assertNotNull(responseOutput);
 	}
+
+    @Test
+    public void test_onboardSingleCert_extrenal_disabled() throws Exception {
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+
+        ResponseEntity<String> responseOutput = sSLCertificateService.onboardSingleCert(userDetails,
+                "5PDrOhsy4ig8L3EpsJZSLAMg", "external", "certificatename.t-mobile.com", "tvt");
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseOutput.getStatusCode());
+    }
 	
 	@Test
 	public void test_onboardCertificate_failure3() throws Exception {
@@ -9095,6 +9425,22 @@ public class SSLCertificateServiceTest {
         when(JSONUtil.getJSON(Mockito.any())).thenReturn("{\"shared\":[{\"s3\":\"read\"},{\"s4\":\"write\"}],\"users\":[{\"s1\":\"read\"},{\"s2\":\"write\"}],\"cert\":[{\"certtest.t-mobile.com\":\"read\"}],\"apps\":[{\"s5\":\"read\"},{\"s6\":\"write\"},{\"s7\":\"deny\"}]}");
         ResponseEntity<String> responseEntity = sSLCertificateService.getAllCertificatesOnCertType(userDetails, certificateType, 1, 0);
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+
+    @Test
+    public void test_getAllCertificatesOnCertType_external_disabled() {
+        String certificateType = "external";
+        UserDetails userDetails = new UserDetails();
+        userDetails.setUsername("normaluser");
+        userDetails.setAdmin(false);
+        userDetails.setClientToken(token);
+        userDetails.setSelfSupportToken(token);
+        ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+        ResponseEntity<String> responseEntity = sSLCertificateService.getAllCertificatesOnCertType(userDetails, certificateType, 1, 0);
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntity.getStatusCode());
+        assertEquals(responseEntityExpected.toString(), responseEntity.toString());
     }
 
     @Test

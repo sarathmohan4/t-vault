@@ -75,6 +75,9 @@ public class SSLCertificateAWSRoleService {
 	@Value("${SSLCertificateController.certificatename.text}")
 	private String certificateNameTailText;
 
+	@Value("${SSLExternalCertificate.enabled}")
+	private boolean isExternalCertEnabled;
+
 	private static Logger log = LogManager.getLogger(SSLCertificateAWSRoleService.class);
 
 	private static final String[] PERMISSIONS = { "read", "write", "deny", "sudo" };
@@ -131,6 +134,19 @@ public class SSLCertificateAWSRoleService {
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid input values\"]}");
 		}
+
+		// External certificate disabled check
+		if (certificateAWSRole.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, SSLCertificateConstants.ADD_AWS_ROLE_TO_CERT_MSG)
+					.put(LogMessage.MESSAGE,
+							"Failed to create external SSL certificate. Operation not allowed.")
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+					"{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+		}
+
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, SSLCertificateConstants.ADD_AWS_ROLE_TO_CERT_MSG)
@@ -347,6 +363,19 @@ public class SSLCertificateAWSRoleService {
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid input values\"]}");
 		}
+
+		// External certificate disabled check
+		if (certificateAWSRoleRequest.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, SSLCertificateConstants.REMOVE_AWS_ROLE_FROM_CERT_MSG)
+					.put(LogMessage.MESSAGE,
+							"Failed to create external SSL certificate. Operation not allowed.")
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+					"{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+		}
+
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, SSLCertificateConstants.REMOVE_AWS_ROLE_FROM_CERT_MSG)
