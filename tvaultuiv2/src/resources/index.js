@@ -59,19 +59,16 @@ const Resources = {
     'Once you add a <strong>Certificate</strong> you’ll see the  Corresponding <strong>Details</strong> here!',
   appRoles:
     'AppRoles operate a lot like safes, but they put the application as the logical unit for sharing. Additional Accessor ID and Secret ID pairs can easily be created through T-Vault, Secret IDs can only be accessed when downloaded.',
-  certificateDesc:
-    'Create both internal and external certificates, External certificates do require approval from an admin before activating, this may take some time. Try to limit your use of external certificates unless completely necessary.',
+  certificateDesc: 'Create internal certificates.',
   noTransferOwnerAvailable:
     'Certificate may not be approved or rejected.Please follow the instructions mentioned in email',
   certificateGuide1:
     'Ensure you are a member of the self-service administration group in AD for your respective application. You can request access from the owner of your application at <a href="https://access.t-mobile.com" target="_blank">Cloud Access</a>. If you are not a member of one or more of these groups you will not be able to create certificates yourself.',
   certificateGuide2:
-    'Currently only the standard SSL Certificate template is used to create certificates, this includes: <br/> Signature algorithm: SHA256-RSA. <br/>Key usage : digitalSignature, keyEncipherment. <br/>Extended key usage : serverAuth for Internal and serverAuth, clientAuth for External certificates',
+    'Currently only the standard SSL Certificate template is used to create certificates, this includes: <br/> Signature algorithm: SHA256-RSA. <br/>Key usage : digitalSignature, keyEncipherment. <br/>Extended key usage : serverAuth for Internal.',
   certificateGuide3:
     'If you need a non-standard certificate please reach out to Cloud Support work with them to create this for you. This functionality will be developed and incorporated into T-Vault at a later date.',
   certificateGuide4:
-    'External certificate requests require approval from the NCLM team, that process is outlined when you request an external certificate.',
-  certificateGuide5:
     'Suggestions for improvements and features are welcome, please reach out to T-Vault@T-Mobile.com if you have any to share. For more information on how to manage certificates please go <a href="https://ccoe.docs.t-mobile.com/t-vault/user-interface/manage_certificates/" target="_blank">here</a>.',
   iamServiceAccountDesc:
     'IAM Service Accounts can only be modified in AWS/IAM. You can only view the details of this IAM Service Account and rotate the associated secret within T-vault. The associated secret needs to be rotated to active the account.',

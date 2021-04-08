@@ -24,7 +24,6 @@ const CertDesc = styled.div``;
 const Description = styled.p`
   color: #c4c4c4;
   font-size: 1.4rem;
-  margin-top: 0;
 `;
 
 const InfoLine = styled('p')`
@@ -48,7 +47,7 @@ const ViewMoreStyles = css`
   align-items: center;
   font-weight: 600;
   cursor: pointer;
-  margin-left: 5rem;
+  margin-left: 6.5rem;
 `;
 
 const CertificateHeader = (props) => {
@@ -97,12 +96,6 @@ const CertificateHeader = (props) => {
                   <strong>4:</strong>
                 </Span>
                 {ReactHtmlParser(Strings.Resources.certificateGuide4)}
-              </InfoLine>
-              <InfoLine>
-                <Span>
-                  <strong>5:</strong>
-                </Span>
-                {ReactHtmlParser(Strings.Resources.certificateGuide5)}
               </InfoLine>
             </CollapsibleContainer>
           </CollapsibleDropdown>

@@ -265,34 +265,34 @@ const CertificatesDashboard = () => {
       });
   }, [offset, allCertList]);
 
-  const fetchAdminExternalData = useCallback(async () => {
-    apiService
-      .getAllAdminCertExternal(limit, offset)
-      .then((result) => {
-        setOffset(offset + limit);
-        const externalCertArray = [];
-        if (result?.data?.keys) {
-          if (result?.data?.next === '-1') {
-            setHasMore(false);
-          } else {
-            setHasMore(true);
-          }
-          result.data.keys.map((item) => {
-            return externalCertArray.push(item);
-          });
-        }
-        setCertificateList([...allCertList, ...externalCertArray]);
-        setAllCertList([...allCertList, ...externalCertArray]);
-        setResponse({ status: 'success' });
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        if (err?.response?.data?.errors && err.response.data.errors[0]) {
-          setErrorMsg(err.response.data.errors[0]);
-        }
-        setResponse({ status: 'failed' });
-      });
-  }, [offset, allCertList]);
+  // const fetchAdminExternalData = useCallback(async () => {
+  //   apiService
+  //     .getAllAdminCertExternal(limit, offset)
+  //     .then((result) => {
+  //       setOffset(offset + limit);
+  //       const externalCertArray = [];
+  //       if (result?.data?.keys) {
+  //         if (result?.data?.next === '-1') {
+  //           setHasMore(false);
+  //         } else {
+  //           setHasMore(true);
+  //         }
+  //         result.data.keys.map((item) => {
+  //           return externalCertArray.push(item);
+  //         });
+  //       }
+  //       setCertificateList([...allCertList, ...externalCertArray]);
+  //       setAllCertList([...allCertList, ...externalCertArray]);
+  //       setResponse({ status: 'success' });
+  //       setIsLoading(false);
+  //     })
+  //     .catch((err) => {
+  //       if (err?.response?.data?.errors && err.response.data.errors[0]) {
+  //         setErrorMsg(err.response.data.errors[0]);
+  //       }
+  //       setResponse({ status: 'failed' });
+  //     });
+  // }, [offset, allCertList]);
 
   const fetchNonAdminInternalData = useCallback(async () => {
     let allCertInternal = [];
@@ -373,80 +373,80 @@ const CertificatesDashboard = () => {
     // eslint-disable-next-line
   }, [offset, allCertList, certificateList]);
 
-  const fetchNonAdminExternalData = useCallback(async () => {
-    let allCertExternal = [];
-    if (configData.AUTH_TYPE === 'oidc' && offset === 0) {
-      allCertExternal = apiService.getAllNonAdminCertExternal();
-    }
-    const externalCertificates = apiService.getExternalCertificates(
-      limit,
-      offset
-    );
-    const allApiResponse = Promise.all([allCertExternal, externalCertificates]);
-    allApiResponse
-      .then((result) => {
-        const allCertificateExternal = [];
-        const externalCertArray = [];
-        if (configData.AUTH_TYPE === 'oidc') {
-          if (result && result[0]?.data?.externalcerts) {
-            result[0].data.externalcerts.map((item) =>
-              Object.entries(item).map(
-                ([key]) =>
-                  item[key] !== 'deny' && allCertificateExternal.push(key)
-              )
-            );
-            setAllCertificates([...allCertificateExternal]);
-          }
-        } else {
-          const access = JSON.parse(sessionStorage.getItem('access'));
-          if (Object.keys(access).length > 0) {
-            Object.keys(access).forEach((item) => {
-              if (item === 'cert' || item === 'externalcerts') {
-                access[item].map((ele) => {
-                  const val = Object.keys(ele);
-                  if (item === 'externalcerts') {
-                    allCertificateExternal.push(val[0]);
-                  }
-                  return null;
-                });
-              }
-            });
-          }
-          setAllCertificates([...allCertificateExternal]);
-        }
-        if (result && result[1]?.data?.keys) {
-          result[1].data.keys.map((item) => {
-            if (item.certificateName) {
-              return externalCertArray.push(item);
-            }
-            return null;
-          });
-        }
-        const finalList = [...allCertList, ...externalCertArray];
-        if (
-          result[1]?.data?.next === '-1' ||
-          result[1]?.data?.next === undefined
-        ) {
-          if (offset === 0) {
-            compareCertificates(finalList, allCertificateExternal, 'external');
-          } else {
-            compareCertificates(finalList, allCertificates, 'external');
-          }
-        }
-        setCertificateList([...finalList]);
-        setAllCertList([...finalList]);
-        setResponse({ status: 'success' });
-        setOffset(offset + limit);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        if (err?.response?.data?.errors && err.response.data.errors[0]) {
-          setErrorMsg(err.response.data.errors[0]);
-        }
-        setResponse({ status: 'failed' });
-      });
-    // eslint-disable-next-line
-  }, []);
+  // const fetchNonAdminExternalData = useCallback(async () => {
+  //   let allCertExternal = [];
+  //   if (configData.AUTH_TYPE === 'oidc' && offset === 0) {
+  //     allCertExternal = apiService.getAllNonAdminCertExternal();
+  //   }
+  //   const externalCertificates = apiService.getExternalCertificates(
+  //     limit,
+  //     offset
+  //   );
+  //   const allApiResponse = Promise.all([allCertExternal, externalCertificates]);
+  //   allApiResponse
+  //     .then((result) => {
+  //       const allCertificateExternal = [];
+  //       const externalCertArray = [];
+  //       if (configData.AUTH_TYPE === 'oidc') {
+  //         if (result && result[0]?.data?.externalcerts) {
+  //           result[0].data.externalcerts.map((item) =>
+  //             Object.entries(item).map(
+  //               ([key]) =>
+  //                 item[key] !== 'deny' && allCertificateExternal.push(key)
+  //             )
+  //           );
+  //           setAllCertificates([...allCertificateExternal]);
+  //         }
+  //       } else {
+  //         const access = JSON.parse(sessionStorage.getItem('access'));
+  //         if (Object.keys(access).length > 0) {
+  //           Object.keys(access).forEach((item) => {
+  //             if (item === 'cert' || item === 'externalcerts') {
+  //               access[item].map((ele) => {
+  //                 const val = Object.keys(ele);
+  //                 if (item === 'externalcerts') {
+  //                   allCertificateExternal.push(val[0]);
+  //                 }
+  //                 return null;
+  //               });
+  //             }
+  //           });
+  //         }
+  //         setAllCertificates([...allCertificateExternal]);
+  //       }
+  //       if (result && result[1]?.data?.keys) {
+  //         result[1].data.keys.map((item) => {
+  //           if (item.certificateName) {
+  //             return externalCertArray.push(item);
+  //           }
+  //           return null;
+  //         });
+  //       }
+  //       const finalList = [...allCertList, ...externalCertArray];
+  //       if (
+  //         result[1]?.data?.next === '-1' ||
+  //         result[1]?.data?.next === undefined
+  //       ) {
+  //         if (offset === 0) {
+  //           compareCertificates(finalList, allCertificateExternal, 'external');
+  //         } else {
+  //           compareCertificates(finalList, allCertificates, 'external');
+  //         }
+  //       }
+  //       setCertificateList([...finalList]);
+  //       setAllCertList([...finalList]);
+  //       setResponse({ status: 'success' });
+  //       setOffset(offset + limit);
+  //       setIsLoading(false);
+  //     })
+  //     .catch((err) => {
+  //       if (err?.response?.data?.errors && err.response.data.errors[0]) {
+  //         setErrorMsg(err.response.data.errors[0]);
+  //       }
+  //       setResponse({ status: 'failed' });
+  //     });
+  //   // eslint-disable-next-line
+  // }, []);
 
   const fetchInternalCertificates = () => {
     if (offset === 0) {
@@ -459,24 +459,26 @@ const CertificatesDashboard = () => {
     }
   };
 
-  const fetchExternalCertificates = () => {
-    if (offset === 0) {
-      setResponse({ status: 'loading' });
-    }
-    if (admin) {
-      fetchAdminExternalData();
-    } else {
-      fetchNonAdminExternalData();
-    }
-  };
+  // const fetchExternalCertificates = () => {
+  //   if (offset === 0) {
+  //     setResponse({ status: 'loading' });
+  //   }
+  //   if (admin) {
+  //     fetchAdminExternalData();
+  //   } else {
+  //     fetchNonAdminExternalData();
+  //   }
+  // };
 
   const loadTypeSpecificData = (type) => {
     setDataCleared(false);
     if (type === 'Internal') {
       fetchInternalCertificates();
-    } else if (type === 'External') {
-      fetchExternalCertificates();
-    } else if (type === 'Onboard') {
+    }
+    // else if (type === 'External') {
+    //   fetchExternalCertificates();
+    // }
+    else if (type === 'Onboard') {
       setCertificateList([...onboardCertificates]);
       setAllCertList([...onboardCertificates]);
       setResponse({ status: 'success' });
@@ -520,7 +522,8 @@ const CertificatesDashboard = () => {
   }, [allCertList, history]);
 
   useEffect(() => {
-    const array = [{ name: 'Internal' }, { name: 'External' }];
+    // const array = [{ name: 'Internal' }, { name: 'External' }];
+    const array = [{ name: 'Internal' }];
     if (admin) {
       array.push({
         name: 'Onboard',
@@ -586,10 +589,12 @@ const CertificatesDashboard = () => {
       })
       .catch((e) => {
         setOnboardCertificates([]);
-        setOnboardStatus({
-          status: 'error',
-          message: e?.response?.data?.errors[0],
-        });
+        if (e?.response?.data?.errors && e?.response?.data?.errors[0]) {
+          setOnboardStatus({
+            status: 'error',
+            message: e?.response?.data?.errors[0],
+          });
+        }
       });
     // eslint-disable-next-line
   }, []);
@@ -606,12 +611,12 @@ const CertificatesDashboard = () => {
               type: 'internal',
             })
           );
-          res.data.external.map((item) =>
-            allSearchCerts.push({
-              name: item,
-              type: 'external',
-            })
-          );
+          // res.data.external.map((item) =>
+          //   allSearchCerts.push({
+          //     name: item,
+          //     type: 'external',
+          //   })
+          // );
         }
         if (allSearchCerts.length === 0) {
           setNoResultFound('No records found');
@@ -741,9 +746,10 @@ const CertificatesDashboard = () => {
       fetchAllCertificateDetail(v.type, v.name);
       if (v.type === 'internal') {
         setCertificateType('Internal');
-      } else if (v.type === 'external') {
-        setCertificateType('External');
       }
+      // else if (v.type === 'external') {
+      //   setCertificateType('External');
+      // }
       setOptions([]);
     } else {
       setSearchSelected([v]);
@@ -983,9 +989,9 @@ const CertificatesDashboard = () => {
     if (certificateType === 'Internal') {
       fetchInternalCertificates();
     }
-    if (certificateType === 'External') {
-      fetchExternalCertificates();
-    }
+    // if (certificateType === 'External') {
+    //   fetchExternalCertificates();
+    // }
   };
 
   const handleListScroll = () => {
