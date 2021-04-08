@@ -198,7 +198,7 @@
         		{"name":"username", "required":true,"appendToPath":true}, 
     	  		{"name":"password","required":true}
  	    ],
-       "outparams":["auth/client_token","admin","access","auth/policies","auth/lease_duration"] 
+       "outparams":["auth/client_token","admin","certAdmin","access","auth/policies","auth/lease_duration"] 
     },
 
 	{"#" : "**** - Used to renew the token *******",
@@ -304,7 +304,7 @@
         	{"name":"username","required":true,"appendToPath":true},
         	{"name":"password","required":true}
         ],
-        "outparams":["auth/client_token","admin","access","auth/policies","auth/lease_duration"]
+        "outparams":["auth/client_token","admin","certAdmin","access","auth/policies","auth/lease_duration"]
 	},
 	
 	{"#":"Configuring LDAP Group",
@@ -1064,7 +1064,7 @@
 		"params":[
 			{"name":"path","required":true, "appendToPath":true}
 		],
-		"outparams":["auth/client_token","admin","access","auth/policies","auth/lease_duration"]
+		"outparams":["auth/client_token","admin","certAdmin","access","auth/policies","auth/lease_duration"]
 	},
 	 { "#":"****  List all auth methods  *****",
     	"apiEndPoint":"/sys/list",

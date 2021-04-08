@@ -12,7 +12,10 @@ const Certificates = (props) => {
   const [, dispatch] = useStateValue();
 
   useEffect(() => {
-    if (!JSON.parse(sessionStorage.getItem('isAdmin'))) {
+    if (
+      !JSON.parse(sessionStorage.getItem('isAdmin')) &&
+      !JSON.parse(sessionStorage.getItem('isCertAdmin'))
+    ) {
       apiService
         .getNonAdminAppNameList()
         .then((res) => {
