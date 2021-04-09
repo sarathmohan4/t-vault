@@ -9912,7 +9912,7 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
             // Getting all on-boarded external certificates
             onboardedExternalCerts = getListOfCertificatesForValidation(token, SSLCertificateConstants.EXTERNAL);
         }
-		getCertificateListFromNclm(nclmAccessToken, certificatesList, targetEndpointVal, onboardedInternalCerts,
+        certificatesList = getCertificateListFromNclm(nclmAccessToken, certificatesList, targetEndpointVal, onboardedInternalCerts,
 				onboardedExternalCerts);
 
 		limit = (limit == null) ? certificatesList.size() : limit;
@@ -9960,7 +9960,7 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 			JsonObject jsonObject = (JsonObject) jsonParser.parse(response.getResponse());
 			if (jsonObject != null) {
 				JsonArray jsonArray = jsonObject.getAsJsonArray(SSLCertificateConstants.CERTIFICATES);
-				setAllActiveCertificates(jsonArray, certificatesList, onboardedInternalCerts, onboardedExternalCerts);
+                certificatesList = setAllActiveCertificates(jsonArray, certificatesList, onboardedInternalCerts, onboardedExternalCerts);
 				if (responseMap.get("next") != null) {
 					String limitVal = responseMap.get("limit").toString();
 					String offset = responseMap.get("offset").toString();
@@ -10011,6 +10011,10 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 					.put(LogMessage.MESSAGE, "Error while setting the active certificates from nclm")
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 		}
+		// Filter external certificates when external certificate feature is disabled
+		if (!isExternalCertEnabled) {
+            certificatesList = certificatesList.stream().filter(c -> c.getCertType().equalsIgnoreCase(SSLCertificateConstants.INTERNAL)).collect(Collectors.toList());
+        }
 		return certificatesList;
 	}
 
