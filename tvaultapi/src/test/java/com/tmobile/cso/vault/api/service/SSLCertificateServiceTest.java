@@ -2924,7 +2924,7 @@ public class SSLCertificateServiceTest {
         userDetail.setUsername("testuser1");
         ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
 
-        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("{\"errors\":[\"Failed to add user to external SSL certificate. Operation not allowed.\"]}");
 
         ResponseEntity<String> responseEntity = sSLCertificateService.addUserToCertificate(certUser, userDetail, false);
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntity.getStatusCode());
@@ -3218,7 +3218,7 @@ public class SSLCertificateServiceTest {
         String certType= "external";
         ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
 
-        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("{\"errors\":[\"Failed to get target system list for external SSL certificate. Operation not allowed.\"]}");
         ResponseEntity<String> responseEntityActual = sSLCertificateService.getTargetSystemList(token, getMockUser(true), certType);
 
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntityActual.getStatusCode());
@@ -3521,7 +3521,7 @@ public class SSLCertificateServiceTest {
     @Test
     public void testAssociateAppRoleToCertificate_external_disabled() {
 
-        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+        ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("{\"errors\":[\"Failed to associate approle to external SSL certificate. Operation not allowed.\"]}");
         token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         userDetails = getMockUser(false);
         ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
@@ -3565,7 +3565,7 @@ public class SSLCertificateServiceTest {
     public void testDeleteAppRoleFromCertificate_external_disabled() {
 
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                "{\"errors\":[\"Failed to remove approle from external SSL certificate. Operation not allowed.\"]}");
         token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         userDetails = getMockUser(false);
         CertificateApprole certificateApprole = new CertificateApprole("certificatename.t-mobile.com", "role1", "read", "external");
@@ -4816,7 +4816,7 @@ public class SSLCertificateServiceTest {
 
         String token = "FSR&&%S*";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                "{\"errors\":[\"Failed to renew external SSL certificate. Operation not allowed.\"]}");
         ResponseEntity<?> renewCertResponse =
                 sSLCertificateService.renewCertificate(certficateType,certficateName, getMockUser(true), token);
 
@@ -5125,7 +5125,7 @@ public class SSLCertificateServiceTest {
         CertificateUser certUser = new CertificateUser("testuser2","write", "certificatename.t-mobile.com", "external");
 
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                "{\"errors\":[\"Failed to remove user from external SSL certificate. Operation not allowed.\"]}");
 
         ResponseEntity<String> responseEntity = sSLCertificateService.removeUserFromCertificate(certUser, userDetail);
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntity.getStatusCode());
@@ -5327,7 +5327,7 @@ public class SSLCertificateServiceTest {
         CertificateGroup certGroup = new CertificateGroup("certificatename.t-mobile.com", "testgroup","read", "external");
 
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                "{\"errors\":[\"Failed to remove group from external SSL certificate. Operation not allowed.\"]}");
 
         ResponseEntity<String> responseEntity = sSLCertificateService.removeGroupFromCertificate(certGroup, userDetail);
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntity.getStatusCode());
@@ -5677,7 +5677,7 @@ public class SSLCertificateServiceTest {
         ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
 
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                "{\"errors\":[\"Failed to get external SSL certificate list. Operation not allowed.\"]}");
         ResponseEntity<String> responseEntityActual = sSLCertificateService.getListOfCertificates(token, certificateType, 1, 0);
 
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntityActual.getStatusCode());
@@ -9437,7 +9437,7 @@ public class SSLCertificateServiceTest {
         userDetails.setSelfSupportToken(token);
         ReflectionTestUtils.setField(sSLCertificateService, "isExternalCertEnabled", false);
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                "{\"errors\":[\"Failed to get all external SSL certificates. Operation not allowed.\"]}");
         ResponseEntity<String> responseEntity = sSLCertificateService.getAllCertificatesOnCertType(userDetails, certificateType, 1, 0);
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, responseEntity.getStatusCode());
         assertEquals(responseEntityExpected.toString(), responseEntity.toString());

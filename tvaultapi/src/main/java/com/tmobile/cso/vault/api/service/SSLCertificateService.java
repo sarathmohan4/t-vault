@@ -2875,10 +2875,10 @@ public class SSLCertificateService {
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, "GetAllSSLCertificatesToManage")
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to get external certificates list. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to get external certificates list. Operation not allowed.\"]}");
         }
 
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
@@ -3157,10 +3157,10 @@ public class SSLCertificateService {
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, "GetTargetSystemList")
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to get target system list for external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to get target system list for external SSL certificate. Operation not allowed.\"]}");
         }
 
         String getTargetSystemEndpoint = "/certmanager/findTargetSystem";	
@@ -3643,10 +3643,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, SSLCertificateConstants.ADD_USER_TO_CERT_MSG)
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to add user to external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to add user to external SSL certificate. Operation not allowed.\"]}");
         }
    		
    		String userName = certificateUser.getUsername().toLowerCase();
@@ -4060,10 +4060,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, SSLCertificateConstants.ADD_GROUP_TO_CERT_MSG)
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to add group to external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to add group to external SSL certificate. Operation not allowed.\"]}");
         }
 
    		if (!ObjectUtils.isEmpty(userDetails)) {
@@ -4337,10 +4337,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, SSLCertificateConstants.ADD_APPROLE_TO_CERT_MSG)
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to associate approle to external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to associate approle to external SSL certificate. Operation not allowed.\"]}");
         }
         
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -4697,7 +4697,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, "downloadCertificateWithPrivateKey")
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to download external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
         }
@@ -4882,7 +4882,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, "downloadCertificate")
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to download external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
         }
@@ -5029,10 +5029,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, "getCertificateDetails")
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to get external certificate details. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to get external certificate details. Operation not allowed.\"]}");
         }
 		SSLCertificateMetadataDetails sslCertificateMetadataDetails = certificateUtils.getCertificateMetaData(token,
 				certificateName, certificateType);
@@ -5095,10 +5095,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, SSLCertificateConstants.CERT_RENEW_MSG)
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to renew external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to renew external SSL certificate. Operation not allowed.\"]}");
         }
 		String endPoint = certificateName;
 		String metaDataPath = (certType.equalsIgnoreCase(SSLCertificateConstants.INTERNAL))?
@@ -5505,10 +5505,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, SSLCertificateConstants.REMOVE_USER_FROM_CERT_MSG)
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to remove user from external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to remove user from external SSL certificate. Operation not allowed.\"]}");
         }
 		
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
@@ -5802,10 +5802,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, SSLCertificateConstants.REMOVE_GROUP_FROM_CERT_MSG)
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to remove group from external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to remove group from external SSL certificate. Operation not allowed.\"]}");
         }
 
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -6230,10 +6230,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, "Get list Of Certificates")
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to get external SSL certificate list. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to get external SSL certificate list. Operation not allowed.\"]}");
         }
 
 		if (certificateType.equalsIgnoreCase(SSLCertificateConstants.INTERNAL)) {
@@ -6365,10 +6365,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, "transferCertificate")
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to transfer owner for external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to transfer owner for external SSL certificate. Operation not allowed.\"]}");
         }
 
 		ResponseEntity<DirectoryObjects> userResponse = directoryService.searchByUPNInGsmAndCorp(certOwnerEmailId);
@@ -6630,10 +6630,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG)
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to validate approval status for external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to validate approval status for external SSL certificate. Operation not allowed.\"]}");
         }
 
 		String metaDataPath = (certType.equalsIgnoreCase(SSLCertificateConstants.INTERNAL)) ? SSLCertificateConstants.SSL_CERT_PATH
@@ -7445,10 +7445,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                         .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                         .put(LogMessage.ACTION, SSLCertificateConstants.CERT_UNLINK_MSG)
                         .put(LogMessage.MESSAGE,
-                                "Failed to create external SSL certificate. Operation not allowed.")
+                                "Failed to unlink external SSL certificate. Operation not allowed.")
                         .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                        "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                        "{\"errors\":[\"Failed to unlink external SSL certificate. Operation not allowed.\"]}");
             }
 
 			String authToken = "";
@@ -7607,10 +7607,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, SSLCertificateConstants.CERT_DELETE_MSG)
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to delete external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to delete external SSL certificate. Operation not allowed.\"]}");
         }
 
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
@@ -8181,10 +8181,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, "getAllCertificatesOnCertType")
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to get all external SSL certificates. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to get all external SSL certificates. Operation not allowed.\"]}");
         }
 
 		String certificatePrefix = TVaultConstants.CERT_POLICY_PREFIX;
@@ -8338,10 +8338,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, "checkCertificateStatus")
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to check status for external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to check status for external SSL certificate. Operation not allowed.\"]}");
         }
 
 		String authToken = null;	
@@ -8932,7 +8932,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                             .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                             .put(LogMessage.ACTION, SSLCertificateConstants.ONBOARD_SSL_CERTIFICATE)
                             .put(LogMessage.MESSAGE,
-                                    "Failed to create external SSL certificate. Operation not allowed.")
+                                    "Failed to onboard external SSL certificate. Operation not allowed.")
                             .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
                     return null;
                 }
@@ -9469,10 +9469,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                                 .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                                 .put(LogMessage.ACTION, SSLCertificateConstants.ONBOARD_SSL_CERTIFICATE)
                                 .put(LogMessage.MESSAGE,
-                                        "Failed to create external SSL certificate. Operation not allowed.")
+                                        "Failed to onboard external SSL certificate. Operation not allowed.")
                                 .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
                         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                                "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                                "{\"errors\":[\"Failed to onboard external SSL certificate. Operation not allowed.\"]}");
                     }
 			    	
 			    	if(isCertAvailableInMetadata(jsonObject, token)) {
@@ -9590,10 +9590,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, SSLCertificateConstants.DELETE_APPROLE_TO_CERT_MSG)
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to remove approle from external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to remove approle from external SSL certificate. Operation not allowed.\"]}");
         }
 
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -10148,10 +10148,10 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
                     .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                     .put(LogMessage.ACTION, SSLCertificateConstants.ONBOARD_SSL_CERTIFICATE)
                     .put(LogMessage.MESSAGE,
-                            "Failed to create external SSL certificate. Operation not allowed.")
+                            "Failed to onboard external SSL certificate. Operation not allowed.")
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                    "{\"errors\":[\"Failed to onboard external SSL certificate. Operation not allowed.\"]}");
         }
 
 		boolean isValidAppName = validateApplicationNameForOnboard(sslCertificateRequest);
@@ -10758,10 +10758,10 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
                         .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
                         .put(LogMessage.ACTION, SSLCertificateConstants.UPDATE_SSL_CERTIFICATE)
                         .put(LogMessage.MESSAGE,
-                                "Failed to create external SSL certificate. Operation not allowed.")
+                                "Failed to update external SSL certificate. Operation not allowed.")
                         .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                        "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+                        "{\"errors\":[\"Failed to update external SSL certificate. Operation not allowed.\"]}");
             }
 			String endPoint = certificateUpdateRequest.getCertificateName();
 			String metaDataPath = (certificateUpdateRequest.getCertType().equalsIgnoreCase(SSLCertificateConstants.INTERNAL))?

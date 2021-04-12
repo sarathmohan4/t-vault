@@ -141,10 +141,10 @@ public class SSLCertificateAWSRoleService {
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, SSLCertificateConstants.ADD_AWS_ROLE_TO_CERT_MSG)
 					.put(LogMessage.MESSAGE,
-							"Failed to create external SSL certificate. Operation not allowed.")
+							"Failed to add AWS role to external SSL certificate. Operation not allowed.")
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-					"{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+					"{\"errors\":[\"Failed to add AWS role to external SSL certificate. Operation not allowed.\"]}");
 		}
 
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
@@ -370,10 +370,10 @@ public class SSLCertificateAWSRoleService {
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, SSLCertificateConstants.REMOVE_AWS_ROLE_FROM_CERT_MSG)
 					.put(LogMessage.MESSAGE,
-							"Failed to create external SSL certificate. Operation not allowed.")
+							"Failed to remove AWS role from external SSL certificate. Operation not allowed.")
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-					"{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+					"{\"errors\":[\"Failed to remove AWS role from external SSL certificate. Operation not allowed.\"]}");
 		}
 
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
