@@ -441,16 +441,7 @@ public class SSLCertificateService {
         		.put(LogMessage.MESSAGE, "Trying to generate SSL Certificate")
         		.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 				.build()));
-		if (userDetails != null && (!userDetails.isCertAdmin() && !userDetails.isAdmin())) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-					.put(LogMessage.ACTION, SSLCertificateConstants.GENERATE_SSL_CERTIFICTAE)
-					.put(LogMessage.MESSAGE,
-							"Access denied. Not authorized to perform SSL certificate creation.")
-					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-					"{\"errors\":[\"Access denied. Not authorized to perform SSL certificate creation.\"]}");
-        }
+
         //Validate the input data
         boolean isValidData = validateInputData(sslCertificateRequest, userDetails);
 		if (!isValidData) {
@@ -3398,16 +3389,6 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
-		if(userDetails != null && (!userDetails.isCertAdmin() && !userDetails.isAdmin())) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-					.put(LogMessage.ACTION, SSLCertificateConstants.CERT_REVOCATION_MSG)
-					.put(LogMessage.MESSAGE,
-							"Access denied. Not authorized to perform SSL certificate revocation.")
-					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-					"{\"errors\":[\"Access denied. Not authorized to perform SSL certificate revocation.\"]}");
-        }
 		Map<String, String> metaDataParams = new HashMap<>();
 
 		String endPoint = certificateName;
@@ -5079,16 +5060,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
-		if(userDetails != null && (!userDetails.isCertAdmin() && !userDetails.isAdmin())) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-					.put(LogMessage.ACTION, SSLCertificateConstants.CERT_RENEW_MSG)
-					.put(LogMessage.MESSAGE,
-							"Access denied. Not authorized to perform SSL certificate renewal.")
-					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-					"{\"errors\":[\"Access denied. Not authorized to perform SSL certificate renewal.\"]}");
-        }
+
         // External certificate disabled check
         if (certType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
             log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
@@ -7591,15 +7563,6 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					.build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
-		if(userDetails != null && (!userDetails.isCertAdmin() && !userDetails.isAdmin())) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-					.put(LogMessage.ACTION, SSLCertificateConstants.CERT_DELETE_MSG)
-					.put(LogMessage.MESSAGE, "Access denied. Not authorized to perform SSL certificate deletion.")
-					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-					"{\"errors\":[\"Access denied. Not authorized to perform SSL certificate deletion.\"]}");
-        }
 
         // External certificate disabled check
         if (certType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
