@@ -286,6 +286,10 @@ public class SSLCertificateService {
     @Value("${sslcertmanager.endpoint.findAllCertificate}")
     private String findAllCertificate;
 
+    @Value("${SSLExternalCertificate.enabled}")
+    private boolean isExternalCertEnabled;
+
+
     @Autowired
 	private OIDCUtil oidcUtil;
 
@@ -437,16 +441,7 @@ public class SSLCertificateService {
         		.put(LogMessage.MESSAGE, "Trying to generate SSL Certificate")
         		.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 				.build()));
-		if (userDetails != null && (!userDetails.isCertAdmin() && !userDetails.isAdmin())) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-					.put(LogMessage.ACTION, SSLCertificateConstants.GENERATE_SSL_CERTIFICTAE)
-					.put(LogMessage.MESSAGE,
-							"Access denied. Not authorized to perform SSL certificate creation.")
-					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-					"{\"errors\":[\"Access denied. Not authorized to perform SSL certificate creation.\"]}");
-        }
+
         //Validate the input data
         boolean isValidData = validateInputData(sslCertificateRequest, userDetails);
 		if (!isValidData) {
@@ -493,7 +488,18 @@ public class SSLCertificateService {
 	        	}
 	        }
 
-		try {
+        // External certificate disabled check
+        if (sslCertificateRequest.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.GENERATE_SSL_CERTIFICTAE)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to create external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to create external SSL certificate. Operation not allowed.\"]}");
+        }
+        try {
             log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                     put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                     put(LogMessage.ACTION, String.format("CERTIFICATE REQUEST [%s]",
@@ -542,7 +548,7 @@ public class SSLCertificateService {
                 containerId = (containerId==public_single_san_ts_gp_id)?public_multi_san_ts_gp_id:public_single_san_ts_gp_id;
                 certificateDetails = getCertificateFromNCLM(sslCertificateRequest.getCertificateName(),containerId, certManagerLogin);
             }
-            token = (userDetails.isAdmin() || userDetails.isCertAdmin())?token : userDetails.getSelfSupportToken();
+            token = (userDetails.isAdmin())?token : userDetails.getSelfSupportToken();
 
             if (Objects.isNull(certificateDetails)) {
                 //Validate the certificate in metadata path  for external certificate
@@ -800,7 +806,7 @@ public class SSLCertificateService {
 					// Policy Creation
 					boolean isPoliciesCreated;
 
-					if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+					if (userDetails.isAdmin()) {
 						isPoliciesCreated = createPolicies(sslCertificateRequest, token);
 					} else {
 						isPoliciesCreated = createPolicies(sslCertificateRequest, userDetails.getSelfSupportToken());
@@ -819,7 +825,7 @@ public class SSLCertificateService {
 
 					boolean sslMetaDataCreationStatus;
 
-					if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+					if (userDetails.isAdmin()) {
 						sslMetaDataCreationStatus = ControllerUtil.createMetadata(metadataJson, token);
 					} else {
 						sslMetaDataCreationStatus = ControllerUtil.createMetadata(metadataJson,
@@ -837,7 +843,7 @@ public class SSLCertificateService {
 
                     boolean sslApplicationMetaDataSaveStatus;
                     //save certificate name into application metadata path
-                    if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+                    if (userDetails.isAdmin()) {
                     	sslApplicationMetaDataSaveStatus = certificateMetadataForApplicationDetails(metadataJson, token, "create");
 					} else {
 						sslApplicationMetaDataSaveStatus = certificateMetadataForApplicationDetails(metadataJson,
@@ -2803,7 +2809,7 @@ public class SSLCertificateService {
        	Response response;
        	String certListStr = "";
 
-		String tokenValue = (userDetails.isAdmin() || userDetails.isCertAdmin()) ? token
+		String tokenValue = (userDetails.isAdmin()) ? token
 				: userDetails.getSelfSupportToken();
         response = getMetadata(tokenValue, metaDataPath);
         if (HttpStatus.OK.equals(response.getHttpstatus())) {
@@ -2853,6 +2859,19 @@ public class SSLCertificateService {
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
+
+        // External certificate disabled check
+        if (certType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, "GetAllSSLCertificatesToManage")
+                    .put(LogMessage.MESSAGE,
+                            "Failed to get external certificates list. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to get external certificates list. Operation not allowed.\"]}");
+        }
+
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, "Get All SSLCertificates To Manage")
@@ -2862,7 +2881,7 @@ public class SSLCertificateService {
                 SSLCertificateConstants.SSL_CERT_PATH :SSLCertificateConstants.SSL_EXTERNAL_CERT_PATH;
 		Response response;
 		String certListStr = "";
-		String tokenValue = (userDetails.isAdmin() || userDetails.isCertAdmin()) ? token : userDetails.getSelfSupportToken();
+		String tokenValue = (userDetails.isAdmin()) ? token : userDetails.getSelfSupportToken();
 		if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
 			response = getMetadata(tokenValue, metaDataPath);
 			if (HttpStatus.OK.equals(response.getHttpstatus())) {
@@ -3122,7 +3141,19 @@ public class SSLCertificateService {
 					.put(LogMessage.MESSAGE, SSLCertificateConstants.INVALID_INPUT_MSG)	
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));	
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);	
-    	}	
+    	}
+        // External certificate disabled check
+        if (certType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, "GetTargetSystemList")
+                    .put(LogMessage.MESSAGE,
+                            "Failed to get target system list for external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to get target system list for external SSL certificate. Operation not allowed.\"]}");
+        }
+
         String getTargetSystemEndpoint = "/certmanager/findTargetSystem";	
         SSLCertType sslCertType = certType.equalsIgnoreCase(SSLCertificateConstants.INTERNAL)?	
                 SSLCertType.valueOf(SSLCertificateConstants.PRIVATE_SINGLE_SAN): SSLCertType.valueOf(SSLCertificateConstants.PUBLIC_SINGLE_SAN);	
@@ -3358,16 +3389,6 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
-		if(userDetails != null && (!userDetails.isCertAdmin() && !userDetails.isAdmin())) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-					.put(LogMessage.ACTION, SSLCertificateConstants.CERT_REVOCATION_MSG)
-					.put(LogMessage.MESSAGE,
-							"Access denied. Not authorized to perform SSL certificate revocation.")
-					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-					"{\"errors\":[\"Access denied. Not authorized to perform SSL certificate revocation.\"]}");
-        }
 		Map<String, String> metaDataParams = new HashMap<>();
 
 		String endPoint = certificateName;
@@ -3375,7 +3396,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                 SSLCertificateConstants.SSL_CERT_PATH + '/' + endPoint :SSLCertificateConstants.SSL_EXTERNAL_CERT_PATH + '/' + endPoint;
 		Response response = null;
 		try {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}", token);
 			} else {
 				response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}",
@@ -3471,7 +3492,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 	        }
 			boolean sslMetaDataUpdationStatus;
 			metaDataParams.put("certificateStatus", "Revoked");
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams, token);
 			} else {
 				sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams,
@@ -3597,6 +3618,17 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    					build()));
    			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
    		}
+        // External certificate disabled check
+        if (certificateUser.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.ADD_USER_TO_CERT_MSG)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to add user to external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to add user to external SSL certificate. Operation not allowed.\"]}");
+        }
    		
    		String userName = certificateUser.getUsername().toLowerCase();
    		String certificateName = certificateUser.getCertificateName().toLowerCase();
@@ -4002,8 +4034,21 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    			
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
+
+   		// External certificate disabled check
+        if (certificateGroup.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.ADD_GROUP_TO_CERT_MSG)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to add group to external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to add group to external SSL certificate. Operation not allowed.\"]}");
+        }
+
    		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
    				authToken = userDetails.getClientToken();
    	        }else {
    	        	authToken = userDetails.getSelfSupportToken();
@@ -4036,7 +4081,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 		String certName = certificatename;
 
 		String powerToken = null;
-		if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+		if (userDetails.isAdmin()) {
 			powerToken = userDetails.getClientToken();
 		} else {
 			powerToken = userDetails.getSelfSupportToken();
@@ -4266,6 +4311,18 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    					build()));
    			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
         }
+
+        // External certificate disabled check
+        if (certificateApprole.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.ADD_APPROLE_TO_CERT_MSG)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to associate approle to external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to associate approle to external SSL certificate. Operation not allowed.\"]}");
+        }
         
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
@@ -4287,7 +4344,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 
         if (!ObjectUtils.isEmpty(userDetails)) {
 
-	        if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+	        if (userDetails.isAdmin()) {
 	        	authToken = userDetails.getClientToken();
 	        }else {
 	        	authToken = userDetails.getSelfSupportToken();
@@ -4614,6 +4671,17 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 	   					build()));
    			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
+
+        // External certificate disabled check
+        if (certificateDownloadRequest.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, "downloadCertificateWithPrivateKey")
+                    .put(LogMessage.MESSAGE,
+                            "Failed to download external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
+        }
         
         SSLCertificateMetadataDetails sslCertificateMetadataDetails = certificateUtils.getCertificateMetaData(token, certName, certType);
         if (hasDownloadPermission(certificateDownloadRequest.getCertificateName(), userDetails, certType) && sslCertificateMetadataDetails!= null) {
@@ -4788,6 +4856,17 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 	   					build()));
    			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
+
+        // External certificate disabled check
+        if (sslCertType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, "downloadCertificate")
+                    .put(LogMessage.MESSAGE,
+                            "Failed to download external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
+        }
         
         SSLCertificateMetadataDetails sslCertificateMetadataDetails = certificateUtils.getCertificateMetaData(token, certificateName, sslCertType);
         if (hasDownloadPermission(certificateName, userDetails, sslCertType) && sslCertificateMetadataDetails != null) {
@@ -4925,6 +5004,17 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 	 */
 	public ResponseEntity<String> getCertificateDetails(String token, String certificateName, String certificateType) {
 
+        // External certificate disabled check
+        if (certificateType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, "getCertificateDetails")
+                    .put(LogMessage.MESSAGE,
+                            "Failed to get external certificate details. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to get external certificate details. Operation not allowed.\"]}");
+        }
 		SSLCertificateMetadataDetails sslCertificateMetadataDetails = certificateUtils.getCertificateMetaData(token,
 				certificateName, certificateType);
 		if (sslCertificateMetadataDetails != null) {
@@ -4970,15 +5060,17 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
-		if(userDetails != null && (!userDetails.isCertAdmin() && !userDetails.isAdmin())) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-					.put(LogMessage.ACTION, SSLCertificateConstants.CERT_RENEW_MSG)
-					.put(LogMessage.MESSAGE,
-							"Access denied. Not authorized to perform SSL certificate renewal.")
-					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-					"{\"errors\":[\"Access denied. Not authorized to perform SSL certificate renewal.\"]}");
+
+        // External certificate disabled check
+        if (certType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.CERT_RENEW_MSG)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to renew external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to renew external SSL certificate. Operation not allowed.\"]}");
         }
 		String endPoint = certificateName;
 		String metaDataPath = (certType.equalsIgnoreCase(SSLCertificateConstants.INTERNAL))?
@@ -4995,7 +5087,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 			}
 		}
 		try {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}", token);
 			} else {
 				response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}",
@@ -5156,7 +5248,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 				metaDataParams.put("certificateStatus", certData.getCertificateStatus()!=null?certData.getCertificateStatus():
 					object.get("certificateStatus").getAsString());
 			}
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams, token);
 			} else {
 				sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams,
@@ -5378,6 +5470,18 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    					build()));
    			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
    		}
+
+        // External certificate disabled check
+        if (certificateUser.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.REMOVE_USER_FROM_CERT_MSG)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to remove user from external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to remove user from external SSL certificate. Operation not allowed.\"]}");
+        }
 		
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
@@ -5393,7 +5497,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    		boolean isAuthorized = true;
    		
    		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
    				authToken = userDetails.getClientToken();   	            
    	        }else {
    	        	authToken = userDetails.getSelfSupportToken();
@@ -5664,6 +5768,18 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
    		}
 
+        // External certificate disabled check
+        if (certificateGroup.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.REMOVE_GROUP_FROM_CERT_MSG)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to remove group from external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to remove group from external SSL certificate. Operation not allowed.\"]}");
+        }
+
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                 put(LogMessage.ACTION, SSLCertificateConstants.REMOVE_GROUP_FROM_CERT_MSG).
@@ -5679,7 +5795,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    		boolean isAuthorized = true;
 
    		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
    				authToken = userDetails.getClientToken();   	            
    	        }else {
    	        	authToken = userDetails.getSelfSupportToken();
@@ -6079,6 +6195,19 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
     	}
+
+        // External certificate disabled check
+        if (certificateType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, "Get list Of Certificates")
+                    .put(LogMessage.MESSAGE,
+                            "Failed to get external SSL certificate list. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to get external SSL certificate list. Operation not allowed.\"]}");
+        }
+
 		if (certificateType.equalsIgnoreCase(SSLCertificateConstants.INTERNAL)) {
 			path = SSLCertificateConstants.SSL_CERT_PATH_VALUE;
 		} else {
@@ -6201,6 +6330,19 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
+
+        // External certificate disabled check
+        if (certType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, "transferCertificate")
+                    .put(LogMessage.MESSAGE,
+                            "Failed to transfer owner for external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to transfer owner for external SSL certificate. Operation not allowed.\"]}");
+        }
+
 		ResponseEntity<DirectoryObjects> userResponse = directoryService.searchByUPNInGsmAndCorp(certOwnerEmailId);
     	if(userResponse.getStatusCode().equals(HttpStatus.OK)) {
     		 users = userResponse.getBody().getData().getValues();
@@ -6238,7 +6380,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 			}
 		}
 		try {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}", authToken);
 				dataResponse = reqProcessor.process("/read", "{\"path\":\"" + permissionMetaDataPath + "\"}", authToken);
 			} else {
@@ -6305,7 +6447,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 		certificateRequest.setCertOwnerNtid(certOwnerNtId);
 		
 		try {
-		if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+		if (userDetails.isAdmin()) {
 
 			sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams, authToken);
 			if(dataObject!=null) {
@@ -6454,12 +6596,24 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
+        // External certificate disabled check
+        if (!isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.VALIDATE_CERTIFICATE_DETAILS_MSG)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to validate approval status for external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to validate approval status for external SSL certificate. Operation not allowed.\"]}");
+        }
+
 		String metaDataPath = (certType.equalsIgnoreCase(SSLCertificateConstants.INTERNAL)) ? SSLCertificateConstants.SSL_CERT_PATH
 				: SSLCertificateConstants.SSL_EXTERNAL_CERT_PATH;
 		String certificatePath = metaDataPath + '/' + certName;
 		String authToken = null;
 		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				authToken = userDetails.getClientToken();
 			} else {
 				authToken = userDetails.getSelfSupportToken();
@@ -7256,9 +7410,22 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
                         build()));
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
             }
+
+            // External certificate disabled check
+            if (certType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+                log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                        .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                        .put(LogMessage.ACTION, SSLCertificateConstants.CERT_UNLINK_MSG)
+                        .put(LogMessage.MESSAGE,
+                                "Failed to unlink external SSL certificate. Operation not allowed.")
+                        .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                        "{\"errors\":[\"Failed to unlink external SSL certificate. Operation not allowed.\"]}");
+            }
+
 			String authToken = "";
 			// Get the token
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				authToken = userDetails.getClientToken();
 			} else {
 				authToken = userDetails.getSelfSupportToken();
@@ -7396,14 +7563,17 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					.build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
-		if(userDetails != null && (!userDetails.isCertAdmin() && !userDetails.isAdmin())) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-					.put(LogMessage.ACTION, SSLCertificateConstants.CERT_DELETE_MSG)
-					.put(LogMessage.MESSAGE, "Access denied. Not authorized to perform SSL certificate deletion.")
-					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-					"{\"errors\":[\"Access denied. Not authorized to perform SSL certificate deletion.\"]}");
+
+        // External certificate disabled check
+        if (certType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.CERT_DELETE_MSG)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to delete external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to delete external SSL certificate. Operation not allowed.\"]}");
         }
 
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
@@ -7842,13 +8012,16 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
             JsonArray jsonArray = jsonObject.getAsJsonObject("data").getAsJsonArray("keys");
             certNames = geMatchCertificates(jsonArray,certName);            
             }
-            
-            response = getMetadata(token, extPath);
-            if(HttpStatus.OK.equals(response.getHttpstatus())) {
-            JsonObject jsonObjectExt = (JsonObject) jsonParser.parse(response.getResponse());
-            JsonArray jsonArrayExt = jsonObjectExt.getAsJsonObject("data").getAsJsonArray("keys");
-            certNamesExt = geMatchCertificates(jsonArrayExt,certName);            
-            certNames.addAll(certNamesExt);
+
+            // External certificate disabled check
+            if (isExternalCertEnabled){
+                response = getMetadata(token, extPath);
+                if(HttpStatus.OK.equals(response.getHttpstatus())) {
+                    JsonObject jsonObjectExt = (JsonObject) jsonParser.parse(response.getResponse());
+                    JsonArray jsonArrayExt = jsonObjectExt.getAsJsonObject("data").getAsJsonArray("keys");
+                    certNamesExt = geMatchCertificates(jsonArrayExt,certName);
+                    certNames.addAll(certNamesExt);
+                }
             }
             
             if (ObjectUtils.isEmpty(certNames)) {
@@ -7964,6 +8137,19 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		}
+
+        // External certificate disabled check
+        if (certificateType.equals(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, "getAllCertificatesOnCertType")
+                    .put(LogMessage.MESSAGE,
+                            "Failed to get all external SSL certificates. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to get all external SSL certificates. Operation not allowed.\"]}");
+        }
+
 		String certificatePrefix = TVaultConstants.CERT_POLICY_PREFIX;
 		if (certificateType.equals(SSLCertificateConstants.EXTERNAL)) {
 			certificatePrefix = TVaultConstants.CERT_POLICY_EXTERNAL_PREFIX;
@@ -8108,10 +8294,22 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 					.put(LogMessage.MESSAGE, SSLCertificateConstants.INVALID_INPUT_MSG)	
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));	
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);	
-		}	
+		}
+        // External certificate disabled check
+        if (certType.equals(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, "checkCertificateStatus")
+                    .put(LogMessage.MESSAGE,
+                            "Failed to check status for external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to check status for external SSL certificate. Operation not allowed.\"]}");
+        }
+
 		String authToken = null;	
 		if (!ObjectUtils.isEmpty(userDetails)) {	
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
 				authToken = userDetails.getClientToken();	
 			} else {	
 				authToken = userDetails.getSelfSupportToken();	
@@ -8270,7 +8468,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    		boolean isAuthorized = true;
    		
    		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
  				authToken = userDetails.getClientToken();   	            
  	        }else {
    	        	authToken = userDetails.getSelfSupportToken();
@@ -8345,7 +8543,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    		boolean isAuthorized = true;
    		
    		if (!ObjectUtils.isEmpty(userDetails)) {
-			if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+			if (userDetails.isAdmin()) {
    				authToken = userDetails.getClientToken();   	            
    	        }else {
    	        	authToken = userDetails.getSelfSupportToken();
@@ -8689,7 +8887,19 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 		    	 }
 		    	 String tagsOwner = certObject.get("tags.Owner")==null?"":certObject.get("tags.Owner").getAsString();
 		    	sslCertificateRequest.setCertificateName(certificateName);
-		    	sslCertificateRequest.setCertType(ObjectUtils.isEmpty(certObject.get(SSLCertificateConstants.CERT_TYPE))?"":certObject.get(SSLCertificateConstants.CERT_TYPE).getAsString().toLowerCase());		    	
+		    	sslCertificateRequest.setCertType(ObjectUtils.isEmpty(certObject.get(SSLCertificateConstants.CERT_TYPE))?"":certObject.get(SSLCertificateConstants.CERT_TYPE).getAsString().toLowerCase());
+
+		    	// External certificate disabled check
+                if (sslCertificateRequest.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+                    log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                            .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                            .put(LogMessage.ACTION, SSLCertificateConstants.ONBOARD_SSL_CERTIFICATE)
+                            .put(LogMessage.MESSAGE,
+                                    "Failed to onboard external SSL certificate. Operation not allowed.")
+                            .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+                    return null;
+                }
+
 		    	response = onboardCertificate(sslCertificateRequest,userDetails,containerId,tagsOwner);
 		    	return response;
 		    }
@@ -9215,6 +9425,18 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 								.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 						return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 					}
+
+                    // External certificate disabled check
+                    if (certType.equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+                        log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                                .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                                .put(LogMessage.ACTION, SSLCertificateConstants.ONBOARD_SSL_CERTIFICATE)
+                                .put(LogMessage.MESSAGE,
+                                        "Failed to onboard external SSL certificate. Operation not allowed.")
+                                .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+                        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                                "{\"errors\":[\"Failed to onboard external SSL certificate. Operation not allowed.\"]}");
+                    }
 			    	
 			    	if(isCertAvailableInMetadata(jsonObject, token)) {
 			    		log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
@@ -9325,6 +9547,18 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
    			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
         }
 
+        // External certificate disabled check
+        if (certificateApprole.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.DELETE_APPROLE_TO_CERT_MSG)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to remove approle from external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to remove approle from external SSL certificate. Operation not allowed.\"]}");
+        }
+
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                 put(LogMessage.ACTION, SSLCertificateConstants.DELETE_APPROLE_TO_CERT_MSG).
@@ -9350,7 +9584,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
         }
         if (!ObjectUtils.isEmpty(userDetails)) {
 
-	        if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+	        if (userDetails.isAdmin()) {
 	        	authToken = userDetails.getClientToken();
 	        }else {
 	        	authToken = userDetails.getSelfSupportToken();
@@ -9634,9 +9868,14 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 		Map<String, Object> certificateMap = new HashMap<>();
 		// Getting all on-boarded internal certificates
 		List<String> onboardedInternalCerts = getListOfCertificatesForValidation(token, SSLCertificateConstants.INTERNAL);
-		// Getting all on-boarded external certificates
-		List<String> onboardedExternalCerts = getListOfCertificatesForValidation(token, SSLCertificateConstants.EXTERNAL);
-		getCertificateListFromNclm(nclmAccessToken, certificatesList, targetEndpointVal, onboardedInternalCerts,
+
+        List<String> onboardedExternalCerts = new ArrayList<>();
+        // External certificate disabled check
+        if (isExternalCertEnabled){
+            // Getting all on-boarded external certificates
+            onboardedExternalCerts = getListOfCertificatesForValidation(token, SSLCertificateConstants.EXTERNAL);
+        }
+        certificatesList = getCertificateListFromNclm(nclmAccessToken, certificatesList, targetEndpointVal, onboardedInternalCerts,
 				onboardedExternalCerts);
 
 		limit = (limit == null) ? certificatesList.size() : limit;
@@ -9684,7 +9923,7 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 			JsonObject jsonObject = (JsonObject) jsonParser.parse(response.getResponse());
 			if (jsonObject != null) {
 				JsonArray jsonArray = jsonObject.getAsJsonArray(SSLCertificateConstants.CERTIFICATES);
-				setAllActiveCertificates(jsonArray, certificatesList, onboardedInternalCerts, onboardedExternalCerts);
+                certificatesList = setAllActiveCertificates(jsonArray, certificatesList, onboardedInternalCerts, onboardedExternalCerts);
 				if (responseMap.get("next") != null) {
 					String limitVal = responseMap.get("limit").toString();
 					String offset = responseMap.get("offset").toString();
@@ -9735,6 +9974,10 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 					.put(LogMessage.MESSAGE, "Error while setting the active certificates from nclm")
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 		}
+		// Filter external certificates when external certificate feature is disabled
+		if (!isExternalCertEnabled) {
+            certificatesList = certificatesList.stream().filter(c -> c.getCertType().equalsIgnoreCase(SSLCertificateConstants.INTERNAL)).collect(Collectors.toList());
+        }
 		return certificatesList;
 	}
 
@@ -9861,6 +10104,18 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body("{\"errors\":[\"Access denied: Not authorized to perform onboard SSL certificates\"]}");
 		}
+
+        // External certificate disabled check
+        if (sslCertificateRequest.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                    .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                    .put(LogMessage.ACTION, SSLCertificateConstants.ONBOARD_SSL_CERTIFICATE)
+                    .put(LogMessage.MESSAGE,
+                            "Failed to onboard external SSL certificate. Operation not allowed.")
+                    .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                    "{\"errors\":[\"Failed to onboard external SSL certificate. Operation not allowed.\"]}");
+        }
 
 		boolean isValidAppName = validateApplicationNameForOnboard(sslCertificateRequest);
 		if(!isValidAppName) {
@@ -10460,6 +10715,17 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 					.build()));
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORINVALID);
 		} else {
+            // External certificate disabled check
+            if (certificateUpdateRequest.getCertType().equalsIgnoreCase(SSLCertificateConstants.EXTERNAL) && !isExternalCertEnabled){
+                log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+                        .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+                        .put(LogMessage.ACTION, SSLCertificateConstants.UPDATE_SSL_CERTIFICATE)
+                        .put(LogMessage.MESSAGE,
+                                "Failed to update external SSL certificate. Operation not allowed.")
+                        .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+                        "{\"errors\":[\"Failed to update external SSL certificate. Operation not allowed.\"]}");
+            }
 			String endPoint = certificateUpdateRequest.getCertificateName();
 			String metaDataPath = (certificateUpdateRequest.getCertType().equalsIgnoreCase(SSLCertificateConstants.INTERNAL))?
 	                SSLCertificateConstants.SSL_CERT_PATH + '/' + endPoint :SSLCertificateConstants.SSL_EXTERNAL_CERT_PATH + '/' + endPoint;
@@ -10485,7 +10751,7 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 				}
 			}
 			try {
-				if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+				if (userDetails.isAdmin()) {
 					response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}", token);
 				} else {
 					response = reqProcessor.process("/read", "{\"path\":\"" + metaDataPath + "\"}",
@@ -10548,7 +10814,7 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 			metaDataParams.put("notificationEmails", String.join(",", notifEmailLst));
 			}
 		try {
-		if (userDetails.isAdmin() || userDetails.isCertAdmin()) {
+		if (userDetails.isAdmin()) {
 			sslMetaDataUpdationStatus = ControllerUtil.updateMetaDataOnPath(metaDataPath, metaDataParams, token);
 
 		} else {
@@ -11006,8 +11272,7 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 	       	JsonParser jsonParser = new JsonParser();
 
 	        internalResponse = getMetadata(token, internalMetaDataPath);
-	        externalResponse = getMetadata(token, externalMetaDataPath);
-	        
+
 	        if (HttpStatus.OK.equals(internalResponse.getHttpstatus())) {
 	        JsonObject jsonObject = (JsonObject) jsonParser.parse(internalResponse.getResponse());
 	   		JsonArray jsonArray = jsonObject.getAsJsonObject("data").getAsJsonArray("keys");
@@ -11015,13 +11280,16 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
 	   		
 	   		boolean isInternalSaved = saveApplicationDetailsForOldCerts(internalCertNames,"internal", token);
 	        }
-	        
-	        if (HttpStatus.OK.equals(externalResponse.getHttpstatus())) {
-	   		JsonObject jsonObjectExt = (JsonObject) jsonParser.parse(externalResponse.getResponse());
-	   		JsonArray jsonArrayExt = jsonObjectExt.getAsJsonObject("data").getAsJsonArray("keys");
-	   		List<String> externalCertNames = geMatchCertificates(jsonArrayExt,"");
-	   		boolean isExternalSaved = saveApplicationDetailsForOldCerts(externalCertNames,"external", token);
-	        }
+             // External certificate disabled check
+             if (isExternalCertEnabled){
+                 externalResponse = getMetadata(token, externalMetaDataPath);
+                 if (HttpStatus.OK.equals(externalResponse.getHttpstatus())) {
+                     JsonObject jsonObjectExt = (JsonObject) jsonParser.parse(externalResponse.getResponse());
+                     JsonArray jsonArrayExt = jsonObjectExt.getAsJsonObject("data").getAsJsonArray("keys");
+                     List<String> externalCertNames = geMatchCertificates(jsonArrayExt,"");
+                     boolean isExternalSaved = saveApplicationDetailsForOldCerts(externalCertNames,"external", token);
+                 }
+             }
 			return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Application details updation is successfully completed.\"]}");
 
 	 }
@@ -11253,10 +11521,14 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
                     .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
             Response internalCertListResponse = getMetadata(token, SSLCertificateConstants.SSL_CERT_PATH);
             List<String> internalCertificateNames = getCertificateListFromResponse(internalCertListResponse);
-            // Get external certificate list from metadata
-            Response externalCertListResponse = getMetadata(token, SSLCertificateConstants.SSL_EXTERNAL_CERT_PATH);
-            List<String> externalCertificateNames = getCertificateListFromResponse(externalCertListResponse);
+            List<String> externalCertificateNames = new ArrayList<>();
 
+            // External certificate disabled check
+            if (isExternalCertEnabled){
+                // Get external certificate list from metadata
+                Response externalCertListResponse = getMetadata(token, SSLCertificateConstants.SSL_EXTERNAL_CERT_PATH);
+                externalCertificateNames = getCertificateListFromResponse(externalCertListResponse);
+            }
             certificateList.put(SSLCertificateConstants.INTERNAL, internalCertificateNames);
             certificateList.put(SSLCertificateConstants.EXTERNAL, externalCertificateNames);
         }
@@ -11274,8 +11546,11 @@ String policyPrefix = getCertificatePolicyPrefix(access, certType);
         if (!StringUtils.isEmpty(searchText) && searchText.length() >= 3) {
             List<String> filterCertNames = certificateList.get(SSLCertificateConstants.INTERNAL).stream().filter(s -> s.toLowerCase().contains(searchText)).collect(Collectors.toList());
             certificateList.put(SSLCertificateConstants.INTERNAL, filterCertNames);
-            filterCertNames = certificateList.get(SSLCertificateConstants.EXTERNAL).stream().filter(s -> s.toLowerCase().contains(searchText)).collect(Collectors.toList());
-            certificateList.put(SSLCertificateConstants.EXTERNAL, filterCertNames);
+            // External certificate disabled check
+            if (isExternalCertEnabled){
+                filterCertNames = certificateList.get(SSLCertificateConstants.EXTERNAL).stream().filter(s -> s.toLowerCase().contains(searchText)).collect(Collectors.toList());
+                certificateList.put(SSLCertificateConstants.EXTERNAL, filterCertNames);
+            }
         }
         return ResponseEntity.status(HttpStatus.OK).body(JSONUtil.getJSON(certificateList));
     }
