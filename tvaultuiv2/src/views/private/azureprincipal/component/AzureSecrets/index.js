@@ -195,32 +195,6 @@ const AccessDeniedIcon = styled.img`
   height: 16rem;
 `;
 
-const NoSecretsContaner = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-`;
-
-const NoSecretsdispIcon = styled.img`
-  width: 16rem;
-  height: 16rem;
-`;
-
-const NoData = styled.div`
-  color: #5a637a;
-  text-align: center;
-  margin-top: 2rem;
-  span {
-    display: contents;
-    margin: 0 0.3rem;
-    color: #fff;
-  }
-`;
-
 const NoPermission = styled.div`
   color: #5a637a;
   text-align: center;
@@ -469,7 +443,7 @@ const AzureSecrets = (props) => {
           }
         />
         {response.status === 'loading' && <Loader customStyle={customStyle} />}
-        {response.status === 'success' && azureMetaData.isActivated && (
+        {response.status === 'success' && (
           <>
             {Object.keys(secretsData).length > 0 ? (
               <SecretFolderWrap>
@@ -558,10 +532,7 @@ const AzureSecrets = (props) => {
                 </Collapsible>
               </SecretFolderWrap>
             ) : (
-              <NoSecretsContaner>
-                <NoSecretsdispIcon src={NoSecretsIcon} alt="NoSecretsIcon" />
-                <NoData>No secrets available!</NoData>
-              </NoSecretsContaner>
+              <></>
             )}
           </>
         )}
@@ -578,6 +549,8 @@ const AzureSecrets = (props) => {
           </AccessDeniedWrap>
         )}
         {!azureMetaData.isActivated &&
+          azureMetaData?.owner_email?.toLowerCase() ===
+            sessionStorage.getItem('owner')?.toLowerCase() &&
           response.status === 'success' &&
           azureDetail.name && (
             <UserList>
