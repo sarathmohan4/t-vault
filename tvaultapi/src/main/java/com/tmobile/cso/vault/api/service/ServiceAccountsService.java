@@ -281,10 +281,6 @@ public class  ServiceAccountsService {
 						adServiceAccount.setMemberOf(memberof);
 					}
 
-					if (attr.get("lockedout") != null) {
-						String memberof = (String) attr.get("lockedout").get();
-						adServiceAccount.setMemberOf(memberof);
-					}
 					// lock status
 					adServiceAccount.setLockStatus("unlocked");
 					if (attr.get("lockedout") != null) {
@@ -292,6 +288,9 @@ public class  ServiceAccountsService {
 						if (lockedOut) {
 							adServiceAccount.setLockStatus("locked");
 						}
+					}
+					else if (attr.get("lockouttime") != null) {
+						adServiceAccount.setLockStatus("locked");
 					}
 					if (attr.get("description") != null) {
 						adServiceAccount.setPurpose((String) attr.get("description").get());
