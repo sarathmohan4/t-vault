@@ -1399,16 +1399,11 @@ public class SSLCertificateService {
 	}
 
     private DirectoryUser getUserDetails(String userName) {
-        ResponseEntity<DirectoryObjects> data = directoryService.searchByCorpId(userName);
-        DirectoryObjects Obj = data.getBody();
-        DirectoryObjectsList usersList = Obj.getData();
-        DirectoryUser directoryUser = null;
-        for (int i = 0; i < usersList.getValues().length; i++) {
-            directoryUser = (DirectoryUser) usersList.getValues()[i];
-            if (directoryUser.getUserName().equalsIgnoreCase(userName)) {
-                break;
-            }
-        }
+		DirectoryUser directoryUser = directoryService.getUserDetailsByCorpId(userName);
+		if (StringUtils.isEmpty(directoryUser.getUserEmail())) {
+			// Get user details from Corp domain (For sprint users)
+			directoryUser = directoryService.getUserDetailsFromCorp(userName);
+		}
         if(directoryUser != null) {
 	        String[] displayName =   directoryUser.getDisplayName().split(",");
 	        if(displayName.length > 1) {

@@ -421,15 +421,10 @@ public class  IAMServiceAccountsService {
 	 * @return
 	 */
 	private DirectoryUser getUserDetails(String userName) {
-		ResponseEntity<DirectoryObjects> data = directoryService.searchByCorpId(userName);
-		DirectoryObjects directoryObjects = data.getBody();
-		DirectoryObjectsList usersList = directoryObjects.getData();
-		DirectoryUser directoryUser = null;
-		for (int i = 0; i < usersList.getValues().length; i++) {
-			directoryUser = (DirectoryUser) usersList.getValues()[i];
-			if (directoryUser != null && directoryUser.getUserName().equalsIgnoreCase(userName)) {
-				break;
-			}
+		DirectoryUser directoryUser = directoryService.getUserDetailsByCorpId(userName);
+		if (StringUtils.isEmpty(directoryUser.getUserEmail())) {
+			// Get user details from Corp domain (For sprint users)
+			directoryUser = directoryService.getUserDetailsFromCorp(userName);
 		}
 		if (directoryUser != null) {
 			String[] displayName = directoryUser.getDisplayName().split(",");
