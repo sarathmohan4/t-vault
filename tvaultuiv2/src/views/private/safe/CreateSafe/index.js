@@ -819,11 +819,6 @@ const CreateModal = (props) => {
                               setOpenTransferConfirmationModal(true)
                             }
                             width={isMobileScreen ? '100%' : ''}
-                            disabled={
-                              applicationName === '' ||
-                              applicationName === undefined ||
-                              applicationName === null
-                            }
                           />
                         </CancelButton>
                       )}
