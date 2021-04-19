@@ -7,6 +7,7 @@ import PopupState, { bindTrigger, bindPopover } from 'material-ui-popup-state';
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import GetAppIcon from '@material-ui/icons/GetApp';
+import axios from 'axios';
 import { customColor } from '../../../../../../../theme';
 import DownloadModal from '../DownloadModal';
 import apiService from '../../../../apiService';
@@ -59,11 +60,25 @@ const Download = (props) => {
     setTypeOfDownload('');
   };
 
+  // axios call is written separately to add responseType: blob inside the config
+  // which is required for file download
   const onPrivateDownloadClicked = (payload, type) => {
     onDownloadChange('loading', null);
     setOpenDownloadModal(false);
-    apiService
-      .onPrivateDownload(payload)
+    if (!sessionStorage.getItem('token')) {
+      window.location.href = '/';
+    }
+    const headers = {
+      'vault-token': sessionStorage.getItem('token'),
+      'Content-type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    };
+    axios
+      .post(
+        'https://perf-vault.corporate.t-mobile.com/vault/v2/sslcert/certificates/download',
+        payload,
+        { headers, responseType: 'blob' }
+      )
       .then((res) => {
         onDownloadChange('success', null);
         FileDownload(
