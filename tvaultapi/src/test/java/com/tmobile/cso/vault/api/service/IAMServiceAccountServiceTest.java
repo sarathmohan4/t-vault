@@ -361,7 +361,7 @@ public class IAMServiceAccountServiceTest {
         users.setData(usersList);
 
         ResponseEntity<DirectoryObjects> responseEntityCorpExpected = ResponseEntity.status(HttpStatus.OK).body(users);
-        when(directoryService.searchByCorpId(Mockito.any())).thenReturn(responseEntityCorpExpected);
+        when(directoryService.getUserDetailsByCorpId(Mockito.any())).thenReturn(directoryUser);
 
 		ReflectionTestUtils.setField(iamServiceAccountsService, "supportEmail", "support@abc.com");
 		Mockito.doNothing().when(emailUtils).sendHtmlEmalFromTemplate(Mockito.any(), Mockito.any(), Mockito.any(),

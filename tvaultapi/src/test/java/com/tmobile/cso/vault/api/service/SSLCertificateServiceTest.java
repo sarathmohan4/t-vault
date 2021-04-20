@@ -261,7 +261,7 @@ public class SSLCertificateServiceTest {
         String responseMessage =new ObjectMapper().writeValueAsString(users);
 
         ResponseEntity<DirectoryObjects> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(users);
-        when(directoryService.searchByCorpId(Mockito.any())).thenReturn(responseEntityExpected);
+        when(directoryService.getUserDetailsByCorpId(Mockito.any())).thenReturn(directoryUser);
 
         Mockito.doNothing().when(emailUtils).sendHtmlEmalFromTemplateForDelete(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any());
         Mockito.doNothing().when(emailUtils).sendEmailForExternalCert(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any());
