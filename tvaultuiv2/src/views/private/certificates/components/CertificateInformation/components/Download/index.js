@@ -11,6 +11,7 @@ import axios from 'axios';
 import { customColor } from '../../../../../../../theme';
 import DownloadModal from '../DownloadModal';
 import apiService from '../../../../apiService';
+import configUrl from '../../../../../../../config';
 import SuccessAndErrorModal from '../../../../../../../components/SuccessAndErrorModal';
 
 const FileDownload = require('js-file-download');
@@ -74,11 +75,10 @@ const Download = (props) => {
       'Access-Control-Allow-Origin': '*',
     };
     axios
-      .post(
-        'https://perf-vault.corporate.t-mobile.com/vault/v2/sslcert/certificates/download',
-        payload,
-        { headers, responseType: 'blob' }
-      )
+      .post(`${configUrl.baseUrl}/sslcert/certificates/download`, payload, {
+        headers,
+        responseType: 'blob',
+      })
       .then((res) => {
         onDownloadChange('success', null);
         FileDownload(
