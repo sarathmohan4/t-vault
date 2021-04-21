@@ -31,11 +31,9 @@ public class IAMSecrets implements Serializable {
 
 	private static final long serialVersionUID = -5704090790663628283L;
 
-	@NotBlank
 	@Size(min = 16, max = 128, message = "AccessKeyId specified should be minimum 16 chanracters and maximum 128 characters only")
 	private String accessKeyId;
 
-	@NotNull
 	@Min(604800000L)
 	@Max(7776000000L)
 	private Long expiryDuration;

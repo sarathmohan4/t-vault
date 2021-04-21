@@ -84,15 +84,18 @@ public class IAMServiceAccount implements Serializable {
 	private String applicationTag;
 
 	@Valid
-	@NotEmpty
 	private List<IAMSecrets> secret;
+
+	@NotBlank
+	@JsonProperty("ad_group")
+	private String adSelfSupportGroup;
 
 	public IAMServiceAccount() {
 	}
 
 	public IAMServiceAccount(String userName, String awsAccountId, String awsAccountName, Long createdAtEpoch,
 			String ownerNtid, String ownerEmail, String applicationId, String applicationName, String applicationTag,
-			List<IAMSecrets> secret) {
+			List<IAMSecrets> secret, String adSelfSupportGroup) {
 		super();
 		this.userName = userName;
 		this.awsAccountId = awsAccountId;
@@ -104,6 +107,7 @@ public class IAMServiceAccount implements Serializable {
 		this.applicationName = applicationName;
 		this.applicationTag = applicationTag;
 		this.secret = secret;
+		this.adSelfSupportGroup = adSelfSupportGroup;
 	}
 
 	/**
@@ -254,11 +258,28 @@ public class IAMServiceAccount implements Serializable {
 		this.secret = secret;
 	}
 
+	public String getAdSelfSupportGroup() {
+		return adSelfSupportGroup;
+	}
+
+	public void setAdSelfSupportGroup(String adSelfSupportGroup) {
+		this.adSelfSupportGroup = adSelfSupportGroup;
+	}
+
 	@Override
 	public String toString() {
-		return "IAMServiceAccount [userName=" + userName + ", awsAccountId=" + awsAccountId + ", awsAccountName="
-				+ awsAccountName + ", createdAtEpoch=" + createdAtEpoch + ", ownerNtid=" + ownerNtid + ", ownerEmail="
-				+ ownerEmail + ", applicationId=" + applicationId + ", applicationName=" + applicationName
-				+ ", applicationTag=" + applicationTag + ", secret=" + secret + "]";
+		return "IAMServiceAccount{" +
+				"userName='" + userName + '\'' +
+				", awsAccountId='" + awsAccountId + '\'' +
+				", awsAccountName='" + awsAccountName + '\'' +
+				", createdAtEpoch=" + createdAtEpoch +
+				", ownerNtid='" + ownerNtid + '\'' +
+				", ownerEmail='" + ownerEmail + '\'' +
+				", applicationId='" + applicationId + '\'' +
+				", applicationName='" + applicationName + '\'' +
+				", applicationTag='" + applicationTag + '\'' +
+				", secret=" + secret +
+				", adSelfSupportGroup='" + adSelfSupportGroup + '\'' +
+				'}';
 	}
 }

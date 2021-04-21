@@ -17,7 +17,7 @@
     <div>Onboarding of IAM Service Account <span class="special-text" data-th-text="${svcAccName}"></span> has been completed successfully, and you will now want to activate the same in T-Vault and assign permissions to other users who you want to view or rotate this password.</div>
     <div>To do so please complete the following steps:</div>
 
-    <h4>Activate IAM Service Account:</h4>
+    <h4>Add Access Keys to IAM Service Account:</h4>
     <ol>
         <li>Login to <a href="https://vault.corporate.t-mobile.com/" target="_blank">T-Vault.</a> </li>
         <li>
@@ -29,14 +29,14 @@
             <img class ="image" src="iamviewlink.png" th:src="|cid:${iamviewlink}|"/>
         </li>
         <li>
-            <div>Click the rotate icon to activate IAM Service Account.</div>
-            <img class ="image" src="iamactivate.png" th:src="|cid:${iamactivate}|"/>
+            <div>Click the "Generate Keys" link to create Access Keys for this IAM Service Account.</div>
+            <!-- <img class ="image" src="iamactivate.png" th:src="|cid:${iamactivate}|"/> -->
         </li>
 
     </ol>
 
     <h4>Assigning Permissions: </h4>
-    <div>Once you are finished activating your IAM Service Account you can assign permissions to other users or groups you want to have permission to view or rotate the password for the account.</div>
+    <div>You can assign permissions to other users or groups you want to have permission to view or rotate the password for the account.</div>
     <div data-th-text="${groupContent}"></div>
     <ol>
         <li>Login to <a href="https://vault.corporate.t-mobile.com/" target="_blank">T-Vault.</a> </li>
@@ -55,7 +55,7 @@
             <img class ="image" src="adduser.png" th:src="|cid:${adduser}|"/>
         </li>
     </ol>
-    
+
     <h4>Rotate Secret Key: </h4>
     <div>Once you are finished activating your IAM Service Account you can rotate the password for the account.</div>
     <ol>

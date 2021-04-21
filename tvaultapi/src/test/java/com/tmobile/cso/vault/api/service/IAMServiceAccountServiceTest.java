@@ -601,7 +601,7 @@ public class IAMServiceAccountServiceTest {
 		when(reqProcessor.process(eq("/sdb"), Mockito.any(), eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true,
 				"{\"data\":{\"isActivated\":true,\"managedBy\":\"normaluser\",\"name\":\"svc_vault_test5\",\"users\":{\"normaluser\":\"sudo\"}}}"));
 		ResponseEntity<String> responseEntity = iamServiceAccountsService.addGroupToIAMServiceAccount(token,
-				iamSvcAccGroup, userDetails);
+				iamSvcAccGroup, userDetails, false);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 		assertEquals(responseEntityExpected, responseEntity);
 	}
@@ -653,7 +653,7 @@ public class IAMServiceAccountServiceTest {
 		when(OIDCUtil.updateGroupPolicies(any(), any(), any(), any(), any())).thenReturn(response);
 
 		ResponseEntity<String> responseEntity = iamServiceAccountsService.addGroupToIAMServiceAccount(token,
-				iamSvcAccGroup, userDetails);
+				iamSvcAccGroup, userDetails, false);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 		assertEquals(responseEntityExpected, responseEntity);
 	}
@@ -689,7 +689,7 @@ public class IAMServiceAccountServiceTest {
 				"{\"data\":{\"isActivated\":true,\"managedBy\":\"normaluser\",\"name\":\"svc_vault_test5\",\"users\":{\"normaluser\":\"sudo\"}}}"));
 		when(tokenUtils.getSelfServiceToken()).thenReturn(token);
 		ResponseEntity<String> responseEntity = iamServiceAccountsService.addGroupToIAMServiceAccount(token,
-				iamSvcAccGroup, userDetails);
+				iamSvcAccGroup, userDetails, false);
 		assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
 		assertEquals(responseEntityExpected, responseEntity);
 	}
@@ -726,7 +726,7 @@ public class IAMServiceAccountServiceTest {
 
 		when(tokenUtils.getSelfServiceToken()).thenReturn(token);
 		ResponseEntity<String> responseEntity = iamServiceAccountsService.addGroupToIAMServiceAccount(token,
-				iamSvcAccGroup, userDetails);
+				iamSvcAccGroup, userDetails, false);
 		assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
 		assertEquals(responseEntityExpected, responseEntity);
 	}
@@ -760,7 +760,7 @@ public class IAMServiceAccountServiceTest {
 		when(reqProcessor.process(eq("/sdb"), Mockito.any(), eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true,
 				"{\"data\":{\"isActivated\":true,\"managedBy\":\"normaluser\",\"name\":\"svc_vault_test5\",\"users\":{\"normaluser\":\"sudo\"}}}"));
 		ResponseEntity<String> responseEntity = iamServiceAccountsService.addGroupToIAMServiceAccount(token,
-				iamSvcAccGroup, userDetails);
+				iamSvcAccGroup, userDetails, false);
 		assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
 		assertEquals(responseEntityExpected, responseEntity);
 	}
@@ -779,7 +779,7 @@ public class IAMServiceAccountServiceTest {
 		when(policyUtils.getCurrentPolicies(userDetails.getSelfSupportToken(), userDetails.getUsername(), userDetails))
 				.thenReturn(latestPolicies);
 		ResponseEntity<String> responseEntity = iamServiceAccountsService.addGroupToIAMServiceAccount(token,
-				iamSvcAccGroup, userDetails);
+				iamSvcAccGroup, userDetails, false);
 		assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
 		assertEquals(responseEntityExpected, responseEntity);
 	}

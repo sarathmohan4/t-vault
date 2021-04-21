@@ -52,6 +52,8 @@ public class IAMServiceAccountMetadataDetails implements Serializable {
 
 	private List<IAMSecretsMetadata> secret;
 
+	private String adSelfSupportGroup;
+
 	/**
 	 * @return the userName
 	 */
@@ -207,13 +209,29 @@ public class IAMServiceAccountMetadataDetails implements Serializable {
 		this.secret = secret;
 	}
 
-	@Override
-	public String toString() {
-		return "IAMServiceAccountMetadataDetails [userName=" + userName + ", awsAccountId=" + awsAccountId
-				+ ", awsAccountName=" + awsAccountName + ", createdAtEpoch=" + createdAtEpoch + ", ownerNtid="
-				+ ownerNtid + ", ownerEmail=" + ownerEmail + ", applicationId=" + applicationId + ", applicationName="
-				+ applicationName + ", applicationTag=" + applicationTag + ", accountActivated=" + accountActivated
-				+ ", secret=" + secret + "]";
+	public String getAdSelfSupportGroup() {
+		return adSelfSupportGroup;
 	}
 
+	public void setAdSelfSupportGroup(String adSelfSupportGroup) {
+		this.adSelfSupportGroup = adSelfSupportGroup;
+	}
+
+	@Override
+	public String toString() {
+		return "IAMServiceAccountMetadataDetails{" +
+				"userName='" + userName + '\'' +
+				", awsAccountId='" + awsAccountId + '\'' +
+				", awsAccountName='" + awsAccountName + '\'' +
+				", createdAtEpoch=" + createdAtEpoch +
+				", ownerNtid='" + ownerNtid + '\'' +
+				", ownerEmail='" + ownerEmail + '\'' +
+				", applicationId='" + applicationId + '\'' +
+				", applicationName='" + applicationName + '\'' +
+				", applicationTag='" + applicationTag + '\'' +
+				", accountActivated=" + accountActivated +
+				", secret=" + secret +
+				", adSelfSupportGroup='" + adSelfSupportGroup + '\'' +
+				'}';
+	}
 }

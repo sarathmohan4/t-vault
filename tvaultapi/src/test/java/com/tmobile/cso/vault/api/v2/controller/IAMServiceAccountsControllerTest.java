@@ -389,7 +389,7 @@ public class IAMServiceAccountsControllerTest {
 		String inputJson = getJSON(iamSvcAccGroup);
 		String responseJson = "{\"messages\":[\"Group is successfully associated with IAM Service Account\"]}";
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);
-		when(iamServiceAccountsService.addGroupToIAMServiceAccount(Mockito.anyString(), Mockito.any(), Mockito.any()))
+		when(iamServiceAccountsService.addGroupToIAMServiceAccount(Mockito.anyString(), Mockito.any(), Mockito.any(), eq(false)))
 				.thenReturn(responseEntityExpected);
 		MvcResult result = mockMvc
 				.perform(MockMvcRequestBuilders.post("/v2/iamserviceaccounts/group")
