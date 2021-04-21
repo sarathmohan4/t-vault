@@ -18,6 +18,8 @@ package com.tmobile.cso.vault.api.v2.controller;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -25,10 +27,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
-import com.tmobile.cso.vault.api.model.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,8 +52,18 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
-
+import com.tmobile.cso.vault.api.model.AWSLoginRole;
+import com.tmobile.cso.vault.api.model.IAMSecrets;
+import com.tmobile.cso.vault.api.model.IAMServiceAccount;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountAWSRole;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountApprole;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountGroup;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountOffboardRequest;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountRotateRequest;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountUser;
+import com.tmobile.cso.vault.api.model.UserDetails;
 import com.tmobile.cso.vault.api.service.IAMServiceAccountsService;
 
 
@@ -75,6 +91,8 @@ public class IAMServiceAccountsControllerTest {
     private static final String VAULT_TOKEN_STRING="vault-token";
     private static final String CONTENT_TYPE_STRING="Content-Type";
     private static final String CONTENT_TYPE_VALUE_STRING="application/json;charset=UTF-8";
+    private static ValidatorFactory validatorFactory;
+    private static Validator validator;
 
     @Before
     public void setUp() {
@@ -85,6 +103,8 @@ public class IAMServiceAccountsControllerTest {
         userDetails.setAdmin(true);
         userDetails.setClientToken(token);
         userDetails.setSelfSupportToken(token);
+        validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
     }
 
 	private IAMServiceAccount generateIAMServiceAccount(String userName, String awsAccountId, String owner) {
@@ -133,6 +153,79 @@ public class IAMServiceAccountsControllerTest {
 				.requestAttr(USER_DETAILS_STRING, userDetails)).andExpect(status().isOk()).andReturn();
 		String actual = result.getResponse().getContentAsString();
 		assertEquals(expected, actual);
+	}
+	@Test
+	public void test_iamsvcUsername_invalidChars_hash() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount#", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertFalse(violations.isEmpty());
+	}
+	@Test
+	public void test_iamsvcUsername_invalidChars_dollar() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount$", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertFalse(violations.isEmpty());
+	}
+	@Test
+	public void test_iamsvcUsername_invalidChars() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount&", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertFalse(violations.isEmpty());
+	}
+	
+	@Test
+	public void test_iamsvcUsername_validChars_alpha() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertTrue(violations.isEmpty());
+	}
+	@Test
+	public void test_iamsvcUsername_validChars_alphanumeric() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount01", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertTrue(violations.isEmpty());
+	}
+	@Test
+	public void test_iamsvcUsername_validChars_alphanumeric_plus() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount01+", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertTrue(violations.isEmpty());
+	}
+	@Test
+	public void test_iamsvcUsername_validChars_alphanumeric_plus_equalto() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount01+=", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertTrue(violations.isEmpty());
+	}
+	@Test
+	public void test_iamsvcUsername_validChars_alphanumeric_plus_equalto_comma() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount01+=,", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertTrue(violations.isEmpty());
+	}
+	@Test
+	public void test_iamsvcUsername_validChars_alphanumeric_plus_equalto_comma_period() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount01+=,.", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertTrue(violations.isEmpty());
+	}
+	@Test
+	public void test_iamsvcUsername_validChars_alphanumeric_plus_equalto_comma_period_at() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount01+=,.@", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertTrue(violations.isEmpty());
+	}
+	@Test
+	public void test_iamsvcUsername_validChars_alphanumeric_plus_equalto_comma_period_at_uscore() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount01+=,.@_", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertTrue(violations.isEmpty());
+	}
+	@Test
+	public void test_iamsvcUsername_validChars_alphanumeric_plus_equalto_comma_period_at_uscore_hyp() {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount01+=,.@_-", "1234567", "normaluser");
+	    Set<ConstraintViolation<IAMServiceAccount>> violations = validator.validate(serviceAccount);
+	    assertTrue(violations.isEmpty());
 	}
 	
 	@Test
