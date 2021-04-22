@@ -84,17 +84,17 @@ const extraCss = css`
 const CertificateListItem = (props) => {
   const { title, createDate, icon, certType, isOnboardCert } = props;
 
-  const renderTitle =()=>{
+  const renderTitle = () => {
     return (
-      <TitleOne 
-      isOnboardCert={isOnboardCert}
-      color="#d0d0d0" 
-      extraCss={extraCss}
+      <TitleOne
+        isOnboardCert={isOnboardCert}
+        color="#d0d0d0"
+        extraCss={extraCss}
       >
         {title}
       </TitleOne>
-      )
-  }
+    );
+  };
   return (
     <ComponentError>
       <FolderWrap>
@@ -103,12 +103,11 @@ const CertificateListItem = (props) => {
             <Avatar alt="ListItem_icon" src={icon} />
           </ListItemAvatarWrap>
           <ListItemDetailBox>
-          <TooltipComponent 
-          title={title} 
-          certificate ={'top'} 
-          renderContent={renderTitle()}
-          >
-            </TooltipComponent>
+            <TooltipComponent
+              title={title}
+              certificate="top"
+              renderContent={renderTitle()}
+            />
             <SubTitleWrap isOnboardCert={isOnboardCert}>
               <Flag fontSize="1.3rem">{createDate}</Flag>
               {createDate ? (
@@ -131,12 +130,13 @@ CertificateListItem.propTypes = {
   title: PropTypes.string,
   icon: PropTypes.string,
   certType: PropTypes.string,
-  isOnboardCert: PropTypes.bool.isRequired,
+  isOnboardCert: PropTypes.bool,
 };
 CertificateListItem.defaultProps = {
   createDate: '',
   title: '',
   icon: ListItemIcon,
   certType: '',
+  isOnboardCert: false,
 };
 export default CertificateListItem;
