@@ -58,6 +58,7 @@ import com.tmobile.cso.vault.api.model.AWSLoginRole;
 import com.tmobile.cso.vault.api.model.IAMSecrets;
 import com.tmobile.cso.vault.api.model.IAMServiceAccount;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountAWSRole;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountAccessKey;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountApprole;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountGroup;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountOffboardRequest;
