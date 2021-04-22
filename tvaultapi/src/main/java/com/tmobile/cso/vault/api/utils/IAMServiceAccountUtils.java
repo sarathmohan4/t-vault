@@ -29,6 +29,7 @@ import com.tmobile.cso.vault.api.controller.ControllerUtil;
 import com.tmobile.cso.vault.api.exception.LogMessage;
 import com.tmobile.cso.vault.api.model.AppRoleIdSecretId;
 import com.tmobile.cso.vault.api.model.IAMSecretsMetadata;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountAccessKey;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountRotateRequest;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountSecret;
 import com.tmobile.cso.vault.api.process.RequestProcessor;
@@ -575,4 +576,25 @@ public class IAMServiceAccountUtils {
       }
 	  return newSecretData;
   }
+
+	/**
+	 * Method to call the delete API from IAM for deleting the IAM service account access key and secret
+	 * @param iamServiceAccountAccessKey
+	 * @return
+	 */
+	public boolean deleteIAMAccesskeySecret(IAMServiceAccountAccessKey iamServiceAccountAccessKey) {
+		String iamApproleToken = getIAMApproleToken();
+		if (StringUtils.isEmpty(iamApproleToken)) {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG)
+					.put(LogMessage.MESSAGE, "Invalid IAM Portal approle token")
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return false;
+		}
+
+		//To do the IAM delete access key api integration
+
+		return true;
+	}
 }

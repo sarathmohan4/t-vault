@@ -561,8 +561,20 @@ public class IAMServiceAccountsControllerTest {
 				.header(CONTENT_TYPE_STRING, CONTENT_TYPE_VALUE_STRING).requestAttr(USER_DETAILS_STRING, userDetails)
 				.content(inputJson)).andExpect(status().isOk()).andReturn();
 	}
-	
-	
-	
 
+	@Test
+	public void testDeleteIAMServiceAccountCreds() throws Exception {
+		IAMServiceAccountAccessKey iamServiceAccountAccessKey = new IAMServiceAccountAccessKey("testaccesskey555", "testiamname", "1234567890");
+		String inputJson = getJSON(iamServiceAccountAccessKey);
+		String responseJson = "{\"messages\":[\"IAM Service account access key deleted successfully\"]}";
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);
+		when(iamServiceAccountsService.deleteIAMServiceAccountCreds(eq(userDetails), eq("5PDrOhsy4ig8L3EpsJZSLAMg"), Mockito.any(IAMServiceAccountAccessKey.class))).thenReturn(responseEntityExpected);
+
+		mockMvc.perform(MockMvcRequestBuilders.delete("/v2/iamserviceaccount/secrets/delete").requestAttr("UserDetails", userDetails)
+				.header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
+				.header("Content-Type", "application/json;charset=UTF-8")
+				.content(inputJson))
+				.andExpect(status().isOk())
+				.andExpect(content().string(containsString(responseJson)));
+	}
 }

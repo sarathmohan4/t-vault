@@ -26,6 +26,7 @@ import com.tmobile.cso.vault.api.model.AWSIAMRole;
 import com.tmobile.cso.vault.api.model.AWSLoginRole;
 import com.tmobile.cso.vault.api.model.IAMServiceAccount;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountAWSRole;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountAccessKey;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountApprole;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountGroup;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountOffboardRequest;
@@ -349,5 +350,19 @@ public class IAMServiceAccountsController {
 			@RequestBody @Valid IAMServiceAccountAWSRole iamServiceAccountAWSRole) {
 		UserDetails userDetails = (UserDetails) request.getAttribute(USER_DETAILS_STRING);
 		return iamServiceAccountsService.removeAWSRoleFromIAMSvcacc(userDetails, token, iamServiceAccountAWSRole);
+	}
+
+	/**
+	 * Delete IAM Service account access key and secret.
+	 * @param request
+	 * @param token
+	 * @param iamServiceAccountAccessKey
+	 * @return
+	 */
+	@DeleteMapping(value="/v2/iamserviceaccount/secrets/delete", produces="application/json")
+	@ApiOperation(value = "${IAMServiceAccountsController.deleteIAMServiceAccountCreds.value}", notes = "${IAMServiceAccountsController.deleteIAMServiceAccountCreds.notes}")
+	public ResponseEntity<String> deleteIAMServiceAccountCreds(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody @Valid IAMServiceAccountAccessKey iamServiceAccountAccessKey){
+		UserDetails userDetails = (UserDetails) request.getAttribute(USER_DETAILS_STRING);
+		return iamServiceAccountsService.deleteIAMServiceAccountCreds(userDetails, token, iamServiceAccountAccessKey);
 	}
 }
