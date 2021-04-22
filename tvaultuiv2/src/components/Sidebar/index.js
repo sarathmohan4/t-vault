@@ -129,7 +129,7 @@ const Sidebar = (props) => {
 
 Sidebar.propTypes = {
   onClose: PropTypes.func.isRequired,
-  navItems: PropTypes.arrayOf(PropTypes.any).isRequired,
+  navItems: PropTypes.objectOf(PropTypes.any).isRequired,
   userName: PropTypes.string.isRequired,
   checkToken: PropTypes.func.isRequired,
   DescriptionIcon: PropTypes.objectOf(PropTypes.any).isRequired,

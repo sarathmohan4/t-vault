@@ -403,15 +403,7 @@ const IamServiceAccountSecrets = (props) => {
       })
       .catch((err) => {
         if (err?.response?.data?.errors && err?.response?.data?.errors[0]) {
-          setSuccessErrorDetails({
-            title: 'Activation Failed!',
-            desc: err?.response?.data?.errors[0],
-          });
-        } else {
-          setSuccessErrorDetails({
-            title: 'Activation Failed!',
-            desc: 'Something went wrong!',
-          });
+          setToastMessage(err?.response?.data?.errors[0]);
         }
         setResponse({});
         setResponseType(-1);
@@ -444,10 +436,9 @@ const IamServiceAccountSecrets = (props) => {
   };
 
   useEffect(() => {
+    setSecretsData({});
     if (accountSecretData && Object.keys(accountSecretData).length > 0) {
       onViewSecretDetails(accountSecretData?.folders[0]);
-    } else {
-      setSecretsData({});
     }
     setShowSecret(false);
   }, [accountSecretData, onViewSecretDetails]);
@@ -645,7 +636,7 @@ const IamServiceAccountSecrets = (props) => {
           <SnackbarComponent
             open
             onClose={() => onToastClose()}
-            message={toastMessage}
+            message={toastMessage || 'Successful!'}
           />
         )}
         {responseType === -1 && (
@@ -654,7 +645,7 @@ const IamServiceAccountSecrets = (props) => {
             severity="error"
             icon="error"
             onClose={() => onToastClose()}
-            message={toastMessage}
+            message={toastMessage || 'Something went wrong!'}
           />
         )}
       </>

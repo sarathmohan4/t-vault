@@ -45,11 +45,9 @@ const LabelWrap = styled.div`
 const extraCss = css`
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   ${mediaBreakpoints.belowLarge} {
     width: 28rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     font-size: 1.6rem;
   }
   ${mediaBreakpoints.smallAndMedium} {

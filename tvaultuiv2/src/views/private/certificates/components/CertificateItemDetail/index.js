@@ -78,7 +78,6 @@ const ListTitle = styled('h5')`
   overflow: hidden;
   word-break: break-all;
   width: 100%;
-  text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 `;

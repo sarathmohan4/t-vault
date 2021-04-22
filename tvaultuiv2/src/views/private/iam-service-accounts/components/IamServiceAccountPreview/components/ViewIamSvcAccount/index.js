@@ -83,6 +83,7 @@ const Label = styled.p`
 
 const Value = styled.p`
   font-size: 1.8rem;
+  word-break: break-all;
 `;
 
 const EachDetail = styled.div`
