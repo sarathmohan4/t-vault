@@ -254,11 +254,13 @@ const AccountSelectionTabs = (props) => {
 AccountSelectionTabs.propTypes = {
   accountDetail: PropTypes.objectOf(PropTypes.any),
   refresh: PropTypes.func.isRequired,
-  setOffboardDecomissionedConfirmation: PropTypes.func.isRequired,
-  setServiceAccountMetaData: PropTypes.func.isRequired,
+  setOffboardDecomissionedConfirmation: PropTypes.func,
+  setServiceAccountMetaData: PropTypes.func,
 };
 AccountSelectionTabs.defaultProps = {
   accountDetail: {},
+  setOffboardDecomissionedConfirmation: () => {},
+  setServiceAccountMetaData: () => {},
 };
 
 export default AccountSelectionTabs;

@@ -36,7 +36,10 @@ import apiService from '../../apiService';
 import Strings from '../../../../../resources';
 import { TitleOne } from '../../../../../styles/GlobalStyles';
 import AccountSelectionTabs from '../IamSvcAccountTabs';
-import { ListContent } from '../../../../../styles/GlobalStyles/listingStyle';
+import {
+  ListContainer,
+  ListContent,
+} from '../../../../../styles/GlobalStyles/listingStyle';
 import { getEachUsersDetails } from '../../../../../services/helper-function';
 import TooltipComponent from '../../../../../components/Tooltip';
 
@@ -45,53 +48,27 @@ const ColumnSection = styled('section')`
   background: ${(props) => props.backgroundColor || '#151820'};
 `;
 
-const RightColumnSection = styled(ColumnSection)`
+const SectionPreview = styled('main')`
+  display: flex;
+  height: 100%;
+`;
+
+export const RightColumnSection = styled(ColumnSection)`
   width: 59.23%;
   padding: 0;
   background: linear-gradient(to top, #151820, #2c3040);
   ${mediaBreakpoints.small} {
     width: 100%;
-    ${(props) => props.mobileViewStyles}
     display: ${(props) => (props.isAccountDetailsOpen ? 'block' : 'none')};
+    ${(props) => props.mobileViewStyles}
   }
 `;
-const LeftColumnSection = styled(ColumnSection)`
+export const LeftColumnSection = styled(ColumnSection)`
   width: 40.77%;
   ${mediaBreakpoints.small} {
     display: ${(props) => (props.isAccountDetailsOpen ? 'none' : 'block')};
     width: 100%;
   }
-`;
-
-const SectionPreview = styled('main')`
-  display: flex;
-  height: 100%;
-`;
-const ColumnHeader = styled('div')`
-  display: flex;
-  align-items: center;
-  padding: 0.5em;
-  justify-content: space-between;
-  border-bottom: 0.1rem solid #1d212c;
-`;
-
-const ListContainer = styled.div`
-  overflow: auto;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  ::-webkit-scrollbar-track {
-    -webkit-box-shadow: none !important;
-    background-color: transparent;
-  }
-`;
-
-const NoDataWrapper = styled.div`
-  height: 61vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 `;
 
 const PopperWrap = styled.div`
@@ -133,15 +110,19 @@ const NoListWrap = styled.div`
   width: 35%;
 `;
 
-const BorderLine = styled.div`
+const ColumnHeader = styled('div')`
+  display: flex;
+  align-items: center;
+  padding: 0.5em;
+  justify-content: space-between;
   border-bottom: 0.1rem solid #1d212c;
-  width: 90%;
-  position: absolute;
-  bottom: 0;
 `;
 
-const SearchWrap = styled.div`
-  width: 100%;
+const NoDataWrapper = styled.div`
+  height: 61vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const MobileViewForListDetailPage = css`
@@ -150,14 +131,21 @@ const MobileViewForListDetailPage = css`
   right: 0;
   left: 0;
   bottom: 0;
-  top: 7rem;
-  z-index: 1;
+  top: 0;
   overflow-y: auto;
-  ::-webkit-scrollbar-track {
-    -webkit-box-shadow: none !important;
-    background-color: transparent;
+  max-height: 100%;
+  z-index: 20;
+`;
+
+const SearchWrap = styled.div`
+  width: 100%;
+  border: 0.5px solid transparent;
+  outline: none;
+  :focus-within {
+    border: 0.5px solid #e20074;
   }
 `;
+
 const EmptyContentBox = styled('div')`
   width: 100%;
   position: absolute;
@@ -166,6 +154,13 @@ const EmptyContentBox = styled('div')`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+`;
+
+const BorderLine = styled.div`
+  border-bottom: 0.1rem solid #1d212c;
+  width: 90%;
+  position: absolute;
+  bottom: 0;
 `;
 
 const ListHeader = css`
@@ -212,7 +207,7 @@ const IamServiceAccountDashboard = () => {
     error: '',
   });
   const [userDetails, setUserDetails] = useState([]);
-
+  const [toastMessage, setToastMessage] = useState('');
   const [state, dispatch] = useStateValue();
 
   const listIconStyles = iconStyles();
@@ -329,7 +324,10 @@ const IamServiceAccountDashboard = () => {
       .then((res) => {
         setSelectedIamServiceAccountDetails(res?.data);
       })
-      .catch(() => {
+      .catch((err) => {
+        if (err?.response?.data?.errors && err?.response?.data?.errors[0]) {
+          setToastMessage(err.response.data.errors);
+        }
         setResponseType(-1);
         setViewDetails(false);
       });
@@ -648,7 +646,7 @@ const IamServiceAccountDashboard = () => {
               onClose={() => onToastClose()}
               severity="error"
               icon="error"
-              message="Something went wrong!"
+              message={toastMessage || 'Something went wrong!'}
             />
           )}
           {responseType === 1 && (

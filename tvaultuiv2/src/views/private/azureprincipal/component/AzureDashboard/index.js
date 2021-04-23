@@ -124,6 +124,11 @@ const BorderLine = styled.div`
 
 const SearchWrap = styled.div`
   width: 100%;
+  border: 0.5px solid transparent;
+  outline: none;
+  :focus-within {
+    border: 0.5px solid #e20074;
+  }
 `;
 
 const ViewIcon = styled.div``;

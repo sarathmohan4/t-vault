@@ -70,6 +70,8 @@ const SecretIdWrap = styled.div`
   background: ${BackgroundColor.secretBg || '#2a2e3e'};
   padding: 1.2rem 0;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
   :hover {
     background: ${BackgroundColor.secretHoverBg};
   }

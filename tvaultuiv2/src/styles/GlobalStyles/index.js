@@ -33,6 +33,7 @@ export const TitleThree = styled('div')`
   line-height: ${(props) => props.lineHeight || 'normal'};
   font-family: ${(props) => props.fontfamily || ''};
   text-overflow: ellipsis;
+  white-space: nowrap;
   overflow: hidden;
   ${(props) => (props.extraCss ? props.extraCss : '')}
 `;
