@@ -31,6 +31,7 @@ import ListItem from '../../../../../components/ListItem';
 import Error from '../../../../../components/Error';
 import SnackbarComponent from '../../../../../components/Snackbar';
 import ScaledLoader from '../../../../../components/Loaders/ScaledLoader';
+import BackdropLoader from '../../../../../components/Loaders/BackdropLoader';
 import ViewIamServiceAccount from '../IamServiceAccountPreview';
 import apiService from '../../apiService';
 import Strings from '../../../../../resources';
@@ -209,7 +210,7 @@ const IamServiceAccountDashboard = () => {
   const [userDetails, setUserDetails] = useState([]);
   const [toastMessage, setToastMessage] = useState('');
   const [state, dispatch] = useStateValue();
-
+  const [backdropLoader, setBackdropLoader] = useState(false);
   const listIconStyles = iconStyles();
   const isMobileScreen = useMediaQuery(mediaBreakpoints.small);
   const history = useHistory();
@@ -317,14 +318,17 @@ const IamServiceAccountDashboard = () => {
   };
 
   const onViewClicked = (svcname, account) => {
-    setViewDetails(true);
     setViewAccountData(account);
+    setBackdropLoader(true);
     apiService
       .fetchIamServiceAccountDetails(svcname)
       .then((res) => {
+        setBackdropLoader(false);
+        setViewDetails(true);
         setSelectedIamServiceAccountDetails(res?.data);
       })
       .catch((err) => {
+        setBackdropLoader(false);
         if (err?.response?.data?.errors && err?.response?.data?.errors[0]) {
           setToastMessage(err.response.data.errors);
         }
@@ -515,6 +519,7 @@ const IamServiceAccountDashboard = () => {
                 />
               </SearchWrap>
             </ColumnHeader>
+            {backdropLoader && <BackdropLoader notAbsolute />}
             {response.status === 'loading' && (
               <ScaledLoader contentHeight="80%" contentWidth="100%" />
             )}
