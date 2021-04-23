@@ -206,39 +206,93 @@ public class  IAMServiceAccountsService {
 		if (iamSvcAccOwnerPermissionAddStatus) {
 			// Add sudo permission to owner
 			boolean iamSvcAccCreationStatus = addSudoPermissionToOwner(token, iamServiceAccount, userDetails, iamSvcAccName);
-
+			boolean selfSupportGroupAssoicationStatus = true;
 			// Add self support group to IAM service account (if available)
 			if (!StringUtils.isEmpty(iamServiceAccount.getAdSelfSupportGroup())) {
 				IAMServiceAccountGroup iamServiceAccountGroup = new IAMServiceAccountGroup(iamServiceAccount.getUserName(),
 						iamServiceAccount.getAdSelfSupportGroup(), IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING,
 						iamServiceAccount.getAwsAccountId());
 				ResponseEntity<String> addGroupResponse = addGroupToIAMServiceAccount(token, iamServiceAccountGroup, userDetails, true);
-				// Rollback if failed to add self support group to IAM service account
+
 				if (addGroupResponse == null || !HttpStatus.OK.equals(addGroupResponse.getStatusCode())) {
 					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 							.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE)
 							.put(LogMessage.MESSAGE, String.format("Successfully onboarded the IAM Service Account[%s]  " +
 											"with owner [%s]. But failed to add rotate permission to [%s]",
-									iamServiceAccount.getUserName(),iamServiceAccount.getOwnerEmail(),
+									iamServiceAccount.getUserName(), iamServiceAccount.getOwnerEmail(),
 									iamServiceAccount.getAdSelfSupportGroup()))
 							.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-					return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onSelfSupportGroupAssociationFailure");
-				}
-				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					selfSupportGroupAssoicationStatus = false;
+				} else {
+					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 						.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE)
 						.put(LogMessage.MESSAGE, String.format("Rotate permission added successfully to Self " +
 								"support group %s in IAM service account %s", iamServiceAccount.getAdSelfSupportGroup(), iamSvcAccName))
 						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+				}
+			}
+
+			// Save legacy secret in iamsvcacc/ mount with only accesskeys if secret array exists in request
+			if (iamServiceAccount.getSecret()!=null) {
+				boolean updateSecretMountStatus = true;
+				int accessKeyIndex = 0;
+				for (IAMSecrets iamSecrets: iamServiceAccount.getSecret()) {
+					accessKeyIndex++;
+					String path = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + iamSvcAccName + "/" +
+							IAMServiceAccountConstants.IAM_SECRET_FOLDER_PREFIX + (accessKeyIndex);
+					IAMServiceAccountSecret iamServiceAccountSecret = populateSecretObjectForLegacyIAMSvcacc(iamServiceAccount, iamSecrets);
+					if (iamServiceAccountUtils.writeIAMSvcAccSecret(token, path, iamServiceAccount.getUserName(), iamServiceAccountSecret)) {
+						log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+								put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+								put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE).
+								put(LogMessage.MESSAGE, "Updated IAM service account secret mount with AccessKeyId").
+								put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+								build()));
+					}
+					else {
+						log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+								put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+								put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE).
+								put(LogMessage.MESSAGE, "Failed to updated IAM service account secret mount with AccessKeyId").
+								put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+								build()));
+						updateSecretMountStatus = false;
+						break;
+					}
+				}
+				if (!updateSecretMountStatus) {
+					log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+							put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+							put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE).
+							put(LogMessage.MESSAGE, "Reverting IAM Service account onboard on failure to create secret mount with accessKeyId").
+							put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+							build()));
+					return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onSecretMountCreationFailure");
+				}
 			}
 
 			if (iamSvcAccCreationStatus) {
 				sendMailToIAMSvcAccOwner(iamServiceAccount, iamSvcAccName);
+				if (!selfSupportGroupAssoicationStatus) {
+					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+							.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE)
+							.put(LogMessage.MESSAGE, String.format("Successfully onboarded the IAM Service Account[%s] " +
+									" with owner [%s]. But failed to add rotate permission to [%s]",
+									iamServiceAccount.getUserName(),iamServiceAccount.getOwnerEmail(),
+									iamServiceAccount.getAdSelfSupportGroup()))
+							.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+					return ResponseEntity.status(HttpStatus.OK).body(
+							"{\"messages\":[\"Successfully completed onboarding of IAM service account. But failed " +
+									"to add rotate permission to "+iamServiceAccount.getAdSelfSupportGroup()+"\"]}");
+				}
 				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 						.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE)
-						.put(LogMessage.MESSAGE, String.format("Successfully onboarded the IAM Service Account[%s]  with owner [%s].", iamServiceAccount.getUserName(),iamServiceAccount.getOwnerEmail()))
+						.put(LogMessage.MESSAGE, String.format("Successfully onboarded the IAM Service Account[%s]  " +
+								"with owner [%s].", iamServiceAccount.getUserName(),iamServiceAccount.getOwnerEmail()))
 						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 				return ResponseEntity.status(HttpStatus.OK).body(
 						"{\"messages\":[\"Successfully completed onboarding of IAM service account\"]}");
@@ -260,6 +314,20 @@ public class  IAMServiceAccountsService {
 	}
 
 	/**
+	 * Method to populate IAM Secret with
+	 * @param iamServiceAccount
+	 * @return
+	 */
+	private IAMServiceAccountSecret populateSecretObjectForLegacyIAMSvcacc(IAMServiceAccount iamServiceAccount, IAMSecrets iamSecrets) {
+		IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret();
+		iamServiceAccountSecret.setUserName(iamServiceAccount.getUserName());
+		iamServiceAccountSecret.setAwsAccountId(iamServiceAccount.getAwsAccountId());
+		iamServiceAccountSecret.setAccessKeyId(iamSecrets.getAccessKeyId());
+		iamServiceAccountSecret.setExpiryDateEpoch(iamSecrets.getExpiryDateEpoch());
+		return iamServiceAccountSecret;
+	}
+
+	/**
 	 * Method to check the secret in the request is valid if present.
 	 * @param iamServiceAccount
 	 * @return
@@ -271,10 +339,14 @@ public class  IAMServiceAccountsService {
 			}
 			for (IAMSecrets iamSecrets : iamServiceAccount.getSecret()) {
 				if (iamSecrets.getAccessKeyId() == null || iamSecrets.getAccessKeyId().length() < 16
-						|| iamSecrets.getAccessKeyId().length() > 128 || iamSecrets.getExpiryDuration() == null ||
-						iamSecrets.getExpiryDuration() < 604800000L || iamSecrets.getExpiryDuration() > 7776000000L ) {
+						|| iamSecrets.getAccessKeyId().length() > 128 || iamSecrets.getExpiryDateEpoch() == null) {
 					return false;
 				}
+			}
+			// Check for duplicate access keyids
+			if (iamServiceAccount.getSecret().size() == 2 &&
+					iamServiceAccount.getSecret().get(0).getAccessKeyId().equals(iamServiceAccount.getSecret().get(1).getAccessKeyId())) {
+				return false;
 			}
 		}
 		return true;
@@ -436,9 +508,9 @@ public class  IAMServiceAccountsService {
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
 						"{\"errors\":[\"Failed to onboard IAM service account. Policy creation failed.\"]}");
 			}
-			else if (onAction.equals("onSelfSupportGroupAssociationFailure")) {
+			else if (onAction.equals("onSecretMountCreationFailure")) {
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-						"{\"errors\":[\"Failed to onboard IAM service account. Association of self support group permission failed.\"]}");
+						"{\"errors\":[\"Failed to onboard IAM service account. Updating legacy accesses key ids failed.\"]}");
 			}
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
 					"{\"errors\":[\"Failed to onboard IAM service account. Association of owner permission failed\"]}");
@@ -581,7 +653,7 @@ public class  IAMServiceAccountsService {
 			for (IAMSecrets iamSecrets : iamServiceAccount.getSecret()) {
 				IAMSecretsMetadata iamSecretsMetadata = new IAMSecretsMetadata();
 				iamSecretsMetadata.setAccessKeyId(iamSecrets.getAccessKeyId());
-				iamSecretsMetadata.setExpiryDuration(iamSecrets.getExpiryDuration());
+				iamSecretsMetadata.setExpiryDateEpoch(iamSecrets.getExpiryDateEpoch());
 				iamSecretsMetadatas.add(iamSecretsMetadata);
 			}
 		}
@@ -590,6 +662,9 @@ public class  IAMServiceAccountsService {
 		if (!StringUtils.isEmpty(iamServiceAccount.getAdSelfSupportGroup())) {
 			iamServiceAccountMetadataDetails.setAdSelfSupportGroup(iamServiceAccount.getAdSelfSupportGroup());
 		}
+
+		// Service account level expiry data
+		iamServiceAccountMetadataDetails.setExpiryDuration(iamServiceAccount.getExpiryDuration());
 
 		// Setting activated status to true on onboard
 		iamServiceAccountMetadataDetails.setAccountActivated(true);
@@ -1793,8 +1868,8 @@ public class  IAMServiceAccountsService {
 		for (int i = 0; i < dataSecret.size(); i++) {
 			JsonElement jsonElement = dataSecret.get(i);
 			JsonObject jsonObject = jsonElement.getAsJsonObject();
-			String expiryDate = dateConversion(jsonObject.get("expiryDuration").getAsLong());
-			jsonObject.addProperty("expiryDuration", expiryDate);
+			String expiryDate = dateConversion(jsonObject.get("expiryDateEpoch").getAsLong());
+			jsonObject.addProperty("expiryDateEpoch", expiryDate);
 		}
 		JsonElement jsonElement = dataSecret.getAsJsonArray();
 		data.add("secret", jsonElement);

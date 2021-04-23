@@ -54,6 +54,8 @@ public class IAMServiceAccountMetadataDetails implements Serializable {
 
 	private String adSelfSupportGroup;
 
+	private Long expiryDuration;
+
 	/**
 	 * @return the userName
 	 */
@@ -217,6 +219,14 @@ public class IAMServiceAccountMetadataDetails implements Serializable {
 		this.adSelfSupportGroup = adSelfSupportGroup;
 	}
 
+	public Long getExpiryDuration() {
+		return expiryDuration;
+	}
+
+	public void setExpiryDuration(Long expiryDuration) {
+		this.expiryDuration = expiryDuration;
+	}
+
 	@Override
 	public String toString() {
 		return "IAMServiceAccountMetadataDetails{" +
@@ -232,6 +242,7 @@ public class IAMServiceAccountMetadataDetails implements Serializable {
 				", accountActivated=" + accountActivated +
 				", secret=" + secret +
 				", adSelfSupportGroup='" + adSelfSupportGroup + '\'' +
+				", expiryDuration=" + expiryDuration +
 				'}';
 	}
 }

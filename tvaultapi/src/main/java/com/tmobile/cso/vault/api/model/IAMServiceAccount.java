@@ -20,10 +20,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
@@ -86,16 +83,19 @@ public class IAMServiceAccount implements Serializable {
 	@Valid
 	private List<IAMSecrets> secret;
 
-	@NotBlank
 	@JsonProperty("ad_group")
 	private String adSelfSupportGroup;
+
+    @Min(604800000L)
+    @Max(7776000000L)
+    private Long expiryDuration;
 
 	public IAMServiceAccount() {
 	}
 
 	public IAMServiceAccount(String userName, String awsAccountId, String awsAccountName, Long createdAtEpoch,
 			String ownerNtid, String ownerEmail, String applicationId, String applicationName, String applicationTag,
-			List<IAMSecrets> secret, String adSelfSupportGroup) {
+			List<IAMSecrets> secret, String adSelfSupportGroup, Long expiryDuration) {
 		super();
 		this.userName = userName;
 		this.awsAccountId = awsAccountId;
@@ -108,6 +108,7 @@ public class IAMServiceAccount implements Serializable {
 		this.applicationTag = applicationTag;
 		this.secret = secret;
 		this.adSelfSupportGroup = adSelfSupportGroup;
+		this.expiryDuration = expiryDuration;
 	}
 
 	/**
@@ -266,20 +267,29 @@ public class IAMServiceAccount implements Serializable {
 		this.adSelfSupportGroup = adSelfSupportGroup;
 	}
 
-	@Override
-	public String toString() {
-		return "IAMServiceAccount{" +
-				"userName='" + userName + '\'' +
-				", awsAccountId='" + awsAccountId + '\'' +
-				", awsAccountName='" + awsAccountName + '\'' +
-				", createdAtEpoch=" + createdAtEpoch +
-				", ownerNtid='" + ownerNtid + '\'' +
-				", ownerEmail='" + ownerEmail + '\'' +
-				", applicationId='" + applicationId + '\'' +
-				", applicationName='" + applicationName + '\'' +
-				", applicationTag='" + applicationTag + '\'' +
-				", secret=" + secret +
-				", adSelfSupportGroup='" + adSelfSupportGroup + '\'' +
-				'}';
-	}
+    public Long getExpiryDuration() {
+        return expiryDuration;
+    }
+
+    public void setExpiryDuration(Long expiryDuration) {
+        this.expiryDuration = expiryDuration;
+    }
+
+    @Override
+    public String toString() {
+        return "IAMServiceAccount{" +
+                "userName='" + userName + '\'' +
+                ", awsAccountId='" + awsAccountId + '\'' +
+                ", awsAccountName='" + awsAccountName + '\'' +
+                ", createdAtEpoch=" + createdAtEpoch +
+                ", ownerNtid='" + ownerNtid + '\'' +
+                ", ownerEmail='" + ownerEmail + '\'' +
+                ", applicationId='" + applicationId + '\'' +
+                ", applicationName='" + applicationName + '\'' +
+                ", applicationTag='" + applicationTag + '\'' +
+                ", secret=" + secret +
+                ", adSelfSupportGroup='" + adSelfSupportGroup + '\'' +
+                ", expiryDuration=" + expiryDuration +
+                '}';
+    }
 }

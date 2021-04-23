@@ -36,7 +36,7 @@ public class IAMSecrets implements Serializable {
 
 	@Min(604800000L)
 	@Max(7776000000L)
-	private Long expiryDuration;
+	private Long expiryDateEpoch;
 
 	public IAMSecrets() {
 		super();
@@ -45,12 +45,12 @@ public class IAMSecrets implements Serializable {
 	/**
 	 *
 	 * @param accessKeyId
-	 * @param expiryDuration
+	 * @param expiryDateEpoch
 	 */
-	public IAMSecrets(String accessKeyId, Long expiryDuration) {
+	public IAMSecrets(String accessKeyId, Long expiryDateEpoch) {
 		super();
 		this.accessKeyId = accessKeyId;
-		this.expiryDuration = expiryDuration;
+		this.expiryDateEpoch = expiryDateEpoch;
 	}
 
 	public String getAccessKeyId() {
@@ -61,11 +61,11 @@ public class IAMSecrets implements Serializable {
 		this.accessKeyId = accessKeyId;
 	}
 
-	public Long getExpiryDuration() {
-		return expiryDuration;
+	public Long getExpiryDateEpoch() {
+		return expiryDateEpoch;
 	}
 
-	public void setExpiryDuration(Long expiryDuration) {
-		this.expiryDuration = expiryDuration;
+	public void setExpiryDateEpoch(Long expiryDateEpoch) {
+		this.expiryDateEpoch = expiryDateEpoch;
 	}
 }
