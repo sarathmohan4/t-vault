@@ -9,7 +9,9 @@ const fetchIamServiceAccountDetails = (svcName) =>
 
 const activateIamServiceAccount = (svcName, iamAccountId) =>
   api.post(
-    `/iamserviceaccount/activate?serviceAccountName=${svcName}&awsAccountId=${iamAccountId}`,
+    `/iamserviceaccount/activate?serviceAccountName=${encodeURIComponent(
+      svcName
+    )}&awsAccountId=${iamAccountId}`,
     {}
   );
 // Service account secret API call.
@@ -19,9 +21,15 @@ const rotateIamServiceAccountPassword = (payload) =>
 // get password details
 
 const getIamSvcAccountSecrets = (svcName) =>
-  api.get(`/iamserviceaccounts/folders/secrets?path=iamsvcacc/${svcName}`);
+  api.get(
+    `/iamserviceaccounts/folders/secrets?path=iamsvcacc/${encodeURIComponent(
+      svcName
+    )}`
+  );
 const getIamServiceAccountPassword = (svcName, secretName) =>
-  api.get(`/iamserviceaccounts/secrets/${svcName}/${secretName}`);
+  api.get(
+    `/iamserviceaccounts/secrets/${encodeURIComponent(svcName)}/${secretName}`
+  );
 
 // API call for users permission
 const addUserPermission = (payload) =>
