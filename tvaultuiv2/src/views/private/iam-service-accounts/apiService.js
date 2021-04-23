@@ -5,7 +5,7 @@ const getIamServiceAccountList = () => api.get('/iamserviceaccounts/list');
 const getIamServiceAccounts = () => api.get('/iamserviceaccounts');
 
 const fetchIamServiceAccountDetails = (svcName) =>
-  api.get(`/iamserviceaccounts/${svcName}`);
+  api.get(`/iamserviceaccounts/${encodeURIComponent(svcName)}`);
 
 const activateIamServiceAccount = (svcName, iamAccountId) =>
   api.post(
