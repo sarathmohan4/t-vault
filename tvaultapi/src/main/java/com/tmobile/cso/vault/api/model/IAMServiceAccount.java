@@ -38,8 +38,8 @@ public class IAMServiceAccount implements Serializable {
 	private static final long serialVersionUID = -9011756132661399159L;
 	
 	@NotBlank
-	@Size(min = 11, message = "UserName specified should be minimum 11 chanracters only")
-	@Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Name can have alphabets, numbers, _ and - characters only")
+	@Size(min = 1, max = 64, message = "UserName specified should be minimum 1 character and maximum 64 characters only")
+	@Pattern(regexp = "^[a-zA-Z0-9+=,.@_-]+$", message = "Name can have alphabets, numbers, plus (+), equal (=), comma (,), period (.), at (@), underscore (_), and hyphen (-)  only")
 	private String userName;
 
 	@NotBlank
