@@ -34,8 +34,6 @@ public class IAMSecrets implements Serializable {
 	@Size(min = 16, max = 128, message = "AccessKeyId specified should be minimum 16 chanracters and maximum 128 characters only")
 	private String accessKeyId;
 
-	@Min(604800000L)
-	@Max(7776000000L)
 	private Long expiryDateEpoch;
 
 	public IAMSecrets() {
