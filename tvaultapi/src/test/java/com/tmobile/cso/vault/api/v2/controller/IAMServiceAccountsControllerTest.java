@@ -127,7 +127,7 @@ public class IAMServiceAccountsControllerTest {
 		List<IAMSecrets> iamSecrets = new ArrayList<>();
 		IAMSecrets iamSecret = new IAMSecrets();
 		iamSecret.setAccessKeyId("testaccesskey555");
-		iamSecret.setExpiryDuration(7776000000L);
+		iamSecret.setExpiryDateEpoch(7776000000L);
 		iamSecrets.add(iamSecret);
 		return iamSecrets;
 	}
