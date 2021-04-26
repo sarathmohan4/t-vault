@@ -578,4 +578,20 @@ public class IAMServiceAccountsControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(content().string(containsString(responseJson)));
 	}
+
+	@Test
+	public void test_getListOfIAMServiceAccountAccessKeys_successful() throws Exception {
+		String responseJson = "{\"access_key_ids\":[\"1212zdasd\",\"abcdefg123\"]}";
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);
+		String expected = responseEntityExpected.getBody();
+
+		when(iamServiceAccountsService.getListOfIAMServiceAccountAccessKeys(token , "testiamsvcacc01", "123456789012"))
+				.thenReturn(responseEntityExpected);
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/v2/iamserviceaccounts/123456789012/testiamsvcacc01/getkeys")
+				.header(VAULT_TOKEN_STRING, token).header(CONTENT_TYPE_STRING, CONTENT_TYPE_VALUE_STRING)
+				.requestAttr(USER_DETAILS_STRING, userDetails)).andExpect(status().isOk()).andReturn();
+
+		String actual = result.getResponse().getContentAsString();
+		assertEquals(expected, actual);
+	}
 }

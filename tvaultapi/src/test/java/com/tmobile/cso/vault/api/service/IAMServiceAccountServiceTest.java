@@ -3755,4 +3755,74 @@ public class IAMServiceAccountServiceTest {
 		ResponseEntity<String> actualResponse = iamServiceAccountsService.deleteIAMServiceAccountCreds(userDetails, token, iamServiceAccountAccessKey);
 		assertEquals(expectedResponse, actualResponse);
 	}
+
+	@Test
+	public void test_getListOfIAMServiceAccountAccessKeys_successfully() {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		String iamSvcaccName = "testiamsvcacc01";
+		String awsAccountId = "1234567890";
+
+		// Mock approle permission check
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("iamportal_master_policy");
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		when(reqProcessor.process(eq("/iamsvcacct"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"data\":{\"app-roles\":{\"selfserviceoidcsupportrole\":\"read\"},\"application_id\":1222,\"application_name\":\"T-Vault\",\"application_tag\":\"TVT\",\"awsAccountId\":\"123456789012\",\"awsAccountName\":\"AWS-SEC\",\"createdAtEpoch\":1086073200000,\"isActivated\":true,\"owner_email\":\"test.test1@T-mobile.com\",\"owner_ntid\":\"testuser1\",\"secret\":[{\"accessKeyId\":\"1212zdasd\",\"expiryDuration\":\"1086073200000\"}],\"userName\":\"testiamsvcacc01\",\"users\":{\"testuser1\":\"write\"}}}"));
+		ResponseEntity<String> responseEntity = iamServiceAccountsService.getListOfIAMServiceAccountAccessKeys(token, iamSvcaccName, awsAccountId);
+		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+	}
+
+	@Test
+	public void test_getListOfIAMServiceAccountAccessKeys_notauthorized_failed() {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		String iamSvcaccName = "testiamsvcacc01";
+		String awsAccountId = "1234567890";
+
+		// Mock approle permission check
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("default");
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// System under test
+		String expectedResponse = "{\"errors\":[\"Access denied. Not authorized to perform getting the list of IAM service account access keys.\"]}";
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body(expectedResponse);
+
+		ResponseEntity<String> responseEntity = iamServiceAccountsService.getListOfIAMServiceAccountAccessKeys(token, iamSvcaccName, awsAccountId);
+		assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntity);
+	}
+
+	@Test
+	public void test_getListOfIAMServiceAccountAccessKeys_failed_Empty() {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		String iamSvcaccName = "testiamsvcacc01";
+		String awsAccountId = "1234567890";
+
+		// Mock approle permission check
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("iamportal_master_policy");
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		when(reqProcessor.process(eq("/iamsvcacct"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"data\":{\"app-roles\":{\"selfserviceoidcsupportrole\":\"read\"},\"application_id\":1222,\"application_name\":\"T-Vault\",\"application_tag\":\"TVT\",\"awsAccountId\":\"123456789012\",\"awsAccountName\":\"AWS-SEC\",\"createdAtEpoch\":1086073200000,\"isActivated\":true,\"owner_email\":\"test.test1@T-mobile.com\",\"owner_ntid\":\"testuser\",\"secret\":[],\"userName\":\"testiamsvcacc01\",\"users\":{\"testuser1\":\"write\"}}}"));
+		ResponseEntity<String> responseEntity = iamServiceAccountsService.getListOfIAMServiceAccountAccessKeys(token, iamSvcaccName, awsAccountId);
+		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+	}
 }
