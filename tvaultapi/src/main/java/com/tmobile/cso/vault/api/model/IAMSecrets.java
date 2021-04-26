@@ -31,14 +31,10 @@ public class IAMSecrets implements Serializable {
 
 	private static final long serialVersionUID = -5704090790663628283L;
 
-	@NotBlank
 	@Size(min = 16, max = 128, message = "AccessKeyId specified should be minimum 16 chanracters and maximum 128 characters only")
 	private String accessKeyId;
 
-	@NotNull
-	@Min(604800000L)
-	@Max(7776000000L)
-	private Long expiryDuration;
+	private Long expiryDateEpoch;
 
 	public IAMSecrets() {
 		super();
@@ -47,12 +43,12 @@ public class IAMSecrets implements Serializable {
 	/**
 	 *
 	 * @param accessKeyId
-	 * @param expiryDuration
+	 * @param expiryDateEpoch
 	 */
-	public IAMSecrets(String accessKeyId, Long expiryDuration) {
+	public IAMSecrets(String accessKeyId, Long expiryDateEpoch) {
 		super();
 		this.accessKeyId = accessKeyId;
-		this.expiryDuration = expiryDuration;
+		this.expiryDateEpoch = expiryDateEpoch;
 	}
 
 	public String getAccessKeyId() {
@@ -63,11 +59,11 @@ public class IAMSecrets implements Serializable {
 		this.accessKeyId = accessKeyId;
 	}
 
-	public Long getExpiryDuration() {
-		return expiryDuration;
+	public Long getExpiryDateEpoch() {
+		return expiryDateEpoch;
 	}
 
-	public void setExpiryDuration(Long expiryDuration) {
-		this.expiryDuration = expiryDuration;
+	public void setExpiryDateEpoch(Long expiryDateEpoch) {
+		this.expiryDateEpoch = expiryDateEpoch;
 	}
 }

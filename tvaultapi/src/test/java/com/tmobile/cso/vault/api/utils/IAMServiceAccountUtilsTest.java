@@ -203,7 +203,7 @@ public class IAMServiceAccountUtilsTest {
             }
         });
 
-        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
         IAMServiceAccountRotateRequest iamServiceAccountRotateRequest = new IAMServiceAccountRotateRequest(accessKeyId, iamServiceAccountName, awsAccountId);
         IAMServiceAccountSecret iamServiceAccountSecret = iamServiceAccountUtils.rotateIAMSecret(iamServiceAccountRotateRequest);
         assertEquals(expectedIamServiceAccountSecret.getAccessKeySecret(), iamServiceAccountSecret.getAccessKeySecret());
@@ -240,7 +240,7 @@ public class IAMServiceAccountUtilsTest {
             }
         });
 
-        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
         IAMServiceAccountRotateRequest iamServiceAccountRotateRequest = new IAMServiceAccountRotateRequest(accessKeyId, iamServiceAccountName, awsAccountId);
         IAMServiceAccountSecret iamServiceAccountSecret = iamServiceAccountUtils.rotateIAMSecret(iamServiceAccountRotateRequest);
     }
@@ -278,7 +278,7 @@ public class IAMServiceAccountUtilsTest {
             }
         });
 
-        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
         IAMServiceAccountRotateRequest iamServiceAccountRotateRequest = new IAMServiceAccountRotateRequest(accessKeyId, iamServiceAccountName, awsAccountId);
         IAMServiceAccountSecret iamServiceAccountSecret = iamServiceAccountUtils.rotateIAMSecret(iamServiceAccountRotateRequest);
     }
@@ -310,7 +310,7 @@ public class IAMServiceAccountUtilsTest {
                 return new ByteArrayInputStream(responseStringToken.getBytes());
             }
         });
-        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
         IAMServiceAccountRotateRequest iamServiceAccountRotateRequest = new IAMServiceAccountRotateRequest(accessKeyId, iamServiceAccountName, awsAccountId);
         IAMServiceAccountSecret iamServiceAccountSecret = iamServiceAccountUtils.rotateIAMSecret(iamServiceAccountRotateRequest);
     }
@@ -343,7 +343,7 @@ public class IAMServiceAccountUtilsTest {
         when(httpResponse.getEntity()).thenReturn(mockHttpEntity);
         when(statusLine.getStatusCode()).thenReturn(200);
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
-        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
         IAMServiceAccountRotateRequest iamServiceAccountRotateRequest = new IAMServiceAccountRotateRequest(accessKeyId, iamServiceAccountName, awsAccountId);
         IAMServiceAccountSecret iamServiceAccountSecret = iamServiceAccountUtils.rotateIAMSecret(iamServiceAccountRotateRequest);
     }
@@ -376,7 +376,7 @@ public class IAMServiceAccountUtilsTest {
         when(httpResponse.getEntity()).thenReturn(mockHttpEntity);
         when(statusLine.getStatusCode()).thenReturn(200);
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
-        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
         IAMServiceAccountRotateRequest iamServiceAccountRotateRequest = new IAMServiceAccountRotateRequest(accessKeyId, iamServiceAccountName, awsAccountId);
         IAMServiceAccountSecret iamServiceAccountSecret = iamServiceAccountUtils.rotateIAMSecret(iamServiceAccountRotateRequest);
     }
@@ -409,7 +409,7 @@ public class IAMServiceAccountUtilsTest {
         when(httpResponse.getEntity()).thenReturn(mockHttpEntity);
         when(statusLine.getStatusCode()).thenReturn(300);
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
-        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
         IAMServiceAccountRotateRequest iamServiceAccountRotateRequest = new IAMServiceAccountRotateRequest(accessKeyId, iamServiceAccountName, awsAccountId);
         IAMServiceAccountSecret iamServiceAccountSecret = iamServiceAccountUtils.rotateIAMSecret(iamServiceAccountRotateRequest);
     }
@@ -423,7 +423,7 @@ public class IAMServiceAccountUtilsTest {
         String path = "metadata/iamsvcacc/1234567890_svc_vault_test5";
         String iamSecret = "abcdefgh";
         String accessKeyId = "testaccesskey";
-        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
         Response response = getMockResponse(HttpStatus.NO_CONTENT, true, "");
         when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response);
         boolean actualStatus = iamServiceAccountUtils.writeIAMSvcAccSecret(token, path, iamServiceAccountName, iamServiceAccountSecret);
@@ -439,7 +439,7 @@ public class IAMServiceAccountUtilsTest {
         String path = "metadata/iamsvcacc/1234567890_svc_vault_test5";
         String iamSecret = "abcdefgh";
         String accessKeyId = "testaccesskey";
-        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
         Response response = getMockResponse(HttpStatus.BAD_REQUEST, true, "");
         when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response);
         boolean actualStatus = iamServiceAccountUtils.writeIAMSvcAccSecret(token, path, iamServiceAccountName, iamServiceAccountSecret);
@@ -544,13 +544,13 @@ public class IAMServiceAccountUtilsTest {
         String iamSecret = "abcdefgh";
         String accessKeyId = "testaccesskey";
 
-        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDuration\": 1609668443000}]}}");
+        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDateEpoch\": 1609668443000}]}}");
         when(reqProcessor.process(eq("/read"),Mockito.any(),eq(token))).thenReturn(response);
         Response response204 = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 
         when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response204);
 
-        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
 
         Response actualResponse = iamServiceAccountUtils.updateIAMSvcAccNewAccessKeyIdInMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId, iamServiceAccountSecret);
         assertEquals(HttpStatus.NO_CONTENT, actualResponse.getHttpstatus());
@@ -568,7 +568,7 @@ public class IAMServiceAccountUtilsTest {
 
         Response response = getMockResponse(HttpStatus.NOT_FOUND, true, "");
         when(reqProcessor.process(eq("/read"),Mockito.any(),eq(token))).thenReturn(response);
-        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
 
         Response actualResponse = iamServiceAccountUtils.updateIAMSvcAccNewAccessKeyIdInMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId, iamServiceAccountSecret);
         assertNull(actualResponse);
@@ -590,7 +590,7 @@ public class IAMServiceAccountUtilsTest {
 
         when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response204);
 
-        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
 
         Response actualResponse = iamServiceAccountUtils.updateIAMSvcAccNewAccessKeyIdInMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId, iamServiceAccountSecret);
 
@@ -606,13 +606,13 @@ public class IAMServiceAccountUtilsTest {
         String iamSecret = "abcdefgh";
         String accessKeyId = "testaccesskey1";
 
-        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDuration\": 1609668443000}]}}");
+        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDateEpoch\": 1609668443000}]}}");
         when(reqProcessor.process(eq("/read"),Mockito.any(),eq(token))).thenReturn(response);
         Response response204 = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 
         when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response204);
 
-        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
 
         Response actualResponse = iamServiceAccountUtils.updateIAMSvcAccNewAccessKeyIdInMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId, iamServiceAccountSecret);
         assertEquals(HttpStatus.NO_CONTENT, actualResponse.getHttpstatus());
@@ -634,7 +634,7 @@ public class IAMServiceAccountUtilsTest {
 
         when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response204);
 
-        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
 
         Response actualResponse = iamServiceAccountUtils.updateIAMSvcAccNewAccessKeyIdInMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId, iamServiceAccountSecret);
     }
@@ -649,13 +649,13 @@ public class IAMServiceAccountUtilsTest {
         String iamSecret = "abcdefgh";
         String accessKeyId = "testaccesskey1";
 
-        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDuration\": 1609668443000}]}}");
+        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDateEpoch\": 1609668443000}]}}");
         when(reqProcessor.process(eq("/read"),Mockito.any(),eq(token))).thenReturn(response);
         Response response204 = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 
         when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response204);
 
-        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId);
+        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
 
         Response actualResponse = iamServiceAccountUtils.updateIAMSvcAccNewAccessKeyIdInMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId, iamServiceAccountSecret);
 
