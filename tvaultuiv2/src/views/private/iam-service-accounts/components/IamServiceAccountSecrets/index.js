@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-curly-newline */
 /* eslint-disable react/jsx-one-expression-per-line */
 /* eslint-disable react/jsx-wrap-multilines */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReportProblemOutlinedIcon from '@material-ui/icons/ReportProblemOutlined';
@@ -32,6 +32,7 @@ import Error from '../../../../../components/Error';
 import IconFolderActive from '../../../../../assets/icon_folder_active.png';
 import IconFolderInactive from '../../../../../assets/icon_folder.png';
 import SuccessAndErrorModal from '../../../../../components/SuccessAndErrorModal';
+import BackdropLoader from '../../../../../components/Loaders/BackdropLoader';
 
 const UserList = styled.div`
   display: flex;
@@ -236,15 +237,57 @@ const IamServiceAccountSecrets = (props) => {
   const [toastMessage, setToastMessage] = useState('');
   const [openConfirmationModal, setOpenConfirmationModal] = useState({});
   const isMobileScreen = useMediaQuery(mediaBreakpoints.small);
-  const [isOpen, setIsOpen] = useState(false);
   const [successErrorModal, setSuccessErrorModal] = useState(false);
   const [successErrorDetails, setSuccessErrorDetails] = useState({
     title: '',
     desc: '',
   });
+  const [loader, setLoader] = useState(false);
+  const [folderDetails, setFolderDetails] = useState({
+    name: '',
+    isOpen: false,
+  });
 
-  const handleToggle = () => {
-    setIsOpen(!isOpen);
+  /**
+   * @function onViewSecretDetails
+   * @param {string} folderName
+   * @description function to call the secret details api , which fetch the
+   */
+  const onViewSecretDetails = (foldername) => {
+    setLoader(true);
+    setSecretsData({});
+    setShowSecret(false);
+    if (accountDetail.active) {
+      apiService
+        .getIamServiceAccountPassword(
+          `${accountDetail?.iamAccountId}_${accountDetail?.name}`,
+          foldername
+        )
+        .then((res) => {
+          setLoader(false);
+          setSecretsData(res?.data);
+          setFolderDetails({ name: foldername, isOpen: true });
+        })
+        .catch((err) => {
+          setFolderDetails({ name: '', isOpen: false });
+          setResponseType(-1);
+          setLoader(false);
+          if (err?.response?.data?.errors && err?.response?.data?.errors[0]) {
+            setToastMessage(err?.response?.data?.errors[0]);
+          }
+        });
+    }
+  };
+
+  const handleToggle = (folder) => {
+    if (
+      !folderDetails.isOpen ||
+      (folderDetails.isOpen && folderDetails.name !== folder)
+    ) {
+      onViewSecretDetails(folder);
+    } else {
+      setFolderDetails({ name: '', isOpen: false });
+    }
   };
 
   useEffect(() => {
@@ -260,7 +303,6 @@ const IamServiceAccountSecrets = (props) => {
 
   useEffect(() => {
     setShowSecret(false);
-    setIsOpen(false);
   }, [value]);
 
   /**
@@ -292,35 +334,6 @@ const IamServiceAccountSecrets = (props) => {
   };
 
   /**
-   * @function onViewSecretDetails
-   * @param {string} folderName
-   * @description function to call the secret details api , which fetch the
-   */
-  const onViewSecretDetails = useCallback(
-    (folderName) => {
-      if (accountDetail.active) {
-        setResponse({ status: 'loading' });
-        apiService
-          .getIamServiceAccountPassword(
-            `${accountDetail?.iamAccountId}_${accountDetail?.name}`,
-            folderName
-          )
-          .then((res) => {
-            setResponse({ status: 'success' });
-            setSecretsData(res?.data);
-          })
-          .catch(() => {
-            setResponse({
-              status: 'error',
-              message: 'There was a  error while fetching secret details!',
-            });
-          });
-      }
-    },
-    [accountDetail]
-  );
-
-  /**
    * @function onRotateConfirmedClicked
    * @description function to reset secret when the confirm is clicked.
    */
@@ -345,8 +358,8 @@ const IamServiceAccountSecrets = (props) => {
           setToastMessage(
             res.data.messages[0] || 'Password rotated successfully!'
           );
-          setIsOpen(false);
           await getSecrets();
+          await onViewSecretDetails(folderDetails.name);
         }
       })
       .catch((err) => {
@@ -436,12 +449,8 @@ const IamServiceAccountSecrets = (props) => {
   };
 
   useEffect(() => {
-    setSecretsData({});
-    if (accountSecretData && Object.keys(accountSecretData).length > 0) {
-      onViewSecretDetails(accountSecretData?.folders[0]);
-    }
     setShowSecret(false);
-  }, [accountSecretData, onViewSecretDetails]);
+  }, [accountSecretData]);
 
   const handleSuccessAndDeleteModalClose = () => {
     setSuccessErrorDetails({ title: '', desc: '' });
@@ -534,95 +543,114 @@ const IamServiceAccountSecrets = (props) => {
             )}
           </>
         )}
-        {response.status === 'success' &&
+        {response?.status === 'success' &&
           accountDetail?.permission !== 'deny' &&
-          Object.keys(secretsData).length > 0 &&
-          accountDetail.name && (
+          Object.keys(accountSecretData)?.length > 0 &&
+          accountSecretData?.folders?.length > 0 && (
             <SecretFolderWrap>
-              <SecretFolder>
-                <div role="button" className="folder--label" tabIndex={0}>
-                  <FolderLabelWrap onClick={(e) => handleToggle(e)}>
-                    {isOpen ? <ExpandMoreIcon /> : <ChevronRightIcon />}
-                    <FolderIcon
-                      alt="folder_icon"
-                      src={isOpen ? IconFolderActive : IconFolderInactive}
-                    />
-                    <FolderLabel>
-                      {accountSecretData?.folders
-                        ? accountSecretData?.folders[0]
-                        : 'No folder available!'}
-                    </FolderLabel>
-                  </FolderLabelWrap>
-                </div>
-              </SecretFolder>
-              <Collapsible isOpen={isOpen}>
-                <UserList>
-                  <SecretDetailsWrap>
-                    <Icon src={lock} alt="lock" />
-                    <InfoWrapper>
-                      <Span>{secretsData.accessKeyId}</Span>
-                      <SecretInputfield
-                        type={showSecret ? 'text' : 'password'}
-                        value={secretsData.accessKeySecret}
-                        readOnly
-                      />
-                      <div className="expirationDate">
-                        <div className="expiry">Expires: </div>
-                        <div>{formatDate(secretsData.expiryDate)}</div>
-                      </div>
-                    </InfoWrapper>
-                  </SecretDetailsWrap>
-                  <FolderIconWrap>
-                    <PopperElement
-                      anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'right',
-                      }}
-                      transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'right',
-                      }}
-                    >
-                      <PopperItem onClick={() => onViewSecretsCliked()}>
-                        {showSecret ? (
-                          <VisibilityOffIcon />
+              {accountSecretData?.folders.map((folder) => (
+                <>
+                  {loader && <BackdropLoader />}
+                  <SecretFolder>
+                    <div role="button" className="folder--label" tabIndex={0}>
+                      <FolderLabelWrap onClick={() => handleToggle(folder)}>
+                        {folderDetails.isOpen &&
+                        folderDetails.name === folder ? (
+                          <ExpandMoreIcon />
                         ) : (
-                          <VisibilityIcon />
+                          <ChevronRightIcon />
                         )}
-                        <span>
-                          {showSecret ? 'Hide Secret key' : 'View Secret key'}
-                        </span>
-                      </PopperItem>
-                      {accountDetail.permission === 'write' && (
-                        <PopperItem onClick={() => onRotateClicked()}>
-                          <img alt="refersh-ic" src={refreshIcon} />
-                          <span>Rotate Secret</span>
-                        </PopperItem>
-                      )}
-                      <CopyToClipboard
-                        text={secretsData.accessKeySecret}
-                        onCopy={() => onCopyClicked()}
-                      >
-                        <PopperItem>
-                          <FileCopyIcon />
-                          <span>Copy Secret Key</span>
-                        </PopperItem>
-                      </CopyToClipboard>
-                      <CopyToClipboard
-                        text={secretsData.accessKeyId}
-                        onCopy={() =>
-                          onCopyClicked('Copied Access Id To Clipboard!')
-                        }
-                      >
-                        <PopperItem>
-                          <FileCopyIcon />
-                          <span>Copy Access Key</span>
-                        </PopperItem>
-                      </CopyToClipboard>
-                    </PopperElement>
-                  </FolderIconWrap>
-                </UserList>
-              </Collapsible>
+                        <FolderIcon
+                          alt="folder_icon"
+                          src={
+                            folderDetails.isOpen &&
+                            folderDetails.name === folder
+                              ? IconFolderActive
+                              : IconFolderInactive
+                          }
+                        />
+                        <FolderLabel>
+                          {accountSecretData?.folders
+                            ? folder
+                            : 'No folder available!'}
+                        </FolderLabel>
+                      </FolderLabelWrap>
+                    </div>
+                  </SecretFolder>
+                  {folderDetails.name === folder && !loader && (
+                    <Collapsible isOpen={folderDetails.isOpen}>
+                      <UserList>
+                        <SecretDetailsWrap>
+                          <Icon src={lock} alt="lock" />
+                          <InfoWrapper>
+                            <Span>{secretsData.accessKeyId}</Span>
+                            <SecretInputfield
+                              type={showSecret ? 'text' : 'password'}
+                              value={secretsData.accessKeySecret}
+                              readOnly
+                            />
+                            <div className="expirationDate">
+                              <div className="expiry">Expires: </div>
+                              <div>{formatDate(secretsData.expiryDate)}</div>
+                            </div>
+                          </InfoWrapper>
+                        </SecretDetailsWrap>
+                        <FolderIconWrap>
+                          <PopperElement
+                            anchorOrigin={{
+                              vertical: 'bottom',
+                              horizontal: 'right',
+                            }}
+                            transformOrigin={{
+                              vertical: 'top',
+                              horizontal: 'right',
+                            }}
+                          >
+                            <PopperItem onClick={() => onViewSecretsCliked()}>
+                              {showSecret ? (
+                                <VisibilityOffIcon />
+                              ) : (
+                                <VisibilityIcon />
+                              )}
+                              <span>
+                                {showSecret
+                                  ? 'Hide Secret key'
+                                  : 'View Secret key'}
+                              </span>
+                            </PopperItem>
+                            {accountDetail.permission === 'write' && (
+                              <PopperItem onClick={() => onRotateClicked()}>
+                                <img alt="refersh-ic" src={refreshIcon} />
+                                <span>Rotate Secret</span>
+                              </PopperItem>
+                            )}
+                            <CopyToClipboard
+                              text={secretsData.accessKeySecret}
+                              onCopy={() => onCopyClicked()}
+                            >
+                              <PopperItem>
+                                <FileCopyIcon />
+                                <span>Copy Secret Key</span>
+                              </PopperItem>
+                            </CopyToClipboard>
+                            <CopyToClipboard
+                              text={secretsData.accessKeyId}
+                              onCopy={() =>
+                                onCopyClicked('Copied Access Id To Clipboard!')
+                              }
+                            >
+                              <PopperItem>
+                                <FileCopyIcon />
+                                <span>Copy Access Key</span>
+                              </PopperItem>
+                            </CopyToClipboard>
+                          </PopperElement>
+                        </FolderIconWrap>
+                      </UserList>
+                    </Collapsible>
+                  )}
+                </>
+              ))}
             </SecretFolderWrap>
           )}
         {response.status === 'error' && (
