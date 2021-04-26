@@ -4565,4 +4565,68 @@ public class  IAMServiceAccountsService {
 			return false;
 		}
 	}
+
+	/**
+	 * Method to get the list of access keys for a given IAM service account
+	 * @param token
+	 * @param iamSvcaccName
+	 * @param awsAccountId
+	 * @return
+	 */
+	public ResponseEntity<String> getListOfIAMServiceAccountAccessKeys(String token, String iamSvcaccName, String awsAccountId) {
+		String uniqueIAMSvcName = awsAccountId + "_" + iamSvcaccName;
+		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+				.put(LogMessage.ACTION, IAMServiceAccountConstants.GET_IAMSVCACC_ACCESSKEY_LIST_MSG)
+				.put(LogMessage.MESSAGE, String.format("Trying to get the list of IAM Service Account [%s] access keys", iamSvcaccName))
+				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+
+		if (!isAuthorizedForIAMOnboardAndOffboard(token)) {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, IAMServiceAccountConstants.GET_IAMSVCACC_ACCESSKEY_LIST_MSG)
+					.put(LogMessage.MESSAGE,
+							"Access denied. Not authorized to perform getting the list of IAM service account access keys.")
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+					"{\"errors\":[\"Access denied. Not authorized to perform getting the list of IAM service account access keys.\"]}");
+		}
+
+		String path = TVaultConstants.IAM_SVC_PATH + uniqueIAMSvcName;
+		Response response = reqProcessor.process("/iamsvcacct", PATHSTR + path + "\"}", token);
+		if (response.getHttpstatus().equals(HttpStatus.OK)) {
+			IAMServiceAccountAccessKeys iamServiceAccountAccessKeys = populateAccesskeysFromMetaData(response);
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+					put(LogMessage.ACTION, "get IAmservice Account details").
+					put(LogMessage.MESSAGE,"IAM Service Account details fetched successfully.").
+					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+					build()));
+			return ResponseEntity.status(HttpStatus.OK).body(JSONUtil.getJSON(iamServiceAccountAccessKeys));
+		}
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body("{\"errors\":[\"No Iam Service Account with " + iamSvcaccName + ".\"]}");
+	}
+
+	/**
+	 * populate access keys from metadata
+	 *
+	 * @param response
+	 * @return
+	 */
+	private IAMServiceAccountAccessKeys populateAccesskeysFromMetaData(Response response) {
+		JsonParser jsonParser = new JsonParser();
+		List<String> accessKeys = new ArrayList<>();
+		IAMServiceAccountAccessKeys iamServiceAccountAccessKeys = new IAMServiceAccountAccessKeys();
+		JsonObject data = ((JsonObject) jsonParser.parse(response.getResponse())).getAsJsonObject("data");
+		JsonArray dataSecret = ((JsonObject) jsonParser.parse(data.toString())).getAsJsonArray("secret");
+		for (int i = 0; i < dataSecret.size(); i++) {
+			JsonElement jsonElement = dataSecret.get(i);
+			JsonObject jsonObject = jsonElement.getAsJsonObject();
+			String accessKey = jsonObject.get("accessKeyId").getAsString();
+			accessKeys.add(accessKey);
+		}
+		iamServiceAccountAccessKeys.setAccessKeyIds(accessKeys);
+		return iamServiceAccountAccessKeys;
+	}
 }

@@ -365,4 +365,20 @@ public class IAMServiceAccountsController {
 		UserDetails userDetails = (UserDetails) request.getAttribute(USER_DETAILS_STRING);
 		return iamServiceAccountsService.deleteIAMServiceAccountCreds(userDetails, token, iamServiceAccountAccessKey);
 	}
+
+	/**
+	 * Method to get the list of access keys for an IAM service account
+	 * @param request
+	 * @param token
+	 * @param awsAccountId
+	 * @param iamSvcName
+	 * @return
+	 */
+	@ApiOperation(value = "${IAMServiceAccountsController.getListOfIAMServiceAccountAccessKeys.value}", notes = "${IAMServiceAccountsController.getListOfIAMServiceAccountAccessKeys.notes}")
+	@GetMapping(value = "/v2/iamserviceaccounts/{aws_account_id}/{iam_svc_name}/getkeys", produces = "application/json")
+	public ResponseEntity<String> getListOfIAMServiceAccountAccessKeys(HttpServletRequest request,
+			@RequestHeader(value = "vault-token") String token, @PathVariable("aws_account_id") String awsAccountId,
+			@PathVariable("iam_svc_name") String iamSvcName) {
+		return iamServiceAccountsService.getListOfIAMServiceAccountAccessKeys(token, iamSvcName, awsAccountId);
+	}
 }
