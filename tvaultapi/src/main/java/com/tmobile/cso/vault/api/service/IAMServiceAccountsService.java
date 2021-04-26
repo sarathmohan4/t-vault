@@ -653,7 +653,7 @@ public class  IAMServiceAccountsService {
 			for (IAMSecrets iamSecrets : iamServiceAccount.getSecret()) {
 				IAMSecretsMetadata iamSecretsMetadata = new IAMSecretsMetadata();
 				iamSecretsMetadata.setAccessKeyId(iamSecrets.getAccessKeyId());
-				iamSecretsMetadata.setExpiryDateEpoch(iamSecrets.getExpiryDateEpoch());
+				iamSecretsMetadata.setExpiryDuration(iamSecrets.getExpiryDateEpoch());
 				iamSecretsMetadatas.add(iamSecretsMetadata);
 			}
 		}
@@ -1868,8 +1868,8 @@ public class  IAMServiceAccountsService {
 		for (int i = 0; i < dataSecret.size(); i++) {
 			JsonElement jsonElement = dataSecret.get(i);
 			JsonObject jsonObject = jsonElement.getAsJsonObject();
-			String expiryDate = dateConversion(jsonObject.get("expiryDateEpoch").getAsLong());
-			jsonObject.addProperty("expiryDateEpoch", expiryDate);
+			String expiryDate = dateConversion(jsonObject.get("expiryDuration").getAsLong());
+			jsonObject.addProperty("expiryDuration", expiryDate);
 		}
 		JsonElement jsonElement = dataSecret.getAsJsonArray();
 		data.add("secret", jsonElement);
