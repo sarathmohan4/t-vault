@@ -127,7 +127,7 @@ public class IAMServiceAccountsControllerTest {
 		List<IAMSecrets> iamSecrets = new ArrayList<>();
 		IAMSecrets iamSecret = new IAMSecrets();
 		iamSecret.setAccessKeyId("testaccesskey555");
-		iamSecret.setExpiryDuration(7776000000L);
+		iamSecret.setExpiryDateEpoch(7776000000L);
 		iamSecrets.add(iamSecret);
 		return iamSecrets;
 	}
@@ -389,7 +389,7 @@ public class IAMServiceAccountsControllerTest {
 		String inputJson = getJSON(iamSvcAccGroup);
 		String responseJson = "{\"messages\":[\"Group is successfully associated with IAM Service Account\"]}";
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);
-		when(iamServiceAccountsService.addGroupToIAMServiceAccount(Mockito.anyString(), Mockito.any(), Mockito.any()))
+		when(iamServiceAccountsService.addGroupToIAMServiceAccount(Mockito.anyString(), Mockito.any(), Mockito.any(), eq(false)))
 				.thenReturn(responseEntityExpected);
 		MvcResult result = mockMvc
 				.perform(MockMvcRequestBuilders.post("/v2/iamserviceaccounts/group")
