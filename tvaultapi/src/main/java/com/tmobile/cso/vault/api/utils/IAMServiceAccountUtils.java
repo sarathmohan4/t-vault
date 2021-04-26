@@ -570,7 +570,7 @@ public class IAMServiceAccountUtils {
           IAMSecretsMetadata iamSecretsMetadata = currentSecretData.get(i);
           if (accessKeyId.equals(iamSecretsMetadata.getAccessKeyId())) {
               iamSecretsMetadata.setAccessKeyId(iamServiceAccountSecret.getAccessKeyId());
-              iamSecretsMetadata.setExpiryDateEpoch(iamServiceAccountSecret.getExpiryDateEpoch());
+              iamSecretsMetadata.setExpiryDuration(iamServiceAccountSecret.getExpiryDateEpoch());
           }
           newSecretData.add(iamSecretsMetadata);
       }

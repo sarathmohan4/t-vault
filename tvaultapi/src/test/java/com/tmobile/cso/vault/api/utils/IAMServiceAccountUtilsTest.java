@@ -544,7 +544,7 @@ public class IAMServiceAccountUtilsTest {
         String iamSecret = "abcdefgh";
         String accessKeyId = "testaccesskey";
 
-        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDateEpoch\": 1609668443000}]}}");
+        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDuration\": 1609668443000}]}}");
         when(reqProcessor.process(eq("/read"),Mockito.any(),eq(token))).thenReturn(response);
         Response response204 = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 
@@ -606,7 +606,7 @@ public class IAMServiceAccountUtilsTest {
         String iamSecret = "abcdefgh";
         String accessKeyId = "testaccesskey1";
 
-        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDateEpoch\": 1609668443000}]}}");
+        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDuration\": 1609668443000}]}}");
         when(reqProcessor.process(eq("/read"),Mockito.any(),eq(token))).thenReturn(response);
         Response response204 = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 
@@ -649,7 +649,7 @@ public class IAMServiceAccountUtilsTest {
         String iamSecret = "abcdefgh";
         String accessKeyId = "testaccesskey1";
 
-        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDateEpoch\": 1609668443000}]}}");
+        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDuration\": 1609668443000}]}}");
         when(reqProcessor.process(eq("/read"),Mockito.any(),eq(token))).thenReturn(response);
         Response response204 = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 

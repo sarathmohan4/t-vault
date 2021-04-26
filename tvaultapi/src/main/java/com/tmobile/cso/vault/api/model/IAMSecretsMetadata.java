@@ -24,7 +24,7 @@ public class IAMSecretsMetadata implements Serializable {
 	private static final long serialVersionUID = -8637360431772943968L;
 
 	private String accessKeyId;
-	private Long expiryDateEpoch;
+	private Long expiryDuration;
 
 	public IAMSecretsMetadata() {
 		super();
@@ -32,12 +32,12 @@ public class IAMSecretsMetadata implements Serializable {
 
 	/**
 	 * @param accessKeyId
-	 * @param expiryDateEpoch
+	 * @param expiryDuration
 	 */
-	public IAMSecretsMetadata(String accessKeyId, Long expiryDateEpoch) {
+	public IAMSecretsMetadata(String accessKeyId, Long expiryDuration) {
 		super();
 		this.accessKeyId = accessKeyId;
-		this.expiryDateEpoch = expiryDateEpoch;
+		this.expiryDuration = expiryDuration;
 	}
 
 	public String getAccessKeyId() {
@@ -48,11 +48,11 @@ public class IAMSecretsMetadata implements Serializable {
 		this.accessKeyId = accessKeyId;
 	}
 
-	public Long getExpiryDateEpoch() {
-		return expiryDateEpoch;
+	public Long getExpiryDuration() {
+		return expiryDuration;
 	}
 
-	public void setExpiryDateEpoch(Long expiryDateEpoch) {
-		this.expiryDateEpoch = expiryDateEpoch;
+	public void setExpiryDuration(Long expiryDuration) {
+		this.expiryDuration = expiryDuration;
 	}
 }
