@@ -66,6 +66,9 @@ public class IAMServiceAccountUtils {
     @Value("${iamPortal.auth.endpoint}")
     private String iamPortalAuthEndpoint;
 
+    @Value("${iamPortal.createaccesskey.endpoint}")
+    private String iamPortalCreateKeyEndpoint;
+
     @Autowired
     HttpUtils httpUtils;
 
@@ -259,7 +262,7 @@ public class IAMServiceAccountUtils {
             IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret();
             JsonObject responseJson = (JsonObject) jsonParser.parse(jsonResponse.toString());
             
-            iamServiceAccountSecret = addValuesToIamServiceAccountSecret(responseJson,iamServiceAccountSecret,iamServiceAccountRotateRequest);     
+            iamServiceAccountSecret = addValuesToIamServiceAccountSecret(responseJson,iamServiceAccountSecret,iamServiceAccountRotateRequest.getAccountId());
             return iamServiceAccountSecret;
         } catch (Exception e) {
             log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -546,7 +549,7 @@ public class IAMServiceAccountUtils {
         return currentpolicies;
     }
     
-   private IAMServiceAccountSecret addValuesToIamServiceAccountSecret(JsonObject responseJson,IAMServiceAccountSecret iamServiceAccountSecret,IAMServiceAccountRotateRequest iamServiceAccountRotateRequest) {
+   private IAMServiceAccountSecret addValuesToIamServiceAccountSecret(JsonObject responseJson,IAMServiceAccountSecret iamServiceAccountSecret,String accountId) {
        if (!responseJson.isJsonNull()) {
            if (responseJson.has("accessKeyId")) {
                iamServiceAccountSecret.setAccessKeyId(responseJson.get("accessKeyId").getAsString());
@@ -560,7 +563,13 @@ public class IAMServiceAccountUtils {
            if (responseJson.has("expiryDateEpoch")) {
                iamServiceAccountSecret.setExpiryDateEpoch(responseJson.get("expiryDateEpoch").getAsLong());
            }
-           iamServiceAccountSecret.setAwsAccountId(iamServiceAccountRotateRequest.getAccountId());
+           if (responseJson.has("status")) {
+               iamServiceAccountSecret.setStatus(responseJson.get("status").getAsString());
+           }
+           if (responseJson.has("createDate")) {
+               iamServiceAccountSecret.setCreateDate(responseJson.get("createDate").getAsString());
+           }
+           iamServiceAccountSecret.setAwsAccountId(accountId);
        }
        return iamServiceAccountSecret;
     }
@@ -597,4 +606,183 @@ public class IAMServiceAccountUtils {
 
 		return true;
 	}
+
+    /**
+     * Method to call access key create api in IAM portal.
+     * @param awsAccountId
+     * @param iamSvcName
+     * @return
+     */
+    public IAMServiceAccountSecret createAccessKeys(String awsAccountId, String iamSvcName) {
+        IAMServiceAccountSecret iamServiceAccountSecret = null;
+        String iamApproleToken = getIAMApproleToken();
+        if (StringUtils.isEmpty(iamApproleToken)) {
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SECRET).
+                    put(LogMessage.MESSAGE, "Invalid IAM Portal approle token").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return null;
+        }
+
+        String api = iamPortalDomain + iamPortalCreateKeyEndpoint;
+        if (StringUtils.isEmpty(iamPortalDomain) || StringUtils.isEmpty(iamPortalCreateKeyEndpoint)) {
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SECRET).
+                    put(LogMessage.MESSAGE, "Invalid IAM portal endpoint").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return null;
+        }
+
+        JsonParser jsonParser = new JsonParser();
+        HttpClient httpClient = httpUtils.getHttpClient();
+        if (httpClient == null) {
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SECRET).
+                    put(LogMessage.MESSAGE, "Failed to initialize httpClient").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return null;
+        }
+
+        HttpPut httpPut = new HttpPut(api);
+
+        String inputJson = "{\"userName\": \""+iamSvcName+"\",\"accountId\": : \""+awsAccountId+"\"}";
+        StringEntity entity;
+        String iamAuthToken = IAMServiceAccountConstants.IAM_AUTH_TOKEN_PREFIX + " " + Base64.getEncoder().encodeToString(iamApproleToken.getBytes());
+
+        try {
+            entity = new StringEntity(inputJson);
+            httpPut.setEntity(entity);
+            httpPut.setHeader("Authorization", iamAuthToken);
+            httpPut.setHeader("Accept", CONTENTTYPE);
+            httpPut.setHeader("Content-type", CONTENTTYPE);
+            httpPut.setEntity(entity);
+
+        } catch (UnsupportedEncodingException e) {
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SECRET).
+                    put(LogMessage.MESSAGE, "Failed to build StringEntity").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return null;
+        }
+
+        StringBuilder jsonResponse = new StringBuilder();
+
+        try {
+            HttpResponse apiResponse = httpClient.execute(httpPut);
+            if (apiResponse.getStatusLine().getStatusCode() != 200) {
+                readFailedResponseForIAMSecret(apiResponse);
+                return null;
+            }
+            readResponseContent(jsonResponse, apiResponse, IAMServiceAccountConstants.CREATE_IAM_SECRET);
+            JsonObject responseJson = (JsonObject) jsonParser.parse(jsonResponse.toString());
+
+            iamServiceAccountSecret = addValuesToIamServiceAccountSecret(responseJson,iamServiceAccountSecret, awsAccountId);
+        } catch (Exception e) {
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SECRET).
+                    put(LogMessage.MESSAGE, "Failed to parse IAM Secret response").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+        }
+        return iamServiceAccountSecret;
+    }
+
+    /**
+     * To add new Access key and secret information in metadata and secret path.
+     * @param token
+     * @param awsAccountId
+     * @param iamServiceAccountName
+     * @param iamServiceAccountSecret
+     * @return
+     */
+    public Response addIAMSvcAccNewAccessKeyIdToMetadata(String token, String awsAccountId, String iamServiceAccountName, IAMServiceAccountSecret iamServiceAccountSecret){
+        log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                put(LogMessage.ACTION, "addIAMSvcAccNewAccessKeyIdToMetadata").
+                put(LogMessage.MESSAGE, String.format ("Trying to update the metadata with new accessKeyId for IAM service account [%s] in aws account [%s]", iamServiceAccountName, awsAccountId)).
+                put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                build()));
+
+        String uniqueIAMSvcaccName = awsAccountId + "_" + iamServiceAccountName;
+        String path = new StringBuffer(IAMServiceAccountConstants.IAM_SVCC_ACC_PATH).append(uniqueIAMSvcaccName).toString();
+
+        String typeSecret = "secret";
+        path = "metadata/"+path;
+
+        ObjectMapper objMapper = new ObjectMapper();
+        String pathjson =PATHSTR+path+"\"}";
+        // Read info for the path
+        Response metadataResponse = requestProcessor.process("/read",pathjson,token);
+        Map<String,Object> iamMetadataMap = null;
+        if(HttpStatus.OK.equals(metadataResponse.getHttpstatus())){
+            try {
+                iamMetadataMap = objMapper.readValue(metadataResponse.getResponse(),
+                        new TypeReference<Map<String, Object>>() {
+                        });
+            } catch (IOException e) {
+                log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                        put(LogMessage.ACTION, "addIAMSvcAccNewAccessKeyIdToMetadata").
+                        put(LogMessage.MESSAGE, String.format ("Error creating _metadataMap for type [%s] and path [%s] message [%s]", typeSecret, path, e.getMessage())).
+                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                        build()));
+            }
+            if(iamMetadataMap != null) {
+                @SuppressWarnings("unchecked")
+                Map<String,Object> metadataMap = (Map<String,Object>) iamMetadataMap.get("data");
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                List<IAMSecretsMetadata> currentSecretData = objectMapper.convertValue((List<IAMSecretsMetadata>) metadataMap.get(typeSecret), new TypeReference<List<IAMSecretsMetadata>>() { });
+                IAMSecretsMetadata iamSecretsMetadata = new IAMSecretsMetadata(iamServiceAccountSecret.getAccessKeyId(), iamServiceAccountSecret.getExpiryDateEpoch());
+                List<IAMSecretsMetadata> newSecretData = new ArrayList<>();
+                if(null != currentSecretData) {
+                    newSecretData.addAll(currentSecretData);
+                }
+                newSecretData.add(iamSecretsMetadata);
+
+                metadataMap.put(typeSecret, newSecretData);
+                String metadataJson = "";
+                try {
+                    metadataJson = objMapper.writeValueAsString(metadataMap);
+                } catch (JsonProcessingException e) {
+                    log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                            put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                            put(LogMessage.ACTION, "addIAMSvcAccNewAccessKeyIdToMetadata").
+                            put(LogMessage.MESSAGE, String.format ("Error in creating metadataJson for type [%s] and path [%s] with message [%s]", typeSecret, path, e.getMessage())).
+                            put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                            build()));
+                }
+
+                String writeJson = PATHSTR+path+DATASTR+ metadataJson +"}";
+                metadataResponse = requestProcessor.process(WRITESTR,writeJson,token);
+                return metadataResponse;
+            }
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "addIAMSvcAccNewAccessKeyIdToMetadata").
+                    put(LogMessage.MESSAGE, String.format ("Error reading metadata items for IAM Service account [%s]", uniqueIAMSvcaccName)).
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            Response errorResponse = new Response();
+            errorResponse.setHttpstatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            errorResponse.setResponse("{\"errors\":[\"Failed to parse metadata before updating for this IAM Service account\"]}");
+            return new Response();
+        }
+        log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                put(LogMessage.ACTION, "addIAMSvcAccNewAccessKeyIdToMetadata").
+                put(LogMessage.MESSAGE, String.format ("Error reading metadata for IAM Service account [%s]", uniqueIAMSvcaccName)).
+                put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                build()));
+        return metadataResponse;
+    }
 }
