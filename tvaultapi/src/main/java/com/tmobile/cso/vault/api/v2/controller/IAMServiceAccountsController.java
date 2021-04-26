@@ -50,6 +50,7 @@ import com.tmobile.cso.vault.api.service.IAMServiceAccountsService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @CrossOrigin
@@ -98,7 +99,7 @@ public class IAMServiceAccountsController {
 	@ApiOperation(value = "${IAMServiceAccountsController.addGroupToIAMServiceAccount.value}", notes = "${IAMServiceAccountsController.addGroupToIAMServiceAccount.notes}")
 	public ResponseEntity<String> addGroupToIAMServiceAccount(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody @Valid IAMServiceAccountGroup iamServiceAccountGroup){
 	   UserDetails userDetails = (UserDetails) request.getAttribute(USER_DETAILS_STRING);
-	   return iamServiceAccountsService.addGroupToIAMServiceAccount(token, iamServiceAccountGroup, userDetails);
+	   return iamServiceAccountsService.addGroupToIAMServiceAccount(token, iamServiceAccountGroup, userDetails, false);
 	}
 	
 	/**
@@ -244,8 +245,9 @@ public class IAMServiceAccountsController {
 	 * @param awsAccountId
 	 * @return
 	 */
+	@ApiIgnore
 	@PostMapping(value="/v2/iamserviceaccount/activate",produces="application/json")
-	@ApiOperation(value = "${IAMServiceAccountsController.activateIAMServiceAccount.value}", notes = "${IAMServiceAccountsController.activateIAMServiceAccount.notes}")
+	@ApiOperation(value = "${IAMServiceAccountsController.activateIAMServiceAccount.value}", notes = "${IAMServiceAccountsController.activateIAMServiceAccount.notes}", hidden = true)
 	public ResponseEntity<String> activateIAMServiceAccount(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestParam("serviceAccountName" ) String iamServiceAccountName, @RequestParam("awsAccountId" ) String awsAccountId){
 		UserDetails userDetails = (UserDetails) request.getAttribute(USER_DETAILS_STRING);
 		return iamServiceAccountsService.activateIAMServiceAccount(token, userDetails, iamServiceAccountName, awsAccountId);
@@ -364,5 +366,21 @@ public class IAMServiceAccountsController {
 	public ResponseEntity<String> deleteIAMServiceAccountCreds(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody @Valid IAMServiceAccountAccessKey iamServiceAccountAccessKey){
 		UserDetails userDetails = (UserDetails) request.getAttribute(USER_DETAILS_STRING);
 		return iamServiceAccountsService.deleteIAMServiceAccountCreds(userDetails, token, iamServiceAccountAccessKey);
+	}
+
+	/**
+	 * Method to get the list of access keys for an IAM service account
+	 * @param request
+	 * @param token
+	 * @param awsAccountId
+	 * @param iamSvcName
+	 * @return
+	 */
+	@ApiOperation(value = "${IAMServiceAccountsController.getListOfIAMServiceAccountAccessKeys.value}", notes = "${IAMServiceAccountsController.getListOfIAMServiceAccountAccessKeys.notes}")
+	@GetMapping(value = "/v2/iamserviceaccounts/{aws_account_id}/{iam_svc_name}/getkeys", produces = "application/json")
+	public ResponseEntity<String> getListOfIAMServiceAccountAccessKeys(HttpServletRequest request,
+			@RequestHeader(value = "vault-token") String token, @PathVariable("aws_account_id") String awsAccountId,
+			@PathVariable("iam_svc_name") String iamSvcName) {
+		return iamServiceAccountsService.getListOfIAMServiceAccountAccessKeys(token, iamSvcName, awsAccountId);
 	}
 }

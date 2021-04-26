@@ -32,6 +32,8 @@ public class IAMServiceAccountSecret implements Serializable {
     private String userName;
     private String awsAccountId;
     private String expiryDate;
+    private String createDate;
+    private String status;
     /**
      *
      */
@@ -39,12 +41,14 @@ public class IAMServiceAccountSecret implements Serializable {
         super();
     }
 
-    public IAMServiceAccountSecret(String userName, String accessKeyId, String accessKeySecret, Long expiryDateEpoch, String awsAccountId) {
+    public IAMServiceAccountSecret(String userName, String accessKeyId, String accessKeySecret, Long expiryDateEpoch, String awsAccountId, String createDate, String status) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
         this.expiryDateEpoch = expiryDateEpoch;
         this.userName = userName;
         this.awsAccountId = awsAccountId;
+        this.createDate = createDate;
+        this.status = status;
     }
 
     public String getAccessKeyId() {
@@ -95,6 +99,22 @@ public class IAMServiceAccountSecret implements Serializable {
         this.expiryDate = expiryDate;
     }
 
+    public String getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(String createDate) {
+        this.createDate = createDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "IAMServiceAccountSecret{" +
@@ -104,6 +124,8 @@ public class IAMServiceAccountSecret implements Serializable {
                 ", userName='" + userName + '\'' +
                 ", awsAccountId='" + awsAccountId + '\'' +
                 ", expiryDate='" + expiryDate + '\'' +
+                ", createDate='" + createDate + '\'' +
+                ", status='" + status + '\'' +
                 '}';
     }
 }
