@@ -1406,6 +1406,104 @@ public class IAMServiceAccountServiceTest {
 		assertEquals(responseEntityExpected, responseEntity);
 	}
 	
+	
+	@Test
+	public void test_listAllOnboardedIAMServiceAccounts_successfully() {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		UserDetails userDetails = getMockUser(false);
+		
+		// Mock approle permission check
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("iamportal_master_policy");
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			when(iamServiceAccountUtils.getIdentityPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(new ArrayList<>());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		when(reqProcessor.process(eq("/iam/onboardedlist"), Mockito.any(), eq(token))).thenReturn(getMockResponse(
+				HttpStatus.OK, true, "{\"keys\":[\"12234237890_svc_test0=.4,1,2.3\",\"12234237890_svc_test0=.5,2,3.4\" ]}"));
+		StringBuffer responseStr = new StringBuffer().append("{" ); 
+		responseStr.append("\"userName\": \"svc_tvt_test0=.4,1,2.3\"," );
+		responseStr.append("\"metaDataName\": \"12234237890_svc_test0=.4,1,2.3\"," );
+		responseStr.append("\"accountID\": \"12234237890\"" );
+		responseStr.append("}," );
+		responseStr.append("{" );
+		responseStr.append("\"userName\": \"svc_tvt_test0=.5,2,3.4\"," );
+		responseStr.append("\"metaDataName\": \"12234237890_svc_test0=.5,2,3.4\"," );
+		responseStr.append("\"accountID\": \"12234237890\"" ); 
+		responseStr.append("}\n" );
+		
+		StringBuffer responseJSONStr = new StringBuffer().append("{");
+		responseJSONStr.append("\"keys\":");
+		responseJSONStr.append(responseStr.toString());
+		responseJSONStr.append("" );
+		responseJSONStr.append("}");
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJSONStr.toString());
+
+
+		when(JSONUtil.getJSON(Mockito.any())).thenReturn(responseStr.toString());
+		ResponseEntity<String> responseEntity = iamServiceAccountsService.listAllOnboardedIAMServiceAccounts(token,
+				userDetails);
+		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntity);
+	}
+	
+	@Test
+	public void test_listAllOnboardedIAMServiceAccounts_notfound() {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		UserDetails userDetails = getMockUser(false);
+		
+		// Mock approle permission check
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("iamportal_master_policy");
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			when(iamServiceAccountUtils.getIdentityPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(new ArrayList<>());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		when(reqProcessor.process(eq("/iam/onboardedlist"), Mockito.any(), eq(token))).thenReturn(getMockResponse(HttpStatus.NOT_FOUND, true, "{\"keys\":[]}"));
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"keys\":[]}");
+		ResponseEntity<String> responseEntity = iamServiceAccountsService.listAllOnboardedIAMServiceAccounts(token, userDetails);
+		assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntity);
+	}
+	
+	@Test
+	public void test_listAllOnboardedIAMServiceAccounts_AccesDenied() {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		UserDetails userDetails = getMockUser(false);
+		
+		// Mock approle permission check
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"default\"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("default");
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			when(iamServiceAccountUtils.getIdentityPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(new ArrayList<>());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		StringBuffer responseStr = new StringBuffer().append("{\"errors\":[\"Access denied. Not authorized to perform this operation.\"]}");
+
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body(responseStr.toString());
+		ResponseEntity<String> responseEntity = iamServiceAccountsService.listAllOnboardedIAMServiceAccounts(token,
+				userDetails);
+		assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntity);
+	}
+	
+	
+	
 	@Test
 	public void test_getIAMServiceAccountDetail_successfully() {
 		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
