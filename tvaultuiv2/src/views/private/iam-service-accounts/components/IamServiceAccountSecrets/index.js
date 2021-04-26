@@ -248,6 +248,11 @@ const IamServiceAccountSecrets = (props) => {
     isOpen: false,
   });
 
+  useEffect(() => {
+    setSecretsData({});
+    setFolderDetails({ name: '', isOpen: false });
+  }, [accountDetail]);
+
   /**
    * @function onViewSecretDetails
    * @param {string} folderName

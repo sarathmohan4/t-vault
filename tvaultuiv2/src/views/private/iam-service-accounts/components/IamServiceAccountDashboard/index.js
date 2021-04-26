@@ -389,6 +389,7 @@ const IamServiceAccountDashboard = () => {
   const getSecrets = useCallback(() => {
     setAccountSecretError('');
     if (listItemDetails.active) {
+      setAccountSecretData({});
       setSecretResponse({ status: 'loading' });
       apiService
         .getIamSvcAccountSecrets(
