@@ -67,13 +67,6 @@ const CancelSaveWrapper = styled.div`
   }
 `;
 
-const CancelButton = styled.div`
-  margin-left: 0.8rem;
-  ${small} {
-    margin-left: 1rem;
-    width: 100%;
-  }
-`;
 const Label = styled.p`
   font-size: 1.3rem;
   color: ${(props) => props.theme.customColor.label.color};
@@ -140,22 +133,8 @@ const useTooltipStyles = makeStyles((theme) => ({
 }));
 
 const ViewIamSvcAccountDetails = (props) => {
-  const {
-    iamSvcAccountData,
-    isMobileScreen,
-    isRotateSecret,
-    isActivateIamSvcAcc,
-    handleCloseModal,
-    viewAccountData,
-  } = props;
+  const { iamSvcAccountData, isMobileScreen, handleCloseModal } = props;
   const tooltipClasses = useTooltipStyles();
-  const onRotateClicked = () => {
-    isRotateSecret(true);
-  };
-
-  const onActivateClicked = () => {
-    isActivateIamSvcAcc(true);
-  };
 
   const onCancelViewDetails = () => {
     handleCloseModal();
@@ -305,26 +284,6 @@ const ViewIamSvcAccountDetails = (props) => {
             onClick={() => onCancelViewDetails(false)}
             width={isMobileScreen ? '100%' : ''}
           />
-          {viewAccountData.permission === 'write' && (
-            <CancelButton>
-              <ButtonComponent
-                label="Rotate"
-                color="secondary"
-                onClick={() => onRotateClicked()}
-                width={isMobileScreen ? '100%' : ''}
-              />
-            </CancelButton>
-          )}
-          {!iamSvcAccountData?.isActivated && (
-            <CancelButton>
-              <ButtonComponent
-                label="Activate"
-                color="secondary"
-                onClick={() => onActivateClicked()}
-                width={isMobileScreen ? '100%' : ''}
-              />
-            </CancelButton>
-          )}
         </CancelSaveWrapper>
       </ModalWrapper>
     </ComponentError>
@@ -334,17 +293,12 @@ const ViewIamSvcAccountDetails = (props) => {
 ViewIamSvcAccountDetails.propTypes = {
   iamSvcAccountData: PropTypes.objectOf(PropTypes.any),
   isMobileScreen: PropTypes.bool,
-  isRotateSecret: PropTypes.func,
-  isActivateIamSvcAcc: PropTypes.func,
   handleCloseModal: PropTypes.func,
-  viewAccountData: PropTypes.objectOf(PropTypes.any).isRequired,
 };
 
 ViewIamSvcAccountDetails.defaultProps = {
   iamSvcAccountData: {},
   isMobileScreen: false,
-  isRotateSecret: () => {},
-  isActivateIamSvcAcc: () => {},
   handleCloseModal: () => {},
 };
 

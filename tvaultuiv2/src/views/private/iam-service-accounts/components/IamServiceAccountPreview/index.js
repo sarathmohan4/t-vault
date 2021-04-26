@@ -9,14 +9,12 @@ import Fade from '@material-ui/core/Fade';
 import styled, { css } from 'styled-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import PropTypes from 'prop-types';
-import ButtonComponent from '../../../../../components/FormFields/ActionButton';
 import ConfirmationModal from '../../../../../components/ConfirmationModal';
 import SnackbarComponent from '../../../../../components/Snackbar';
 import ComponentError from '../../../../../errorBoundaries/ComponentError/component-error';
 import mediaBreakpoints from '../../../../../breakpoints';
 import LoaderSpinner from '../../../../../components/Loaders/LoaderSpinner';
 import ViewIamSvcAccountDetails from './components/ViewIamSvcAccount';
-import apiService from '../../apiService';
 import SuccessAndErrorModal from '../../../../../components/SuccessAndErrorModal';
 
 const { small } = mediaBreakpoints;
@@ -78,13 +76,13 @@ const ViewIamServiceAccount = (props) => {
   const classes = useStyles();
   const [open] = useState(true);
   const [status, setStatus] = useState(null);
-  const [actionPerformed, setActionPerformed] = useState(false);
+  const [actionPerformed] = useState(false);
   const [successErrorDetails, setSuccessErrorDetails] = useState({
     title: '',
     desc: '',
   });
   const [successErrorModal, setSuccessErrorModal] = useState(false);
-  const [openModal, setOpenModal] = useState({
+  const [openModal] = useState({
     status: '',
     message: '',
     description: '',
@@ -110,120 +108,6 @@ const ViewIamServiceAccount = (props) => {
     handleCloseModal(actionPerformed);
   };
 
-  /**
-   * @function handleCloseConfirmationModal
-   * @description function when user clicked cancel of confirmation modal.
-   */
-  const handleCloseConfirmationModal = () => {
-    setOpenModal({ status: '', message: '' });
-  };
-
-  /**
-   * @function rotateSecret
-   * @description function when user clicked on rotate secret to roate the secret.
-   */
-
-  const rotateSecret = () => {
-    setOpenModal({
-      status: 'open',
-      message: 'Confirmation!',
-      description: 'Are you sure, You want to rotate the password?',
-    });
-  };
-
-  /**
-   * @function isActivateIamSvcAcc
-   * @description function when user clicked on activate iam service account for the very first time.
-   */
-
-  const isActivateIamSvcAcc = () => {
-    setOpenModal({
-      status: 'open',
-      message: 'IAM Service Account Activation!',
-      description:
-        "During the activation, the password of the IAM service account will be rotated to ensure AWS and T-Vault are in sync. If you want to continue with activation now please click the 'ACTIVATE' button below and make sure to update any services depending on the service account with its new password",
-    });
-  };
-
-  /**
-   * @function activateServiceAccount
-   * @description function when user clicked on activate iam service account for the very first time.
-   */
-  const activateServiceAccount = () => {
-    setStatus({ status: 'loading', message: '' });
-    setOpenModal({});
-    apiService
-      .activateIamServiceAccount(
-        iamServiceAccountDetails?.userName,
-        iamServiceAccountDetails?.awsAccountId
-      )
-      .then(() => {
-        setActionPerformed(true);
-        setSuccessErrorDetails({
-          title: 'Activation Successful!',
-          desc: `IAM Service account ${iamServiceAccountDetails.userName} has been activated successfully! </br> IAM Service Account has been activated. You may also want to assign permissions for other users or groups to view or modify this service account. Please do so by clicking the "Permission" button on the next screen.`,
-        });
-        setSuccessErrorModal(true);
-        setStatus({ status: '', message: '' });
-      })
-      .catch((err) => {
-        setActionPerformed(false);
-        setSuccessErrorModal(true);
-        setStatus({ status: '', message: '' });
-        if (err?.response?.data?.errors && err?.response?.data?.errors[0]) {
-          setSuccessErrorDetails({
-            title: 'Activation Failed!',
-            desc: err?.response?.data?.errors[0],
-          });
-        } else {
-          setSuccessErrorDetails({
-            title: 'Activation Failed!',
-            desc: 'Something went wrong!',
-          });
-        }
-      });
-  };
-
-  /**
-   * @function onRotateSecret
-   * @description function when user clicked on rotate secret to rotate the secret.
-   */
-
-  const onRotateSecret = () => {
-    const payload = {
-      accessKeyId: iamServiceAccountDetails?.secret[0]?.accessKeyId,
-      accountId: iamServiceAccountDetails?.awsAccountId,
-      userName: iamServiceAccountDetails?.userName,
-    };
-    setStatus({ status: 'loading' });
-    setOpenModal({});
-    apiService
-      .rotateIamServiceAccountPassword(payload)
-      .then((res) => {
-        setActionPerformed(true);
-        setOpenModal({ status: '' });
-        if (res?.data?.messages && res?.data?.messages[0]) {
-          setStatus({ status: 'success', message: res.data.messages[0] });
-        } else {
-          setStatus({ status: 'success', message: 'Rotation Successful!' });
-        }
-      })
-      .catch((err) => {
-        setActionPerformed(false);
-        if (err?.response?.data?.errors && err?.response?.data?.errors[0]) {
-          setStatus({
-            status: 'failed',
-            message: err?.response?.data?.errors[0],
-          });
-        } else {
-          setStatus({
-            status: 'failed',
-            message: 'Something went wrong!',
-          });
-        }
-      });
-  };
-
   return (
     <ComponentError>
       <>
@@ -233,36 +117,6 @@ const ViewIamServiceAccount = (props) => {
             description={successErrorDetails.desc}
             handleSuccessAndDeleteModalClose={() =>
               handleSuccessAndDeleteModalClose()
-            }
-          />
-        )}
-        {openModal?.status === 'open' && (
-          <ConfirmationModal
-            open={openModal?.status === 'open'}
-            handleClose={() => handleCloseConfirmationModal()}
-            title={openModal.message || ''}
-            description={openModal?.description || ''}
-            cancelButton={
-              <ButtonComponent
-                label="Cancel"
-                color="primary"
-                onClick={() => handleCloseConfirmationModal()}
-                width={isMobileScreen ? '100%' : '45%'}
-              />
-            }
-            confirmButton={
-              <ButtonComponent
-                label={
-                  iamServiceAccountDetails?.isActivated ? 'Rotate' : 'Activate'
-                }
-                color="secondary"
-                onClick={
-                  iamServiceAccountDetails?.isActivated
-                    ? () => onRotateSecret()
-                    : () => activateServiceAccount()
-                }
-                width={isMobileScreen ? '100%' : '45%'}
-              />
             }
           />
         )}
@@ -289,8 +143,6 @@ const ViewIamServiceAccount = (props) => {
                   <ViewIamSvcAccountDetails
                     iamSvcAccountData={iamServiceAccountDetails}
                     isMobileScreen={isMobileScreen}
-                    isRotateSecret={rotateSecret}
-                    isActivateIamSvcAcc={isActivateIamSvcAcc}
                     handleCloseModal={() => handleCloseModal(actionPerformed)}
                     viewAccountData={viewAccountData}
                   />
