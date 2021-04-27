@@ -889,6 +889,16 @@ public class OIDCUtil {
 		if (responseJson != null && responseJson.has("id")) {
 			userId = responseJson.get("id").getAsString();
 		}
+
+		if(StringUtils.isEmpty(userId)) {
+			if (responseJson != null && responseJson.has(VALUESTR)) {
+				JsonArray vaulesArray = responseJson.get(VALUESTR).getAsJsonArray();
+				if (vaulesArray.size() > 0) {
+					JsonObject adObject = vaulesArray.get(0).getAsJsonObject();
+					userId = adObject.get("id").getAsString();
+				}
+			}
+		}
 		return userId;
 	}
 

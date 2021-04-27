@@ -32,8 +32,6 @@ public class IAMServiceAccountGroup implements Serializable {
 	private static final long serialVersionUID = 7345425327330378618L;
 
 	@NotBlank
-	@Size(min = 11, max = 30, message = "UserName specified should be minimum 11 chanracters and maximum 30 characters only")
-	@Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Name can have alphabets, numbers, _ and - characters only")
 	private String iamSvcAccName;
 
 	@NotBlank
