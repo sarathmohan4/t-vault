@@ -415,15 +415,19 @@ const IamServiceAccountDashboard = () => {
     if (iamServiceAccountList?.length > 0) {
       const val = location.pathname.split('/');
       const svcName = val[val.length - 1];
-      const obj = iamServiceAccountList.find((svc) => svc.name === svcName);
+      const accountId = svcName?.split('_')[0];
+      const iamName = svcName?.replace(`${accountId}_`, '');
+      const obj = iamServiceAccountList?.find(
+        (svc) => svc.name === iamName && accountId === svc.iamAccountId
+      );
       if (obj) {
-        if (listItemDetails.name !== obj.name) {
-          setListItemDetails({ ...obj });
-          setAccountSecretData({});
-        }
+        setListItemDetails({ ...obj });
+        setAccountSecretData({});
       } else {
         setListItemDetails(iamServiceAccountList[0]);
-        history.push(`/iam-service-accounts/${iamServiceAccountList[0].name}`);
+        history.push(
+          `/iam-service-accounts/${iamServiceAccountList[0].iamAccountId}_${iamServiceAccountList[0].name}`
+        );
       }
     }
     // eslint-disable-next-line
@@ -437,14 +441,15 @@ const IamServiceAccountDashboard = () => {
   const renderList = () => {
     return iamServiceAccountList.map((account) => (
       <ListFolderWrap
-        key={account.name}
+        key={`${account.iamAccountId}_${account.name}`}
         to={{
-          pathname: `/iam-service-accounts/${account.name}`,
+          pathname: `/iam-service-accounts/${account.iamAccountId}_${account.name}`,
           state: { data: account },
         }}
         onClick={() => onLinkClicked()}
         active={
-          history.location.pathname === `/iam-service-accounts/${account.name}`
+          history.location.pathname ===
+          `/iam-service-accounts/${account.iamAccountId}_${account.name}`
             ? 'true'
             : 'false'
         }
