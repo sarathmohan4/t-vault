@@ -155,6 +155,22 @@ public class IAMServiceAccountsControllerTest {
 		String actual = result.getResponse().getContentAsString();
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void test_getAllOnboardedIAMServiceAccounts_successful() throws Exception {
+		String responseJson = "{\"keys\":[{\"userName\":\"testiamsvcacc01\",\"metaDataName\":\"123456789012_testiamsvcacc01\",\"accountID\":\"123456789012\"},{\"userName\":\"test_iamsvcacc2\",\"metaDataName\":\"123456789045_test_iamsvcacc2\",\"accountID\":\"123456789045\"}]}";
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);
+		String expected = responseEntityExpected.getBody();
+
+		when(iamServiceAccountsService.listAllOnboardedIAMServiceAccounts(token, userDetails))
+				.thenReturn(responseEntityExpected);
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/v2/iamserviceaccounts/all")
+				.header(VAULT_TOKEN_STRING, token).header(CONTENT_TYPE_STRING, CONTENT_TYPE_VALUE_STRING)
+				.requestAttr(USER_DETAILS_STRING, userDetails)).andExpect(status().isOk()).andReturn();
+		String actual = result.getResponse().getContentAsString();
+		assertEquals(expected, actual);
+	}
+	
 	@Test
 	public void test_iamsvcUsername_invalidChars_hash() {
 		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount#", "1234567", "normaluser");

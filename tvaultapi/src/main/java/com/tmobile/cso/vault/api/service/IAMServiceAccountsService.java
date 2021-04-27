@@ -42,6 +42,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.tmobile.cso.vault.api.common.IAMServiceAccountConstants;
+import com.tmobile.cso.vault.api.common.SSLCertificateConstants;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.controller.ControllerUtil;
 import com.tmobile.cso.vault.api.controller.OIDCUtil;
@@ -312,7 +313,7 @@ public class  IAMServiceAccountsService {
 		return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onPolicyFailure");
 
 	}
-
+	
 	/**
 	 * Method to populate IAM Secret with
 	 * @param iamServiceAccount
@@ -927,6 +928,64 @@ public class  IAMServiceAccountsService {
 		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 	}
 
+	/**
+	 * To get all IAM service accounts
+	 *
+	 * @param token
+	 * @param userDetails
+	 * @return
+	 */
+	public ResponseEntity<String> listAllOnboardedIAMServiceAccounts(String token, UserDetails userDetails) {
+		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+				.put(LogMessage.ACTION, "listAllOnboardedIAMServiceAccounts")
+				.put(LogMessage.MESSAGE, "Trying to get all onboaded IAM service accounts")
+				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+		if (!isAuthorizedForIAMOnboardAndOffboard(token)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+					"{\"errors\":[\"Access denied. Not authorized to perform this operation.\"]}");
+		}
+		String metadataPath = IAMServiceAccountConstants.IAM_SVCC_ACC_META_PATH;
+
+		Response response = reqProcessor.process("/iam/onboardedlist", PATHSTR + metadataPath + "\"}", token);
+		List<IAMServiceAccountResponse> onboardedlist = new ArrayList<>();
+		if (HttpStatus.OK.equals(response.getHttpstatus())) {
+
+			try {
+				Map<String, Object> requestParams = new ObjectMapper().readValue(response.getResponse(), new TypeReference<Map<String, Object>>(){});
+				List<String> allIAMSvcAccNames = (ArrayList<String>) requestParams.get("keys");
+				for (String iamSvcAccName: allIAMSvcAccNames) {
+					IAMServiceAccountResponse iamServiceAccountResponse = new IAMServiceAccountResponse();
+					String[] accountID = iamSvcAccName.split("_");
+					String separator = "_";
+					int sepPos = iamSvcAccName.indexOf(separator);
+					iamServiceAccountResponse.setMetaDataName(iamSvcAccName);
+					iamServiceAccountResponse.setUserName(iamSvcAccName.substring(sepPos + separator.length()));
+					iamServiceAccountResponse.setAccountID(accountID[0]);
+					onboardedlist.add(iamServiceAccountResponse);
+				}
+				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+						.put(LogMessage.ACTION, "listAllOnboardedIAMServiceAccounts")
+						.put(LogMessage.MESSAGE, "Successfully retrieved the list of IAM Service Accounts from Vault ")
+						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+				
+			} catch (Exception e) {
+				log.error("Unable to get list of onboarded IAM Service Accounts.");
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+						put(LogMessage.ACTION, "listAllOnboardedIAMServiceAccounts").
+						put(LogMessage.MESSAGE, String.format ("Unable to get list of all onboarded IAM Service Accounts due to [%s] ",e.getMessage())).
+						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+						build()));
+			}
+			return ResponseEntity.status(response.getHttpstatus()).body("{\"keys\":" + JSONUtil.getJSON(onboardedlist) + "}");
+			
+		} else if (HttpStatus.NOT_FOUND.equals(response.getHttpstatus())) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"keys\":[]}");
+		}
+		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
+	}
 	/**
 	 * Add Group to IAM Service Account
 	 *
