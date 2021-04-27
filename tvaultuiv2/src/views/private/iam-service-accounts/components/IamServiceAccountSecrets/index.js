@@ -17,6 +17,8 @@ import ComponentError from '../../../../../errorBoundaries/ComponentError/compon
 import apiService from '../../apiService';
 import lock from '../../../../../assets/icon_lock.svg';
 import refreshIcon from '../../../../../assets/refresh-ccw.svg';
+import createIcon from '../../../../../assets/icon_add_secreett.svg';
+
 import NoSecretsIcon from '../../../../../assets/no-data-secrets.svg';
 import AccessDeniedLogo from '../../../../../assets/accessdenied-logo.svg';
 import ButtonComponent from '../../../../../components/FormFields/ActionButton';
@@ -222,6 +224,7 @@ const SecretDetailsWrap = styled.div`
 const IamServiceAccountSecrets = (props) => {
   const {
     accountDetail,
+    disabledPermission,
     accountSecretError,
     accountSecretData,
     value,
@@ -392,6 +395,20 @@ const IamServiceAccountSecrets = (props) => {
   };
 
   /**
+   * @function createAccesskey
+   * @description function to create access key for the IAM service account.
+   */
+  const createAccesskey = () => {
+    setOpenConfirmationModal({
+      status: 'open',
+      type: 'create',
+      title: 'Create Access Key!',
+      description:
+        "During the creation, new access key secret will be created for the IAM service account and will be saved in T-Vault. If you want to continue with access key creation now please click the 'CREATE' button below.",
+    });
+  };
+
+  /**
    * @function onActivateConfirm
    * To activate the servcie account once it is onBoarded
    */
@@ -399,13 +416,13 @@ const IamServiceAccountSecrets = (props) => {
   const onActivateConfirm = () => {
     setOpenConfirmationModal({
       status: 'close',
-      type: 'activate',
+      type: 'create',
       title: '',
       description: '',
     });
     setResponse({ status: 'loading' });
     apiService
-      .activateIamServiceAccount(
+      .createIamServiceAccountSecret(
         accountDetail?.name,
         accountDetail?.iamAccountId
       )
@@ -415,6 +432,44 @@ const IamServiceAccountSecrets = (props) => {
           setSuccessErrorDetails({
             title: 'Activation Successful!',
             desc: `IAM Service account ${accountDetail?.name} has been activated successfully! </br> IAM Service Account has been activated. You may also want to assign permissions for other users or groups to view or modify this service account. Please do so by clicking the "Permission" button on the next screen.`,
+          });
+          setSuccessErrorModal(true);
+          await refresh();
+        }
+      })
+      .catch((err) => {
+        if (err?.response?.data?.errors && err?.response?.data?.errors[0]) {
+          setToastMessage(err?.response?.data?.errors[0]);
+        }
+        setResponse({});
+        setResponseType(-1);
+      });
+  };
+
+  /**
+   * @function onActivonCreateAccessKeyConfirmateConfirm
+   * To Create access key for the servcie account
+   */
+
+  const onCreateAccessKeyConfirm = () => {
+    setOpenConfirmationModal({
+      status: 'close',
+      type: 'activate',
+      title: '',
+      description: '',
+    });
+    setResponse({ status: 'loading' });
+    apiService
+      .createIamServiceAccountSecret(
+        accountDetail?.name,
+        accountDetail?.iamAccountId
+      )
+      .then(async (res) => {
+        if (res?.data) {
+          setResponse({ status: 'success', message: res.data.messages[0] });
+          setSuccessErrorDetails({
+            title: 'Access key created Successfully!',
+            desc: `Access key for IAM Service account ${accountDetail?.name} has been created successfully! </br> Maximum of 2 Access keys can be created for an IAM Service Account. You may also want to assign permissions for other users or groups to view or modify this service account. Please do so by clicking the "Permission" button on the next screen.`,
           });
           setSuccessErrorModal(true);
           await refresh();
@@ -492,13 +547,13 @@ const IamServiceAccountSecrets = (props) => {
             confirmButton={
               <ButtonComponent
                 label={
-                  openConfirmationModal?.type === 'activate'
-                    ? 'Activate'
+                  openConfirmationModal?.type === 'create'
+                    ? 'Create'
                     : 'Rotate'
                 }
                 color="secondary"
                 onClick={
-                  openConfirmationModal?.type === 'activate'
+                  openConfirmationModal?.type === 'create'
                     ? () => onActivateConfirm()
                     : () => onRotateConfirmedClicked()
                 }
@@ -523,6 +578,17 @@ const IamServiceAccountSecrets = (props) => {
                 </Secret>
                 <FolderIconWrap onClick={() => activateServiceAccount()}>
                   <Icon src={refreshIcon} alt="refresh" />
+                </FolderIconWrap>
+              </UserList>
+            )}
+            {accountDetail?.name && (Object.keys(accountSecretData)?.length == 0 ||
+              accountSecretData?.folders?.length <= 1) && !disabledPermission && (
+              <UserList>
+                <LabelWrap>
+                  <Span>Create Access Key</Span>
+                </LabelWrap>
+                <FolderIconWrap onClick={() => createAccesskey()}>
+                  <Icon src={createIcon} alt="refresh" />
                 </FolderIconWrap>
               </UserList>
             )}
@@ -689,6 +755,7 @@ const IamServiceAccountSecrets = (props) => {
 
 IamServiceAccountSecrets.propTypes = {
   accountDetail: PropTypes.objectOf(PropTypes.any).isRequired,
+  disabledPermission: PropTypes.bool.isRequired,
   secretResponse: PropTypes.string,
   accountSecretError: PropTypes.string,
   accountSecretData: PropTypes.objectOf(PropTypes.any),
