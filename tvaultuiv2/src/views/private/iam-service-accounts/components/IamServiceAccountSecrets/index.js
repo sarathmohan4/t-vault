@@ -251,6 +251,7 @@ const IamServiceAccountSecrets = (props) => {
   useEffect(() => {
     setSecretsData({});
     setFolderDetails({ name: '', isOpen: false });
+    setResponse({ status: '' });
   }, [accountDetail]);
 
   /**
