@@ -42,8 +42,6 @@ public class IAMServiceAccountAWSRole implements Serializable{
 	}
 
 	@NotBlank
-	@Size(min = 11, max = 30, message = "IAM SvcAccName specified should be minimum 11 characters and maximum 30 characters only")
-	@Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Name can have alphabets, numbers, _ and - characters only")
 	private String iamSvcAccName;
 
 	@NotBlank

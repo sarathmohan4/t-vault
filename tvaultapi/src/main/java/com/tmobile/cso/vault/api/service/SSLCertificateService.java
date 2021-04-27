@@ -1404,12 +1404,16 @@ public class SSLCertificateService {
 			// Get user details from Corp domain (For sprint users)
 			directoryUser = directoryService.getUserDetailsFromCorp(userName);
 		}
-        if(directoryUser != null) {
-	        String[] displayName =   directoryUser.getDisplayName().split(",");
-	        if(displayName.length > 1) {
-	            directoryUser.setDisplayName(displayName[1] + "  " + displayName[0]);
-	        }
-        }
+		if (directoryUser != null) {
+			if (directoryUser.getDisplayName() != null) {
+				String[] displayName = directoryUser.getDisplayName().split(",");
+				if (displayName.length > 1) {
+					directoryUser.setDisplayName(displayName[1] + "  " + displayName[0]);
+				}
+			} else {
+				directoryUser.setDisplayName(userName);
+			}
+		}
         return directoryUser;
     }
 

@@ -29,12 +29,9 @@ public class IAMServiceAccountAccessKey implements Serializable {
 	private static final long serialVersionUID = 6105103104159772257L;
 	
 	@NotBlank
-	@Size(min = 16, max = 128, message = "AccessKeyId specified should be minimum 16 chanracters and maximum 128 characters only")
     private String accessKeyId;
 
 	@NotBlank
-	@Size(min = 11, message = "UserName specified should be minimum 11 chanracters only")
-	@Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Name can have alphabets, numbers, _ and - characters only")
     private String userName;
 
     @NotBlank
