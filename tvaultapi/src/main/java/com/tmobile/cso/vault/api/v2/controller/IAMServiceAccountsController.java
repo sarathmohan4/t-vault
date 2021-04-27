@@ -116,6 +116,19 @@ public class IAMServiceAccountsController {
 	}
 	
 	/**
+	 * Gets the list of all IAM Service accounts onbaorded in t-vault. Works only for Admins
+	 * @param request
+	 * @param token
+	 * @return
+	 */
+	@ApiOperation(value = "${IAMServiceAccountsController.listAllOnboardedIAMServiceAccounts.value}", notes = "${IAMServiceAccountsController.listAllOnboardedIAMServiceAccounts.notes}")
+	@GetMapping(value="/v2/iamserviceaccounts/all", produces="application/json")
+	public ResponseEntity<String> getAllOnboardedIAMServiceAccounts(HttpServletRequest request, @RequestHeader(value="vault-token") String token){
+		UserDetails userDetails = (UserDetails) request.getAttribute(USER_DETAILS_STRING);
+		return iamServiceAccountsService.listAllOnboardedIAMServiceAccounts(token, userDetails);
+	}
+	
+	/**
 	 * Get the list of iam service accounts for users with permissions.
 	 * @param request
 	 * @param token

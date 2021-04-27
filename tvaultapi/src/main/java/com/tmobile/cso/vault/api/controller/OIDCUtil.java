@@ -6,21 +6,16 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.JsonArray;
-import com.tmobile.cso.vault.api.exception.LogMessage;
-import com.tmobile.cso.vault.api.model.*;
-import com.tmobile.cso.vault.api.utils.HttpUtils;
-import com.tmobile.cso.vault.api.utils.JSONUtil;
-import com.tmobile.cso.vault.api.utils.ThreadLocalContext;
-import com.tmobile.cso.vault.api.utils.TokenUtils;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -28,7 +23,6 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,14 +31,35 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.tmobile.cso.vault.api.common.SSLCertificateConstants;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
+import com.tmobile.cso.vault.api.exception.LogMessage;
+import com.tmobile.cso.vault.api.model.AADUserObject;
+import com.tmobile.cso.vault.api.model.DirecotryGroupEmail;
+import com.tmobile.cso.vault.api.model.DirectoryGroup;
+import com.tmobile.cso.vault.api.model.DirectoryUser;
+import com.tmobile.cso.vault.api.model.GroupAliasRequest;
+import com.tmobile.cso.vault.api.model.OIDCEntityRequest;
+import com.tmobile.cso.vault.api.model.OIDCEntityResponse;
+import com.tmobile.cso.vault.api.model.OIDCGroup;
+import com.tmobile.cso.vault.api.model.OIDCIdentityGroupRequest;
+import com.tmobile.cso.vault.api.model.OIDCLookupEntityRequest;
+import com.tmobile.cso.vault.api.model.OidcEntityAliasRequest;
+import com.tmobile.cso.vault.api.model.UserDetails;
 import com.tmobile.cso.vault.api.process.RequestProcessor;
 import com.tmobile.cso.vault.api.process.Response;
 import com.tmobile.cso.vault.api.service.DirectoryService;
+import com.tmobile.cso.vault.api.utils.HttpUtils;
+import com.tmobile.cso.vault.api.utils.JSONUtil;
+import com.tmobile.cso.vault.api.utils.ThreadLocalContext;
+import com.tmobile.cso.vault.api.utils.TokenUtils;
 
 @Component
 public class OIDCUtil {
@@ -140,8 +155,7 @@ public class OIDCUtil {
 				oidcEntityResponse.setEntityName(m.getValue().toString());
 			}
 			if (m.getKey().equals(TVaultConstants.POLICIES) && m.getValue() != null && m.getValue() != "") {
-				String policy = m.getValue().toString().replace("[", "").replace("]", "").replaceAll("\\s", "");
-				List<String> policies = new ArrayList<>(Arrays.asList(policy.split(",")));
+				List<String> policies = (ArrayList<String>) m.getValue();
 				oidcEntityResponse.setPolicies(policies);
 			}
 		}
@@ -666,8 +680,7 @@ public class OIDCUtil {
         List<String> policies = new ArrayList<>();
         for (Map.Entry m : metaDataParams.entrySet()) {
             if (m.getKey().equals(TVaultConstants.IDENTITY_POLICIES) && m.getValue() != null && m.getValue() != "") {
-                String policy = m.getValue().toString().replace("[", "").replace("]", "").replaceAll("\\s", "");
-                policies = new ArrayList<>(Arrays.asList(policy.split(",")));
+            	policies = (ArrayList<String>) m.getValue();
                 break;
             }
         }
