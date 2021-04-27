@@ -68,6 +68,7 @@ public final class IAMServiceAccountConstants {
 		IAM_EMAIL_TEMPLATE_IMAGE_IDS.put("permissiontab", "templates/images/permissiontab.png");
 		IAM_EMAIL_TEMPLATE_IMAGE_IDS.put("adduser", "templates/images/adduser.png");
 		IAM_EMAIL_TEMPLATE_IMAGE_IDS.put("iamrotate", "templates/images/iamrotate.png");
+		IAM_EMAIL_TEMPLATE_IMAGE_IDS.put("iamcreatesecret", "templates/images/iamcreatesecret.png");
 	}
 	
 	public static final String ACCESS_KEY_ID = "accessKeyId";
