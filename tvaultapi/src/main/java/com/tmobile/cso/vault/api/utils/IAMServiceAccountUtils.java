@@ -613,8 +613,7 @@ public class IAMServiceAccountUtils {
      * @param iamSvcName
      * @return
      */
-    public IAMServiceAccountSecret createAccessKeys(String awsAccountId, String iamSvcName) {
-        IAMServiceAccountSecret iamServiceAccountSecret = null;
+    public Integer createAccessKeys(String awsAccountId, String iamSvcName, IAMServiceAccountSecret iamServiceAccountSecret) {
         String iamApproleToken = getIAMApproleToken();
         if (StringUtils.isEmpty(iamApproleToken)) {
             log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -649,19 +648,19 @@ public class IAMServiceAccountUtils {
             return null;
         }
 
-        HttpPut httpPut = new HttpPut(api);
+        HttpPost httpPost = new HttpPost(api);
 
-        String inputJson = "{\"userName\": \""+iamSvcName+"\",\"accountId\": : \""+awsAccountId+"\"}";
+        String inputJson = "{\"userName\": \""+iamSvcName+"\",\"accountId\": \""+awsAccountId+"\"}";
         StringEntity entity;
         String iamAuthToken = IAMServiceAccountConstants.IAM_AUTH_TOKEN_PREFIX + " " + Base64.getEncoder().encodeToString(iamApproleToken.getBytes());
 
         try {
             entity = new StringEntity(inputJson);
-            httpPut.setEntity(entity);
-            httpPut.setHeader("Authorization", iamAuthToken);
-            httpPut.setHeader("Accept", CONTENTTYPE);
-            httpPut.setHeader("Content-type", CONTENTTYPE);
-            httpPut.setEntity(entity);
+            httpPost.setEntity(entity);
+            httpPost.setHeader("Authorization", iamAuthToken);
+            httpPost.setHeader("Accept", CONTENTTYPE);
+            httpPost.setHeader("Content-type", CONTENTTYPE);
+            httpPost.setEntity(entity);
 
         } catch (UnsupportedEncodingException e) {
             log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -674,12 +673,13 @@ public class IAMServiceAccountUtils {
         }
 
         StringBuilder jsonResponse = new StringBuilder();
-
+        Integer statusCode = 0;
         try {
-            HttpResponse apiResponse = httpClient.execute(httpPut);
+            HttpResponse apiResponse = httpClient.execute(httpPost);
+            statusCode = apiResponse.getStatusLine().getStatusCode();
             if (apiResponse.getStatusLine().getStatusCode() != 200) {
                 readFailedResponseForIAMSecret(apiResponse);
-                return null;
+                return statusCode;
             }
             readResponseContent(jsonResponse, apiResponse, IAMServiceAccountConstants.CREATE_IAM_SECRET);
             JsonObject responseJson = (JsonObject) jsonParser.parse(jsonResponse.toString());
@@ -693,7 +693,7 @@ public class IAMServiceAccountUtils {
                     put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                     build()));
         }
-        return iamServiceAccountSecret;
+        return statusCode;
     }
 
     /**

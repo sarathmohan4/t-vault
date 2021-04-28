@@ -4906,21 +4906,10 @@ public class  IAMServiceAccountsService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to read metadata for this IAM Service account\"]}");
         }
 
-        // @TODO mock resposen for create api
-        IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret();
-        iamServiceAccountSecret.setCreateDate((new Date()).toString());
-        iamServiceAccountSecret.setStatus("Valid");
-        iamServiceAccountSecret.setAccessKeyId("testaccesskeyid"+ Math.random());
-        iamServiceAccountSecret.setExpiryDate("");
-        iamServiceAccountSecret.setExpiryDateEpoch(1622030825000L);
-        iamServiceAccountSecret.setAccessKeySecret("testSecret"+ Math.random());
-        iamServiceAccountSecret.setAwsAccountId(awsAccountId);
-        iamServiceAccountSecret.setUserName(iamSvcName);
+		IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret();
+        Integer statusCode = iamServiceAccountUtils.createAccessKeys(awsAccountId, iamSvcName, iamServiceAccountSecret);
 
-        // @TODO test the IAM stg api
-        //IAMServiceAccountSecret iamServiceAccountSecret = iamServiceAccountUtils.createAccessKeys(awsAccountId, iamSvcName);
-
-        if (null != iamServiceAccountSecret) {
+        if (statusCode == 200 && null != iamServiceAccountSecret.getAccessKeyId()) {
             log.info(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                     put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                     put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
@@ -4953,13 +4942,23 @@ public class  IAMServiceAccountsService {
                 }
             }
         }
-        log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
-                put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-                put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
-                put(LogMessage.MESSAGE, String.format ("Failed to create AccessKeySecret for IAM Service Account [%s]", uniqueIAMSvcaccName)).
-                put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
-                build()));
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Failed to create access key secrets for IAM Service Account\"]}");
-
+        if (statusCode == 409) {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+					put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
+					put(LogMessage.MESSAGE, String.format ("Failed to create AccessKeySecret for IAM Service Account [%s]. Cannot exceed quota for AccessKeysPerUser: 2", uniqueIAMSvcaccName)).
+					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+					build()));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Failed to create access key secrets for IAM Service Account. Cannot exceed quota (2) for AccessKeys Per IAM Service Account\"]}");
+		}
+        else {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+					put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
+					put(LogMessage.MESSAGE, String.format ("Failed to create AccessKeySecret for IAM Service Account [%s]", uniqueIAMSvcaccName)).
+					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+					build()));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Failed to create access key secrets for IAM Service Account\"]}");
+		}
     }
 }
