@@ -396,4 +396,22 @@ public class IAMServiceAccountsController {
 			@PathVariable("iam_svc_name") String iamSvcName) {
 		return iamServiceAccountsService.getListOfIAMServiceAccountAccessKeys(token, iamSvcName, awsAccountId);
 	}
+
+	/**
+	 * To create access key - access key secret pair for IAM Service Account.
+	 * @param request
+	 * @param token
+	 * @param awsAccountId
+	 * @param iamSvcName
+	 * @return
+	 */
+	@ApiOperation(value = "${IAMServiceAccountsController.createAccessKeys.value}", notes = "${IAMServiceAccountsController.createAccessKeys.notes}")
+	@PostMapping(value = "/v2/iamserviceaccounts/{aws_account_id}/{iam_svc_name}/createkeys", produces = "application/json")
+	public ResponseEntity<String> createAccessKeys(HttpServletRequest request,
+														@RequestHeader(value = "vault-token") String token,
+			@PathVariable("aws_account_id") String awsAccountId, @PathVariable("iam_svc_name") String iamSvcName) {
+		UserDetails userDetails = (UserDetails) request.getAttribute(USER_DETAILS_STRING);
+		return iamServiceAccountsService.createAccessKeys(userDetails, token, iamSvcName, awsAccountId);
+	}
+
 }

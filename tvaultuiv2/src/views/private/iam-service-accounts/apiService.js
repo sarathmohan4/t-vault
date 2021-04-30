@@ -61,6 +61,10 @@ const getUserDetails = (user) =>
   api.get(`/ldap/getusersdetail/${user}
 `);
 
+const createIamServiceAccountSecret = (svcName, iamAccountId) =>
+  api.post(
+    `/iamserviceaccounts/${iamAccountId}/${encodeURIComponent(svcName)}/createkeys`,{});
+
 export default {
   getIamServiceAccounts,
   getIamServiceAccountList,
@@ -79,4 +83,5 @@ export default {
   getUserDetails,
   getIamServiceAccountPassword,
   getIamSvcAccountSecrets,
+  createIamServiceAccountSecret,
 };

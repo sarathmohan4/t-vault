@@ -33,13 +33,15 @@ import IconFolderActive from '../../../../../assets/icon_folder_active.png';
 import IconFolderInactive from '../../../../../assets/icon_folder.png';
 import SuccessAndErrorModal from '../../../../../components/SuccessAndErrorModal';
 import BackdropLoader from '../../../../../components/Loaders/BackdropLoader';
+import NamedButton from '../../../../../components/NamedButton';
+import addFolderPlus from '../../../../../assets/folder-plus.svg';
 
 const UserList = styled.div`
   display: flex;
   align-items: center;
   position: relative;
   background-color: ${BackgroundColor.listBg};
-  padding: 1.2rem 0;
+  padding: 2.2rem 0;
   border-bottom: 1px solid #323649;
   :hover {
     background-image: ${(props) => props.theme.gradients.list || 'none'};
@@ -219,9 +221,17 @@ const SecretDetailsWrap = styled.div`
   width: 90%;
 `;
 
+const customBtnStyles = css`
+  padding: 0.2rem 1rem;
+  border-radius: 0.5rem;
+  position: absolute;
+  right: 0;
+`;
+
 const IamServiceAccountSecrets = (props) => {
   const {
     accountDetail,
+    disabledPermission,
     accountSecretError,
     accountSecretData,
     value,
@@ -378,43 +388,43 @@ const IamServiceAccountSecrets = (props) => {
   };
 
   /**
-   * @function activateServiceAccount
-   * @description function to activate the service account for the first tie when it is onboarded.
+   * @function createAccesskey
+   * @description function to create access key for the IAM service account.
    */
-  const activateServiceAccount = () => {
+  const createAccesskey = () => {
     setOpenConfirmationModal({
       status: 'open',
-      type: 'activate',
-      title: 'IAM Service Account Activation!',
+      type: 'create',
+      title: 'Create Access Key!',
       description:
-        "During the activation, the password of the IAM service account will be rotated to ensure AWS and T-Vault are in sync. If you want to continue with activation now please click the 'ACTIVATE' button below and make sure to update any services depending on the service account with its new password.",
+        "During the creation, new access key secret will be created for the IAM service account and will be saved in T-Vault. Maximum of 2 Access keys can be created for an IAM Service Account. If you want to continue with access key creation now, please click the 'Create' button below.",
     });
   };
 
   /**
-   * @function onActivateConfirm
-   * To activate the servcie account once it is onBoarded
+   * @function onActivonCreateAccessKeyConfirmateConfirm
+   * To Create access key for the servcie account
    */
 
-  const onActivateConfirm = () => {
+  const onCreateAccessKeyConfirm = () => {
     setOpenConfirmationModal({
       status: 'close',
-      type: 'activate',
+      type: 'create',
       title: '',
       description: '',
     });
     setResponse({ status: 'loading' });
     apiService
-      .activateIamServiceAccount(
+      .createIamServiceAccountSecret(
         accountDetail?.name,
         accountDetail?.iamAccountId
       )
       .then(async (res) => {
         if (res?.data) {
-          setResponse({ status: 'success', message: res.data.messages[0] });
+          setResponse({ status: 'loading' });
           setSuccessErrorDetails({
-            title: 'Activation Successful!',
-            desc: `IAM Service account ${accountDetail?.name} has been activated successfully! </br> IAM Service Account has been activated. You may also want to assign permissions for other users or groups to view or modify this service account. Please do so by clicking the "Permission" button on the next screen.`,
+            title: 'Access key created successfully!',
+            desc: `Access key for IAM Service account ${accountDetail?.name} has been created successfully! </br> Please update the dependent applications with the new AccessKeySecret. You may also want to assign permissions for other users or groups to view or modify this service account. Please do so by clicking the "Permission" button on the next screen.`,
           });
           setSuccessErrorModal(true);
           await refresh();
@@ -492,14 +502,14 @@ const IamServiceAccountSecrets = (props) => {
             confirmButton={
               <ButtonComponent
                 label={
-                  openConfirmationModal?.type === 'activate'
-                    ? 'Activate'
+                  openConfirmationModal?.type === 'create'
+                    ? 'Create'
                     : 'Rotate'
                 }
                 color="secondary"
                 onClick={
-                  openConfirmationModal?.type === 'activate'
-                    ? () => onActivateConfirm()
+                  openConfirmationModal?.type === 'create'
+                    ? () => onCreateAccessKeyConfirm()
                     : () => onRotateConfirmedClicked()
                 }
                 width={isMobileScreen ? '100%' : '45%'}
@@ -512,18 +522,15 @@ const IamServiceAccountSecrets = (props) => {
         )}
         {response.status !== 'loading' && (
           <>
-            {!isIamSvcAccountActive && accountDetail?.name && (
+            {accountDetail?.name && (Object.keys(accountSecretData)?.length == 0 ||
+              accountSecretData?.folders?.length <= 1) && !disabledPermission && (
               <UserList>
-                <LabelWrap>
-                  <ReportProblemOutlinedIcon />
-                  <Span>Rotate Secret to Activate</Span>
-                </LabelWrap>
-                <Secret type="password" viewSecret={showSecret}>
-                  ****
-                </Secret>
-                <FolderIconWrap onClick={() => activateServiceAccount()}>
-                  <Icon src={refreshIcon} alt="refresh" />
-                </FolderIconWrap>
+                <NamedButton
+                  label="Create Access Key"
+                  onClick={createAccesskey}
+                  customStyle={customBtnStyles}
+                  iconSrc={addFolderPlus}
+                />
               </UserList>
             )}
             {!accountDetail?.name && (
@@ -590,11 +597,20 @@ const IamServiceAccountSecrets = (props) => {
                           <Icon src={lock} alt="lock" />
                           <InfoWrapper>
                             <Span>{secretsData.accessKeyId}</Span>
-                            <SecretInputfield
-                              type={showSecret ? 'text' : 'password'}
-                              value={secretsData.accessKeySecret}
-                              readOnly
-                            />
+                            {secretsData.accessKeySecret !== null && (
+                              <SecretInputfield
+                                type={showSecret ? 'text' : 'password'}
+                                value={secretsData.accessKeySecret}
+                                readOnly
+                              />
+                            )}
+                            {secretsData.accessKeySecret === null && (
+                              <SecretInputfield
+                                type={'text'}
+                                value={'No secret'}
+                                readOnly
+                              />
+                            )}
                             <div className="expirationDate">
                               <div className="expiry">Expires: </div>
                               <div>{formatDate(secretsData.expiryDate)}</div>
@@ -612,33 +628,37 @@ const IamServiceAccountSecrets = (props) => {
                               horizontal: 'right',
                             }}
                           >
-                            <PopperItem onClick={() => onViewSecretsCliked()}>
-                              {showSecret ? (
-                                <VisibilityOffIcon />
-                              ) : (
-                                <VisibilityIcon />
-                              )}
-                              <span>
-                                {showSecret
-                                  ? 'Hide Secret key'
-                                  : 'View Secret key'}
-                              </span>
-                            </PopperItem>
+                            {secretsData.accessKeySecret !== null && (
+                              <PopperItem onClick={() => onViewSecretsCliked()}>
+                                {showSecret ? (
+                                  <VisibilityOffIcon />
+                                ) : (
+                                  <VisibilityIcon />
+                                )}
+                                <span>
+                                  {showSecret
+                                    ? 'Hide Secret key'
+                                    : 'View Secret key'}
+                                </span>
+                              </PopperItem>
+                            )}
                             {accountDetail.permission === 'write' && (
                               <PopperItem onClick={() => onRotateClicked()}>
                                 <img alt="refersh-ic" src={refreshIcon} />
                                 <span>Rotate Secret</span>
                               </PopperItem>
                             )}
-                            <CopyToClipboard
-                              text={secretsData.accessKeySecret}
-                              onCopy={() => onCopyClicked()}
-                            >
-                              <PopperItem>
-                                <FileCopyIcon />
-                                <span>Copy Secret Key</span>
-                              </PopperItem>
-                            </CopyToClipboard>
+                            {secretsData.accessKeySecret !== null && (
+                              <CopyToClipboard
+                                text={secretsData.accessKeySecret}
+                                onCopy={() => onCopyClicked()}
+                              >
+                                <PopperItem>
+                                  <FileCopyIcon />
+                                  <span>Copy Secret Key</span>
+                                </PopperItem>
+                              </CopyToClipboard>
+                            )}
                             <CopyToClipboard
                               text={secretsData.accessKeyId}
                               onCopy={() =>
@@ -659,11 +679,28 @@ const IamServiceAccountSecrets = (props) => {
               ))}
             </SecretFolderWrap>
           )}
-        {response.status === 'error' && (
+        {response.status === 'error' && accountSecretError !== "No access keys/secrets available for this IAM Service account" && (
           <Error
             description={
               accountSecretError || response.message || 'Something went wrong!'
             }
+          />
+        )}
+        {response.status === 'error' && accountSecretError === "No access keys/secrets available for this IAM Service account" && (
+          <Error
+            description={
+              accountSecretError || response.message || 'Something went wrong!'
+            }
+            actionButton={!disabledPermission && (
+              <ButtonComponent
+                label="Create"
+                icon="add"
+                color="secondary"
+                disabled={response.status === 'loading'}
+                width={isMobileScreen ? '100%' : '9.4rem'}
+                onClick={() => createAccesskey()}
+              />
+            )}
           />
         )}
         {responseType === 1 && (
@@ -689,6 +726,7 @@ const IamServiceAccountSecrets = (props) => {
 
 IamServiceAccountSecrets.propTypes = {
   accountDetail: PropTypes.objectOf(PropTypes.any).isRequired,
+  disabledPermission: PropTypes.bool.isRequired,
   secretResponse: PropTypes.string,
   accountSecretError: PropTypes.string,
   accountSecretData: PropTypes.objectOf(PropTypes.any),
