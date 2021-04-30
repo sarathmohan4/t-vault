@@ -42,7 +42,6 @@ const UserList = styled.div`
   position: relative;
   background-color: ${BackgroundColor.listBg};
   padding: 2.2rem 0;
-  border-bottom: 1px solid #323649;
   :hover {
     background-image: ${(props) => props.theme.gradients.list || 'none'};
   }
@@ -427,7 +426,7 @@ const IamServiceAccountSecrets = (props) => {
             desc: `Access key for IAM Service account ${accountDetail?.name} has been created successfully! </br> Please update the dependent applications with the new AccessKeySecret. You may also want to assign permissions for other users or groups to view or modify this service account. Please do so by clicking the "Permission" button on the next screen.`,
           });
           setSuccessErrorModal(true);
-          await refresh();
+          await getSecrets();
         }
       })
       .catch((err) => {
@@ -436,6 +435,7 @@ const IamServiceAccountSecrets = (props) => {
         }
         setResponse({});
         setResponseType(-1);
+        getSecrets();
       });
   };
 
@@ -523,7 +523,7 @@ const IamServiceAccountSecrets = (props) => {
         {response.status !== 'loading' && (
           <>
             {accountDetail?.name && (Object.keys(accountSecretData)?.length == 0 ||
-              accountSecretData?.folders?.length <= 1) && !disabledPermission && (
+              accountSecretData?.folders?.length <= 1) && (!disabledPermission || accountDetail.permission === 'write')&& (
               <UserList>
                 <NamedButton
                   label="Create Access Key"
