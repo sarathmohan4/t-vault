@@ -42,7 +42,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.tmobile.cso.vault.api.common.IAMServiceAccountConstants;
-import com.tmobile.cso.vault.api.common.SSLCertificateConstants;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.controller.ControllerUtil;
 import com.tmobile.cso.vault.api.controller.OIDCUtil;
@@ -3358,11 +3357,16 @@ public class  IAMServiceAccountsService {
 											.put(LogMessage.APIURL,
 													ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 											.build()));
-							// Rotate IAM service account secret for each access
-							// key id in metadata
-							rotationStatus = rotateIAMServiceAccountByAccessKeyId(token, awsAccountId, iamSvcName,
-									accessKeyId, i + 1);
-							break;
+							// Rotate IAM service account secret for each the gven access key id in metadata
+
+							// get the correct secret folder name for an accesskeyid
+							String folderName = getSecretFolderNameForAccessKeyId(token, uniqueIAMSvcaccName, accessKeyId);
+							if (!StringUtils.isEmpty(folderName)) {
+								int accessKeyIndex = Integer.parseInt(folderName.split("_")[1]);
+								rotationStatus = rotateIAMServiceAccountByAccessKeyId(token, awsAccountId, iamSvcName,
+										accessKeyId, accessKeyIndex);
+								break;
+							}
 						}
 					}
 				}
@@ -4854,111 +4858,171 @@ public class  IAMServiceAccountsService {
 
         String uniqueIAMSvcaccName = awsAccountId + "_" + iamSvcName;
 
-        if (!isAuthorizedToAddPermissionInIAMSvcAcc(userDetails, uniqueIAMSvcaccName, token, false)) {
-            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
-                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-                    put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
-                    put(LogMessage.MESSAGE, String.format("Access denied. No permisison to create secrets for IAM secret for [%s].", uniqueIAMSvcaccName)).
-                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
-                    build()));
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: No permission to create secrets for this IAM service account.\"]}");
-        }
+        if (isAuthorizedToAddPermissionInIAMSvcAcc(userDetails, uniqueIAMSvcaccName, token, false) || hasResetPermissionForIAMServiceAccount(token, uniqueIAMSvcaccName)) {
+            // Get metadata to check the accesskeyids
+            JsonObject iamMetadataJson = getIAMMetadata(token, uniqueIAMSvcaccName);
+            int metadataSecretCount = 0;
 
-        // Get metadata to check the accesskeyids
-        JsonObject iamMetadataJson = getIAMMetadata(token, uniqueIAMSvcaccName);
-        int metadataSecretCount = 0;
-        if (null!= iamMetadataJson) {
-            if (iamMetadataJson.has("secret") && !iamMetadataJson.get("secret").isJsonNull()) {
-                log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+			IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret();
+			if (null!= iamMetadataJson) {
+				if (iamMetadataJson.has("secret") && !iamMetadataJson.get("secret").isJsonNull()) {
+					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+							put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+							put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
+							put(LogMessage.MESSAGE, String.format("Trying to read accessKeys from metadata for the IAM Service account [%s]", uniqueIAMSvcaccName)).
+							put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+							build()));
+
+					JsonArray svcSecretArray = null;
+					try {
+						svcSecretArray = iamMetadataJson.get("secret").getAsJsonArray();
+					} catch (IllegalStateException e) {
+						log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+								put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+								put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
+								put(LogMessage.MESSAGE, String.format("Failed to accessKeys from metadata for IAM Service account. Invalid metadata for [%s].", uniqueIAMSvcaccName)).
+								put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+								build()));
+						return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to read accessKeyIds from metadata for IAM Service account. Invalid metadata.\"]}");
+					}
+
+					if (null != svcSecretArray && svcSecretArray.size() == 2) {
+						return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to create access key secrets for IAM service account. Two AccessKeyIds already available for this IAM Service Account.\"]}");
+					}
+					metadataSecretCount = (null != svcSecretArray)?svcSecretArray.size():0;
+				}
+			}
+			else {
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String> builder()
+						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+						.put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE)
+						.put(LogMessage.MESSAGE, String.format("Failed to read metadata for IAM Service "
+								+ "account [%s]", uniqueIAMSvcaccName))
+						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
+						.build()));
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to read metadata for this IAM Service account\"]}");
+			}
+			Integer statusCode = iamServiceAccountUtils.createAccessKeys(awsAccountId, iamSvcName, iamServiceAccountSecret);
+
+            if (statusCode == 200 && null != iamServiceAccountSecret.getAccessKeyId()) {
+                log.info(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                         put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                         put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
-                        put(LogMessage.MESSAGE, String.format("Trying to read accessKeys from metadata for the IAM Service account [%s]", uniqueIAMSvcaccName)).
+                        put(LogMessage.MESSAGE, String.format ("Access key secrets generated successfully from IAM portal for IAM Service account [%s] " +
+                                " in AWS account [%s]", iamSvcName, awsAccountId)).
                         put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                         build()));
 
-                JsonArray svcSecretArray = null;
-                try {
-                    svcSecretArray = iamMetadataJson.get("secret").getAsJsonArray();
-                } catch (IllegalStateException e) {
-                    log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
-                            put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-                            put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
-                            put(LogMessage.MESSAGE, String.format("Failed to accessKeys from metadata for IAM Service account. Invalid metadata for [%s].", uniqueIAMSvcaccName)).
-                            put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
-                            build()));
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to read accessKeyIds from metadata for IAM Service account. Invalid metadata.\"]}");
+
+                // Save secret in iamavcacc mount
+                int accessKeyIndex = 1;
+                if (metadataSecretCount == 1) {
+					// If one access key already exists, get secret data to check if the existing folder name is secret_1 or secret_2
+					//  Save secret in secret_2 if secret_1 exists, else save secret in secret_1.
+					ResponseEntity<String> secretFolder1Response = getIAMServiceAccountSecretKey(token, uniqueIAMSvcaccName, "secret_1");
+					if (HttpStatus.OK.equals(secretFolder1Response.getStatusCode())) {
+						accessKeyIndex = 2;
+					}
                 }
-
-                if (null != svcSecretArray && svcSecretArray.size() == 2) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to create access key secrets for IAM service account. Two AccessKeyIds already available for this IAM Service Account.\"]}");
-                }
-                metadataSecretCount = (null != svcSecretArray)?svcSecretArray.size():0;
-            }
-        }
-        else {
-            log.error(JSONUtil.getJSON(ImmutableMap.<String, String> builder()
-                            .put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-                            .put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE)
-                            .put(LogMessage.MESSAGE, String.format("Failed to read metadata for IAM Service "
-                                                    + "account [%s]", uniqueIAMSvcaccName))
-                            .put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
-                            .build()));
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to read metadata for this IAM Service account\"]}");
-        }
-
-		IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret();
-        Integer statusCode = iamServiceAccountUtils.createAccessKeys(awsAccountId, iamSvcName, iamServiceAccountSecret);
-
-        if (statusCode == 200 && null != iamServiceAccountSecret.getAccessKeyId()) {
-            log.info(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
-                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-                    put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
-                    put(LogMessage.MESSAGE, String.format ("Access key secrets generated successfully from IAM portal for IAM Service account [%s] " +
-                                    " in AWS account [%s]", iamSvcName, awsAccountId)).
-                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
-                    build()));
-            // Save secret in iamavcacc mount
-            int accessKeyIndex = 1;
-            if (metadataSecretCount == 1) {
-                accessKeyIndex = 2;
-            }
-            String path = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + uniqueIAMSvcaccName + "/" + IAMServiceAccountConstants.IAM_SECRET_FOLDER_PREFIX + (accessKeyIndex);
-            if (iamServiceAccountUtils.writeIAMSvcAccSecret(token, path, iamSvcName, iamServiceAccountSecret)) {
-                log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
-                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-                        put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
-                        put(LogMessage.MESSAGE, "Secret generated from IAM portal is saved to IAM service account mount").
-                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
-                        build()));
-                Response metadataUdpateResponse = iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, awsAccountId, iamSvcName, iamServiceAccountSecret);
-                if (null != metadataUdpateResponse && HttpStatus.NO_CONTENT.equals(metadataUdpateResponse.getHttpstatus())) {
+                String path = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + uniqueIAMSvcaccName + "/" + IAMServiceAccountConstants.IAM_SECRET_FOLDER_PREFIX + (accessKeyIndex);
+                if (iamServiceAccountUtils.writeIAMSvcAccSecret(token, path, iamSvcName, iamServiceAccountSecret)) {
                     log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                             put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                             put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
-                            put(LogMessage.MESSAGE, "Updated IAM service account metadata with new AccessKeyId and expiry").
+                            put(LogMessage.MESSAGE, "Secret generated from IAM portal is saved to IAM service account mount").
                             put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                             build()));
-                    return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Successfully created access key secrets for IAM Service Account\"]}");
+                    Response metadataUdpateResponse = iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, awsAccountId, iamSvcName, iamServiceAccountSecret);
+                    if (null != metadataUdpateResponse && HttpStatus.NO_CONTENT.equals(metadataUdpateResponse.getHttpstatus())) {
+                        log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                                put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                                put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
+                                put(LogMessage.MESSAGE, "Updated IAM service account metadata with new AccessKeyId and expiry").
+                                put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                                build()));
+                        return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Successfully created access key secrets for IAM Service Account\"]}");
+                    }
                 }
             }
+            if (statusCode == 406) {
+                log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                        put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
+                        put(LogMessage.MESSAGE, String.format ("Failed to create AccessKeySecret for IAM Service Account [%s]. Cannot exceed quota for AccessKeysPerUser: 2", uniqueIAMSvcaccName)).
+                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                        build()));
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Failed to create access key secrets for IAM Service Account. Cannot exceed quota (2) for AccessKeys Per IAM Service Account\"]}");
+            }
+            else {
+                log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                        put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
+                        put(LogMessage.MESSAGE, String.format ("Failed to create AccessKeySecret for IAM Service Account [%s]", uniqueIAMSvcaccName)).
+                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                        build()));
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Failed to create access key secrets for IAM Service Account\"]}");
+            }
         }
-        if (statusCode == 409) {
-			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
-					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-					put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
-					put(LogMessage.MESSAGE, String.format ("Failed to create AccessKeySecret for IAM Service Account [%s]. Cannot exceed quota for AccessKeysPerUser: 2", uniqueIAMSvcaccName)).
-					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
-					build()));
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Failed to create access key secrets for IAM Service Account. Cannot exceed quota (2) for AccessKeys Per IAM Service Account\"]}");
-		}
         else {
+         log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                 put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
+                 put(LogMessage.MESSAGE, String.format("Access denied. No permisison to create secrets for IAM secret for [%s].", uniqueIAMSvcaccName)).
+                 put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                 build()));
+         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access denied: No permission to create secrets for this IAM service account.\"]}");
+        }
+    }
+
+
+	/**
+	 * To get the secretFoldername for an access key id in an IAM Service Account.
+	 * @param token
+	 * @param uniqueIAMSvcaccName
+	 * @param accessKeyId
+	 * @return
+	 */
+    String getSecretFolderNameForAccessKeyId(String token, String uniqueIAMSvcaccName, String accessKeyId) {
+
+		String iamSvcNamePath = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + uniqueIAMSvcaccName;
+		ResponseEntity<String> response = null;
+		String folderKeyIndex = null;
+		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+				put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+				put(LogMessage.ACTION, "getFolderKeyIndexForAccessKey").
+				put(LogMessage.MESSAGE, String.format ("Trying to find the FolderKeyIndex for IAM Service Account [%s] and accessKeyId [%s]", uniqueIAMSvcaccName, accessKeyId)).
+				put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+				build()));
+		try {
+			response = readFolders(token, iamSvcNamePath);
+			ObjectMapper mapper = new ObjectMapper();
+			if (HttpStatus.OK.equals(response.getStatusCode())) {
+				// Iterate the folder list to find the access key id
+				IAMServiceAccountNode iamServiceAccountNode = mapper.readValue(response.getBody(), IAMServiceAccountNode.class);
+				if (iamServiceAccountNode.getFolders() != null) {
+					int index = 0;
+					for (String folderName : iamServiceAccountNode.getFolders()) {
+						index++;
+						ResponseEntity<String> responseEntity = getIAMServiceAccountSecretKey(token, uniqueIAMSvcaccName, folderName);
+						if (HttpStatus.OK.equals(responseEntity.getStatusCode())) {
+							IAMServiceAccountSecret iamServiceAccountSecret = mapper.readValue(responseEntity.getBody(), IAMServiceAccountSecret.class);
+							if (accessKeyId.equals(iamServiceAccountSecret.getAccessKeyId())) {
+								folderKeyIndex = folderName;
+								break;
+							}
+						}
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-					put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
-					put(LogMessage.MESSAGE, String.format ("Failed to create AccessKeySecret for IAM Service Account [%s]", uniqueIAMSvcaccName)).
+					put(LogMessage.ACTION, "getFolderKeyIndexForAccessKey").
+					put(LogMessage.MESSAGE, String.format ("Failed to find the FolderKeyIndex for IAM Service Account [%s] and accessKeyId [%s]", uniqueIAMSvcaccName, accessKeyId)).
 					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 					build()));
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Failed to create access key secrets for IAM Service Account\"]}");
 		}
-    }
+		return folderKeyIndex;
+	}
 }
