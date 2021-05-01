@@ -21,6 +21,18 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.tmobile.cso.vault.api.exception.TVaultValidationException;
 import com.tmobile.cso.vault.api.model.AWSIAMRole;
 import com.tmobile.cso.vault.api.model.AWSLoginRole;
@@ -31,21 +43,9 @@ import com.tmobile.cso.vault.api.model.IAMServiceAccountApprole;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountGroup;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountOffboardRequest;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountRotateRequest;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountSecret;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountUser;
 import com.tmobile.cso.vault.api.model.UserDetails;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.tmobile.cso.vault.api.service.IAMServiceAccountsService;
 
 import io.swagger.annotations.Api;
@@ -294,7 +294,7 @@ public class IAMServiceAccountsController {
 			@PathVariable("accessKey") String accessKey) throws IOException {
 		return iamServiceAccountsService.readSecrets(token, awsAccountID, iamSvcName, accessKey);
 	}
-
+	
 	/**
 	 * Offboard IAM service account.
 	 * @param request
@@ -381,6 +381,21 @@ public class IAMServiceAccountsController {
 		return iamServiceAccountsService.deleteIAMServiceAccountCreds(userDetails, token, iamServiceAccountAccessKey);
 	}
 
+	/**
+	 * Write AccessKey/SecertKey for a give IAM Service Account. Need to be called from external Apps
+	 * @param token
+	 * @param awsAccountID
+	 * @param iamSvcName
+	 * @param iamServiceAccountSecret
+	 * @return
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "${IAMServiceAccountsController.writeKeys.value}", notes = "${IAMServiceAccountsController.writeKeys.notes}", hidden = false)
+	@PostMapping(value = "/v2/iam/iamserviceaccounts/keys", produces = "application/json")
+	public ResponseEntity<String> writeIAMKey(@RequestHeader(value = "vault-token") String token, @Valid @RequestBody IAMServiceAccountSecret iamServiceAccountSecret) throws IOException {
+		return iamServiceAccountsService.writeIAMKey(token, iamServiceAccountSecret);
+	}
+	
 	/**
 	 * Method to get the list of access keys for an IAM service account
 	 * @param request

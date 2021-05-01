@@ -37,6 +37,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.LogManager;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -3859,6 +3860,280 @@ public class IAMServiceAccountServiceTest {
 	}
 
 	@Test
+	public void test_writeIAMKey_successful() throws Exception {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		String iamSvcaccName = "testaccount";
+		String awsAccountId = "1234567890";
+		String accessKeyId = "testaccesskey01";
+		String accessKeySecret = "testsecret";
+		Long expiryDateEpoch = new Long(1627603345);
+		String createDate = "July 30, 2021 12:02:25 AM";
+		String status = "";
+		String path = "iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		String folderName = "secret_2";
+		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
+		
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[{\"accessKeyId\":\"testaccesskey\", \"expiryDuration\":1627685477}]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
+		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true, iamMetaDataStr));
+		
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("iamportal_master_policy");
+		
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			IAMServiceAccountNode node = new IAMServiceAccountNode();
+			List<String> folders = new ArrayList<String>();
+			folders.add("secret_1");
+			node.setPath(path);
+			node.setIamsvcaccName(iamSvcaccName);
+			node.setFolders(folders);
+			String nodeStr = getJSON(node);
+			when(JSONUtil.getJSON(Mockito.any(IAMServiceAccountNode.class))).thenReturn(nodeStr);
+			when(reqProcessor.process(eq("/iam/list"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"secret_1\"]}"));
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			when(iamServiceAccountUtils.writeIAMSvcAccSecret(token, path+"/"+folderName, iamSvcaccName, iamServiceAccount)).thenReturn(true);
+			when(iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, awsAccountId, iamSvcaccName, iamServiceAccount)).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, iamMetaDataStr));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ResponseEntity<String> responseEntityExpected =  ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Successfully added accesskey for the IAM service account\"]}");
+		ResponseEntity<String> responseEntityActual = iamServiceAccountsService.writeIAMKey(token, iamServiceAccount);
+		assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntityActual);
+	}
+	
+	@Test
+	public void test_writeIAMKey_NoAccount() throws Exception {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		String iamSvcaccName = "testaccount";
+		String awsAccountId = "1234567890";
+		String accessKeyId = "testaccesskey01";
+		String accessKeySecret = "testsecret";
+		Long expiryDateEpoch = new Long(1627603345);
+		String createDate = "July 30, 2021 12:02:25 AM";
+		String status = "";
+		String path = "iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		String folderName = "secret_2";
+		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
+		
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[{\"accessKeyId\":\"testaccesskey\", \"expiryDuration\":1627685477}]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
+		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.NOT_FOUND, true, iamMetaDataStr));
+		
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("iamportal_master_policy");
+		
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			IAMServiceAccountNode node = new IAMServiceAccountNode();
+			List<String> folders = new ArrayList<String>();
+			folders.add("secret_1");
+			node.setPath(path);
+			node.setIamsvcaccName(iamSvcaccName);
+			node.setFolders(folders);
+			String nodeStr = getJSON(node);
+			when(JSONUtil.getJSON(Mockito.any(IAMServiceAccountNode.class))).thenReturn(nodeStr);
+			when(reqProcessor.process(eq("/iam/list"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"secret_1\"]}"));
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			when(iamServiceAccountUtils.writeIAMSvcAccSecret(token, path+"/"+folderName, iamSvcaccName, iamServiceAccount)).thenReturn(true);
+			when(iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, awsAccountId, iamSvcaccName, iamServiceAccount)).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, iamMetaDataStr));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ResponseEntity<String> responseEntityExpected =  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account access key. Either account does not exist or invalid information (metadata) found for the account.\"]}");
+		ResponseEntity<String> responseEntityActual = iamServiceAccountsService.writeIAMKey(token, iamServiceAccount);
+		assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntityActual);
+	}
+	
+	@Test
+	public void test_writeIAMKey_TwoKeysPresent() throws Exception {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		String iamSvcaccName = "testaccount";
+		String awsAccountId = "1234567890";
+		String accessKeyId = "testaccesskey01";
+		String accessKeySecret = "testsecret";
+		Long expiryDateEpoch = new Long(1627603345);
+		String createDate = "July 30, 2021 12:02:25 AM";
+		String status = "";
+		String path = "iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		String folderName = "secret_2";
+		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
+		
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[{\"accessKeyId\":\"testaccesskey\", \"expiryDuration\":1627685477},{\"accessKeyId\":\"testaccesskey2\", \"expiryDuration\":1627685477}]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
+		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true, iamMetaDataStr));
+		
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("iamportal_master_policy");
+		
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			IAMServiceAccountNode node = new IAMServiceAccountNode();
+			List<String> folders = new ArrayList<String>();
+			folders.add("secret_1");
+			node.setPath(path);
+			node.setIamsvcaccName(iamSvcaccName);
+			node.setFolders(folders);
+			String nodeStr = getJSON(node);
+			when(JSONUtil.getJSON(Mockito.any(IAMServiceAccountNode.class))).thenReturn(nodeStr);
+			when(reqProcessor.process(eq("/iam/list"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"secret_1\"]}"));
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			when(iamServiceAccountUtils.writeIAMSvcAccSecret(token, path+"/"+folderName, iamSvcaccName, iamServiceAccount)).thenReturn(true);
+			when(iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, awsAccountId, iamSvcaccName, iamServiceAccount)).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, iamMetaDataStr));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ResponseEntity<String> responseEntityExpected =  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey. There are already two accesskeys available for this IAM Service Account.\"]}");
+		ResponseEntity<String> responseEntityActual = iamServiceAccountsService.writeIAMKey(token, iamServiceAccount);
+		assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntityActual);
+	}
+	
+	@Test
+	public void test_writeIAMKey_ExistingKey() throws Exception {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		String iamSvcaccName = "testaccount";
+		String awsAccountId = "1234567890";
+		String accessKeyId = "testaccesskey";
+		String accessKeySecret = "testsecret";
+		Long expiryDateEpoch = new Long(1627603345);
+		String createDate = "July 30, 2021 12:02:25 AM";
+		String status = "";
+		String path = "iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		String folderName = "secret_2";
+		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
+		
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[{\"accessKeyId\":\"testaccesskey\", \"expiryDuration\":1627685477}]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
+		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true, iamMetaDataStr));
+		
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("iamportal_master_policy");
+		
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			IAMServiceAccountNode node = new IAMServiceAccountNode();
+			List<String> folders = new ArrayList<String>();
+			folders.add("secret_1");
+			node.setPath(path);
+			node.setIamsvcaccName(iamSvcaccName);
+			node.setFolders(folders);
+			String nodeStr = getJSON(node);
+			when(JSONUtil.getJSON(Mockito.any(IAMServiceAccountNode.class))).thenReturn(nodeStr);
+			when(reqProcessor.process(eq("/iam/list"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"secret_1\"]}"));
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			when(iamServiceAccountUtils.writeIAMSvcAccSecret(token, path+"/"+folderName, iamSvcaccName, iamServiceAccount)).thenReturn(true);
+			when(iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, awsAccountId, iamSvcaccName, iamServiceAccount)).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, iamMetaDataStr));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ResponseEntity<String> responseEntityExpected =  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey. The given AccesKey is already available in T-Vault. Please delete it and add again.\"]}");
+		ResponseEntity<String> responseEntityActual = iamServiceAccountsService.writeIAMKey(token, iamServiceAccount);
+		assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntityActual);
+	}
+	
+	@Test
+	public void test_writeIAMKey_MetadataUpdateFailed() throws Exception {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		String iamSvcaccName = "testaccount";
+		String awsAccountId = "1234567890";
+		String accessKeyId = "testaccesskey";
+		String accessKeySecret = "testsecret";
+		Long expiryDateEpoch = new Long(1627603345);
+		String createDate = "July 30, 2021 12:02:25 AM";
+		String status = "";
+		String path = "iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		String folderName = "secret_2";
+		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
+		
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
+		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true, iamMetaDataStr));
+		
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("iamportal_master_policy");
+		
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			IAMServiceAccountNode node = new IAMServiceAccountNode();
+			List<String> folders = new ArrayList<String>();
+			folders.add("secret_1");
+			node.setPath(path);
+			node.setIamsvcaccName(iamSvcaccName);
+			node.setFolders(folders);
+			String nodeStr = getJSON(node);
+			when(JSONUtil.getJSON(Mockito.any(IAMServiceAccountNode.class))).thenReturn(nodeStr);
+			when(reqProcessor.process(eq("/iam/list"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"secret_1\"]}"));
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			when(iamServiceAccountUtils.writeIAMSvcAccSecret(token, path+"/"+folderName, iamSvcaccName, iamServiceAccount)).thenReturn(true);
+			when(iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, awsAccountId, iamSvcaccName, iamServiceAccount)).thenReturn(null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ResponseEntity<String> responseEntityExpected =  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey. Metadata update failed.\"]}");
+		ResponseEntity<String> responseEntityActual = iamServiceAccountsService.writeIAMKey(token, iamServiceAccount);
+		assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntityActual);
+	}
+	@Test
+	public void test_writeIAMKey_Fail() throws Exception {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		String iamSvcaccName = "testaccount";
+		String awsAccountId = "1234567890";
+		String accessKeyId = "testaccesskey";
+		String accessKeySecret = "testsecret";
+		Long expiryDateEpoch = new Long(1627603345);
+		String createDate = "July 30, 2021 12:02:25 AM";
+		String status = "";
+		String path = "iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		String folderName = "secret_2";
+		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
+		
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
+		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
+		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true, iamMetaDataStr));
+		
+		List<String> currentPolicies = new ArrayList<>();
+		currentPolicies.add("iamportal_master_policy");
+		
+		try {
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			IAMServiceAccountNode node = new IAMServiceAccountNode();
+			List<String> folders = new ArrayList<String>();
+			folders.add("secret_1");
+			node.setPath(path);
+			node.setIamsvcaccName(iamSvcaccName);
+			node.setFolders(folders);
+			String nodeStr = getJSON(node);
+			when(JSONUtil.getJSON(Mockito.any(IAMServiceAccountNode.class))).thenReturn(nodeStr);
+			when(reqProcessor.process(eq("/iam/list"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"secret_1\"]}"));
+			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
+			when(iamServiceAccountUtils.writeIAMSvcAccSecret(token, path+"/"+folderName, iamSvcaccName, iamServiceAccount)).thenReturn(false);
+			when(iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, awsAccountId, iamSvcaccName, iamServiceAccount)).thenReturn(null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ResponseEntity<String> responseEntityExpected =  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey.\"]}");
+		ResponseEntity<String> responseEntityActual = iamServiceAccountsService.writeIAMKey(token, iamServiceAccount);
+		assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntityActual);
+	}
+	@Test
 	public void test_getListOfIAMServiceAccountAccessKeys_successfully() {
 		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
 		String iamSvcaccName = "testiamsvcacc01";
@@ -3927,4 +4202,5 @@ public class IAMServiceAccountServiceTest {
 		ResponseEntity<String> responseEntity = iamServiceAccountsService.getListOfIAMServiceAccountAccessKeys(token, iamSvcaccName, awsAccountId);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 	}
+	
 }
