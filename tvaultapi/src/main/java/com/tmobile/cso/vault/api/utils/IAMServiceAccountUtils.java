@@ -27,11 +27,7 @@ import com.google.gson.JsonParser;
 import com.tmobile.cso.vault.api.common.IAMServiceAccountConstants;
 import com.tmobile.cso.vault.api.controller.ControllerUtil;
 import com.tmobile.cso.vault.api.exception.LogMessage;
-import com.tmobile.cso.vault.api.model.AppRoleIdSecretId;
-import com.tmobile.cso.vault.api.model.IAMSecretsMetadata;
-import com.tmobile.cso.vault.api.model.IAMServiceAccountAccessKey;
-import com.tmobile.cso.vault.api.model.IAMServiceAccountRotateRequest;
-import com.tmobile.cso.vault.api.model.IAMServiceAccountSecret;
+import com.tmobile.cso.vault.api.model.*;
 import com.tmobile.cso.vault.api.process.RequestProcessor;
 import com.tmobile.cso.vault.api.process.Response;
 import org.apache.http.HttpResponse;
@@ -613,7 +609,10 @@ public class IAMServiceAccountUtils {
      * @param iamSvcName
      * @return
      */
-    public Integer createAccessKeys(String awsAccountId, String iamSvcName, IAMServiceAccountSecret iamServiceAccountSecret) {
+    public IAMServiceAccountSecretResponse createAccessKeys(String awsAccountId, String iamSvcName) {
+        IAMServiceAccountSecretResponse iamServiceAccountSecretResponse = new IAMServiceAccountSecretResponse();
+        iamServiceAccountSecretResponse.setStatusCode(500);
+        iamServiceAccountSecretResponse.setIamServiceAccountSecret(null);
         String iamApproleToken = getIAMApproleToken();
         if (StringUtils.isEmpty(iamApproleToken)) {
             log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -622,7 +621,7 @@ public class IAMServiceAccountUtils {
                     put(LogMessage.MESSAGE, "Invalid IAM Portal approle token").
                     put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                     build()));
-            return null;
+            return iamServiceAccountSecretResponse;
         }
 
         String api = iamPortalDomain + iamPortalCreateKeyEndpoint;
@@ -633,7 +632,7 @@ public class IAMServiceAccountUtils {
                     put(LogMessage.MESSAGE, "Invalid IAM portal endpoint").
                     put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                     build()));
-            return null;
+            return iamServiceAccountSecretResponse;
         }
 
         JsonParser jsonParser = new JsonParser();
@@ -645,7 +644,7 @@ public class IAMServiceAccountUtils {
                     put(LogMessage.MESSAGE, "Failed to initialize httpClient").
                     put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                     build()));
-            return null;
+            return iamServiceAccountSecretResponse;
         }
 
         HttpPost httpPost = new HttpPost(api);
@@ -669,7 +668,7 @@ public class IAMServiceAccountUtils {
                     put(LogMessage.MESSAGE, "Failed to build StringEntity").
                     put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                     build()));
-            return null;
+            return iamServiceAccountSecretResponse;
         }
 
         StringBuilder jsonResponse = new StringBuilder();
@@ -677,14 +676,16 @@ public class IAMServiceAccountUtils {
         try {
             HttpResponse apiResponse = httpClient.execute(httpPost);
             statusCode = apiResponse.getStatusLine().getStatusCode();
+            iamServiceAccountSecretResponse.setStatusCode(statusCode);
             if (apiResponse.getStatusLine().getStatusCode() != 200) {
                 readFailedResponseForIAMSecret(apiResponse);
-                return statusCode;
+                return iamServiceAccountSecretResponse;
             }
             readResponseContent(jsonResponse, apiResponse, IAMServiceAccountConstants.CREATE_IAM_SECRET);
             JsonObject responseJson = (JsonObject) jsonParser.parse(jsonResponse.toString());
-
+            IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret();
             iamServiceAccountSecret = addValuesToIamServiceAccountSecret(responseJson,iamServiceAccountSecret, awsAccountId);
+            iamServiceAccountSecretResponse.setIamServiceAccountSecret(iamServiceAccountSecret);
         } catch (Exception e) {
             log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                     put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
@@ -693,7 +694,7 @@ public class IAMServiceAccountUtils {
                     put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                     build()));
         }
-        return statusCode;
+        return iamServiceAccountSecretResponse;
     }
 
     /**
