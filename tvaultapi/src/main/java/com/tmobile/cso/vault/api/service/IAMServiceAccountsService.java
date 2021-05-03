@@ -4188,9 +4188,14 @@ public class  IAMServiceAccountsService {
 					return false;
 				}
 
+				// To handle deleting all secret (if more than 2 secrets)/ at least 2 secrets folders on offboard
+				int secretCount = svcSecretArray.size();
+				if (secretCount < 2) {
+					secretCount = 2;
+				}
 				if (null != svcSecretArray) {
 					int deleteCount = 0;
-					for (int i = 0; i < svcSecretArray.size(); i++) {
+					for (int i = 0; i < secretCount; i++) {
 						String folderPath = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + uniqueSvcAccName + "/secret_" + (i+1);
 						Response deleteFolderResponse = reqProcessor.process(DELETEPATH,
 								PATHSTR + folderPath + "\"}", token);
@@ -4206,7 +4211,7 @@ public class  IAMServiceAccountsService {
 							deleteCount++;
 						}
 					}
-					if (deleteCount == svcSecretArray.size()) {
+					if (deleteCount == secretCount) {
 						return true;
 					}
 					else {
