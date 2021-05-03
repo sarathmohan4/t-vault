@@ -17,6 +17,35 @@
 
 package com.tmobile.cso.vault.api.utils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.support.HttpRequestWrapper;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,24 +59,6 @@ import com.tmobile.cso.vault.api.exception.LogMessage;
 import com.tmobile.cso.vault.api.model.*;
 import com.tmobile.cso.vault.api.process.RequestProcessor;
 import com.tmobile.cso.vault.api.process.Response;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
 
 @Component
 public class IAMServiceAccountUtils {
@@ -64,6 +75,9 @@ public class IAMServiceAccountUtils {
 
     @Value("${iamPortal.createaccesskey.endpoint}")
     private String iamPortalCreateKeyEndpoint;
+
+    @Value("${iamPortal.deleteaccesskey.endpoint}")
+    private String iamPortalDeleteKeyEndpoint;
 
     @Autowired
     HttpUtils httpUtils;
@@ -584,10 +598,18 @@ public class IAMServiceAccountUtils {
 
 	/**
 	 * Method to call the delete API from IAM for deleting the IAM service account access key and secret
-	 * @param iamServiceAccountAccessKey
+	 * @param awsAccountId
+	 * @param iamSvcName
+	 * @param accessKeyId
 	 * @return
 	 */
-	public boolean deleteIAMAccesskeySecret(IAMServiceAccountAccessKey iamServiceAccountAccessKey) {
+	public boolean deleteIAMAccesskeyFromIAM(String awsAccountId, String iamSvcName, String accessKeyId) {
+		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+				put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+				put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG).
+				put(LogMessage.MESSAGE, String.format ("Trying to delete the access key from IAM for the IAM service account [%s] and access key [%s]", iamSvcName, accessKeyId)).
+				put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+				build()));
 		String iamApproleToken = getIAMApproleToken();
 		if (StringUtils.isEmpty(iamApproleToken)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
@@ -598,9 +620,67 @@ public class IAMServiceAccountUtils {
 			return false;
 		}
 
-		//To do the IAM delete access key api integration
+		String endpoint = iamPortalDomain + iamPortalDeleteKeyEndpoint;
+		if (StringUtils.isEmpty(iamPortalDomain) || StringUtils.isEmpty(iamPortalDeleteKeyEndpoint)) {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG)
+					.put(LogMessage.MESSAGE, "Invalid IAM portal endpoint")
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return false;
+		}
 
-		return true;
+		String inputJson = "{\"accessKeyId\": \"" + accessKeyId + "\",\"accountId\": \"" + awsAccountId
+				+ "\",\"userName\": \"" + iamSvcName + "\"}";
+		String iamAuthToken = IAMServiceAccountConstants.IAM_AUTH_TOKEN_PREFIX + " "
+				+ Base64.getEncoder().encodeToString(iamApproleToken.getBytes());
+
+		HttpClient httpClient = httpUtils.getHttpClient();
+		if (httpClient == null) {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG)
+					.put(LogMessage.MESSAGE, "Failed to initialize httpClient")
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return false;
+		}
+		StringEntity entity = null;
+		HttpDeleteWithBody httpDeleteWithBody = new HttpDeleteWithBody(endpoint);
+		try {
+			entity = new StringEntity(inputJson);
+			httpDeleteWithBody.setEntity(entity);
+			httpDeleteWithBody.setHeader("Authorization", iamAuthToken);
+			httpDeleteWithBody.setHeader("Accept", CONTENTTYPE);
+			httpDeleteWithBody.setHeader("Content-type", CONTENTTYPE);
+		} catch (UnsupportedEncodingException e) {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG)
+					.put(LogMessage.MESSAGE, "Failed to build StringEntity")
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return false;
+		}
+		try {
+			boolean deleteStatus = false;
+			HttpResponse apiResponse = httpClient.execute(httpDeleteWithBody);
+			if (apiResponse.getStatusLine().getStatusCode() != 200) {
+				readFailedResponseForIAMSecret(apiResponse);
+				deleteStatus = false;
+			}
+			if (apiResponse.getStatusLine().getStatusCode() == 200
+					|| apiResponse.getStatusLine().getStatusCode() == 404) {
+				deleteStatus = true;
+			}
+			return deleteStatus;
+
+		} catch (Exception e) {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG)
+					.put(LogMessage.MESSAGE, "Failed to parse IAM access key delete response")
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return false;
+		}
 	}
 
     /**
@@ -786,4 +866,110 @@ public class IAMServiceAccountUtils {
                 build()));
         return metadataResponse;
     }
+
+    /**
+     * Method to update the IAM service account metadata for delete access key and secret.
+     * @param token
+     * @param awsAccountId
+     * @param iamServiceAccountName
+     * @param accessKeyId
+     * @return
+     */
+    public Response updateIAMSvcAccMetadata(String token, String awsAccountId, String iamServiceAccountName, String accessKeyId){
+        log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                put(LogMessage.ACTION, IAMServiceAccountConstants.UPDATE_IAM_SVCACC_METADATA).
+                put(LogMessage.MESSAGE, String.format ("Trying to delete access key from IAM service account metadata [%s] for the access key [%s]", iamServiceAccountName, accessKeyId)).
+                put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                build()));
+
+        String uniqueIAMSvcaccName = awsAccountId + "_" + iamServiceAccountName;
+        String path = new StringBuffer(IAMServiceAccountConstants.IAM_SVCC_ACC_PATH).append(uniqueIAMSvcaccName).toString();
+
+        String typeSecret = "secret";
+        path = "metadata/"+path;
+
+        ObjectMapper objMapper = new ObjectMapper();
+        String pathjson = PATHSTR + path + "\"}";
+
+        // Read info for the path
+        Response metadataResponse = requestProcessor.process("/read",pathjson,token);
+        Map<String,Object> iamMetadataMap = null;
+        if(HttpStatus.OK.equals(metadataResponse.getHttpstatus())){
+            try {
+                iamMetadataMap = objMapper.readValue(metadataResponse.getResponse(),
+                        new TypeReference<Map<String, Object>>() {
+                        });
+            } catch (IOException e) {
+                log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                        put(LogMessage.ACTION, IAMServiceAccountConstants.UPDATE_IAM_SVCACC_METADATA).
+                        put(LogMessage.MESSAGE, String.format ("Error updating metadataMap for type [%s] and path [%s] message [%s]", typeSecret, path, e.getMessage())).
+                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                        build()));
+            }
+            if(iamMetadataMap != null) {
+                @SuppressWarnings("unchecked")
+                Map<String,Object> metadataMap = (Map<String,Object>) iamMetadataMap.get("data");
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                List<IAMSecretsMetadata> currentSecretData = objectMapper.convertValue((List<IAMSecretsMetadata>) metadataMap.get(typeSecret), new TypeReference<List<IAMSecretsMetadata>>() { });
+                List<IAMSecretsMetadata> newSecretData = new ArrayList<>();
+
+				for (IAMSecretsMetadata iamSecretsMetadata : currentSecretData) {
+					if (!iamSecretsMetadata.getAccessKeyId().equals(accessKeyId)) {
+						newSecretData.add(iamSecretsMetadata);
+					}
+				}
+
+                metadataMap.put(typeSecret, newSecretData);
+                String metadataJson = "";
+                try {
+                    metadataJson = objMapper.writeValueAsString(metadataMap);
+                } catch (JsonProcessingException e) {
+                    log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                            put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                            put(LogMessage.ACTION, IAMServiceAccountConstants.UPDATE_IAM_SVCACC_METADATA).
+                            put(LogMessage.MESSAGE, String.format ("Error in updating metadataJson for type [%s] and path [%s] with message [%s]", typeSecret, path, e.getMessage())).
+                            put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                            build()));
+                }
+
+                String writeJson = new StringBuilder().append(PATHSTR).append(path).append(DATASTR).append(metadataJson).append("}").toString();
+                metadataResponse = requestProcessor.process(WRITESTR,writeJson,token);
+                return metadataResponse;
+            }
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, IAMServiceAccountConstants.UPDATE_IAM_SVCACC_METADATA).
+                    put(LogMessage.MESSAGE, String.format ("Error parsing metadata items for IAM Service account [%s]", uniqueIAMSvcaccName)).
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            Response errorResponse = new Response();
+            errorResponse.setHttpstatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            errorResponse.setResponse("{\"errors\":[\"Failed to parse metadata before updating for this IAM Service account\"]}");
+            return new Response();
+        }
+        log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                put(LogMessage.ACTION, IAMServiceAccountConstants.UPDATE_IAM_SVCACC_METADATA).
+                put(LogMessage.MESSAGE, String.format ("Error reading metadata for IAM Service account [%s]", uniqueIAMSvcaccName)).
+                put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                build()));
+        return metadataResponse;
+    }
+}
+
+class HttpCertRequestInterceptor implements ClientHttpRequestInterceptor {
+	  private String token;
+	  public HttpCertRequestInterceptor(String token){
+		  this.token= token;
+	  }
+	  @Override
+	  public ClientHttpResponse intercept(HttpRequest request, byte[] body,
+	      ClientHttpRequestExecution execution) throws IOException {
+	    HttpRequestWrapper requestWrapper = new HttpRequestWrapper(request);
+	    requestWrapper.getHeaders().add("Authorization", token);
+	    return execution.execute(requestWrapper, body);
+	  }
 }

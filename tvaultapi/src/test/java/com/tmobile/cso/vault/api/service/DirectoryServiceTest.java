@@ -158,6 +158,61 @@ public class DirectoryServiceTest {
     }
 
     @Test
+    public void test_getUserDetails_GSM_successfully() {
+        DirectoryUser directoryUser = new DirectoryUser();
+        directoryUser.setDisplayName("testUser");
+        directoryUser.setGivenName("testUser");
+        directoryUser.setUserEmail("testUser@t-mobile.com");
+        directoryUser.setUserId("testuser01");
+        directoryUser.setUserName("testUser");
+        List<DirectoryUser> persons = new ArrayList<>();
+        persons.add(directoryUser);
+        DirectoryObjects users = new DirectoryObjects();
+        DirectoryObjectsList usersList = new DirectoryObjectsList();
+        usersList.setValues(persons.toArray(new DirectoryUser[persons.size()]));
+        users.setData(usersList);
+        ResponseEntity<DirectoryObjects> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(users);
+        when(ldapTemplate.search(Mockito.anyString(), Mockito.anyString(), Mockito.any(AttributesMapper.class))).thenReturn(persons);
+        ResponseEntity<DirectoryObjects> responseEntity = directoryService.getUserDetails("test_corpid");
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(responseEntityExpected.getBody().getData().getValues()[0], responseEntity.getBody().getData().getValues()[0]);
+    }
+
+    @Test
+    public void test_getUserDetails_CORP_successfully() {
+        DirectoryUser directoryUser = new DirectoryUser();
+        directoryUser.setDisplayName(null);
+        directoryUser.setGivenName("testUser");
+        directoryUser.setUserEmail(null);
+        directoryUser.setUserId("testuser01");
+        directoryUser.setUserName("testUser");
+
+        List<DirectoryUser> persons = new ArrayList<>();
+        persons.add(directoryUser);
+
+        DirectoryUser directoryUserCorp = new DirectoryUser();
+        directoryUserCorp.setDisplayName("testUser");
+        directoryUserCorp.setGivenName("testUser");
+        directoryUserCorp.setUserEmail("testUser@sprint.com");
+        directoryUserCorp.setUserId("testuser01");
+        directoryUserCorp.setUserName("testUser");
+
+        List<DirectoryUser> personsCorp = new ArrayList<>();
+        personsCorp.add(directoryUserCorp);
+
+        DirectoryObjects users = new DirectoryObjects();
+        DirectoryObjectsList usersList = new DirectoryObjectsList();
+        usersList.setValues(personsCorp.toArray(new DirectoryUser[personsCorp.size()]));
+        users.setData(usersList);
+        ResponseEntity<DirectoryObjects> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(users);
+        when(ldapTemplate.search(Mockito.anyString(), Mockito.anyString(), Mockito.any(AttributesMapper.class))).thenReturn(persons);
+        when(adUserLdapTemplate.search(Mockito.anyString(), Mockito.anyString(), Mockito.any(AttributesMapper.class))).thenReturn(personsCorp);
+        ResponseEntity<DirectoryObjects> responseEntity = directoryService.getUserDetails("test_corpid");
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(responseEntityExpected.getBody().getData().getValues()[0], responseEntity.getBody().getData().getValues()[0]);
+    }
+
+    @Test
     public void test_searchByGroupName_successfully() {
 
         DirectoryGroup dirGrp = new DirectoryGroup();

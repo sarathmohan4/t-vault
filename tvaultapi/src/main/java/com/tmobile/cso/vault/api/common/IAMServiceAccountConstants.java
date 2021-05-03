@@ -83,4 +83,5 @@ public final class IAMServiceAccountConstants {
 	public static final String GET_IAMSVCACC_ACCESSKEY_LIST_MSG = "Get the list of IAM service account access keys";
 	public static final String CREATE_IAM_SVCACC_SECRET_TITLE = "Create IAM Service Account Secrets";
 	public static final String CREATE_IAM_SECRET = "createAccessKeys";
+	public static final String UPDATE_IAM_SVCACC_METADATA = "Update IAM service account metadata";
 }

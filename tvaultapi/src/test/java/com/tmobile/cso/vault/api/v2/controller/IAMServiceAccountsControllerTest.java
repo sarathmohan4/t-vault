@@ -52,7 +52,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.model.AWSLoginRole;
 import com.tmobile.cso.vault.api.model.IAMSecrets;
@@ -612,7 +611,7 @@ public class IAMServiceAccountsControllerTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);
 		when(iamServiceAccountsService.deleteIAMServiceAccountCreds(eq(userDetails), eq("5PDrOhsy4ig8L3EpsJZSLAMg"), Mockito.any(IAMServiceAccountAccessKey.class))).thenReturn(responseEntityExpected);
 
-		mockMvc.perform(MockMvcRequestBuilders.delete("/v2/iamserviceaccount/secrets/delete").requestAttr("UserDetails", userDetails)
+		mockMvc.perform(MockMvcRequestBuilders.delete("/v2/iamserviceaccount/secrets/keys").requestAttr("UserDetails", userDetails)
 				.header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
 				.header("Content-Type", "application/json;charset=UTF-8")
 				.content(inputJson))
@@ -628,7 +627,7 @@ public class IAMServiceAccountsControllerTest {
 
 		when(iamServiceAccountsService.getListOfIAMServiceAccountAccessKeys(token , "testiamsvcacc01", "123456789012"))
 				.thenReturn(responseEntityExpected);
-		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/v2/iamserviceaccounts/123456789012/testiamsvcacc01/getkeys")
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/v2/iamserviceaccounts/123456789012/testiamsvcacc01/keys")
 				.header(VAULT_TOKEN_STRING, token).header(CONTENT_TYPE_STRING, CONTENT_TYPE_VALUE_STRING)
 				.requestAttr(USER_DETAILS_STRING, userDetails)).andExpect(status().isOk()).andReturn();
 

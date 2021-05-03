@@ -375,7 +375,7 @@ public class IAMServiceAccountsController {
 	 * @param iamServiceAccountAccessKey
 	 * @return
 	 */
-	@DeleteMapping(value="/v2/iamserviceaccount/secrets/delete", produces="application/json")
+	@DeleteMapping(value="/v2/iamserviceaccount/secrets/keys", produces="application/json")
 	@ApiOperation(value = "${IAMServiceAccountsController.deleteIAMServiceAccountCreds.value}", notes = "${IAMServiceAccountsController.deleteIAMServiceAccountCreds.notes}")
 	public ResponseEntity<String> deleteIAMServiceAccountCreds(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody @Valid IAMServiceAccountAccessKey iamServiceAccountAccessKey){
 		UserDetails userDetails = (UserDetails) request.getAttribute(USER_DETAILS_STRING);
@@ -415,7 +415,7 @@ public class IAMServiceAccountsController {
 	 * @return
 	 */
 	@ApiOperation(value = "${IAMServiceAccountsController.getListOfIAMServiceAccountAccessKeys.value}", notes = "${IAMServiceAccountsController.getListOfIAMServiceAccountAccessKeys.notes}")
-	@GetMapping(value = "/v2/iamserviceaccounts/{aws_account_id}/{iam_svc_name}/getkeys", produces = "application/json")
+	@GetMapping(value = "/v2/iamserviceaccounts/{aws_account_id}/{iam_svc_name}/keys", produces = "application/json")
 	public ResponseEntity<String> getListOfIAMServiceAccountAccessKeys(HttpServletRequest request,
 			@RequestHeader(value = "vault-token") String token, @PathVariable("aws_account_id") String awsAccountId,
 			@PathVariable("iam_svc_name") String iamSvcName) {

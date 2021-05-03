@@ -112,7 +112,7 @@ public class DirectoryServiceControllerV2Test {
         String responseMessage =new ObjectMapper().writeValueAsString(users);
 
         ResponseEntity<DirectoryObjects> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(users);
-        when(directoryService.searchByCorpId(Mockito.any())).thenReturn(responseEntityExpected);
+        when(directoryService.getUserDetails(Mockito.any())).thenReturn(responseEntityExpected);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/v2/ldap/corpusers?CorpId=corpid")
                 .header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
