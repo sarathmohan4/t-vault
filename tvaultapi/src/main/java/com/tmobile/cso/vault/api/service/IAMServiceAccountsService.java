@@ -4816,7 +4816,200 @@ public class  IAMServiceAccountsService {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body("{\"errors\":[\"No Iam Service Account with " + iamSvcaccName + ".\"]}");
 	}
+	
+	/**
+	 * Method to get the list of access keys for a given IAM service account from Secrets Mount
+	 * @param token
+	 * @param iamSvcaccName
+	 * @param awsAccountId
+	 * @return
+	 */
+	private ResponseEntity<String> getListOfIAMServiceAccountAccessKeysFromSecretsMount(String token, String iamSvcaccName, String awsAccountId) {
+		String uniqueIAMSvcName = awsAccountId + "_" + iamSvcaccName;
+		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+				.put(LogMessage.ACTION, IAMServiceAccountConstants.GET_IAMSVCACC_ACCESSKEY_LIST_MSG)
+				.put(LogMessage.MESSAGE, String.format("Trying to get the list of IAM Service Account [%s] access keys", iamSvcaccName))
+				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 
+		String path = "iamsvcacc/" + uniqueIAMSvcName;
+		ResponseEntity<String> readFoldersResponse;
+		try {
+			readFoldersResponse = readFolders(token, path);
+			if (readFoldersResponse.getStatusCode().equals(HttpStatus.OK)) {
+				ObjectMapper mapper = new ObjectMapper();
+				IAMServiceAccountNode iamServiceAccountNode = mapper.readValue(readFoldersResponse.getBody(), IAMServiceAccountNode.class);
+				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+						put(LogMessage.ACTION, "get IAmservice Account details").
+						put(LogMessage.MESSAGE,"IAM Service Account details fetched successfully.").
+						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+						build()));
+				return ResponseEntity.status(HttpStatus.OK).body(JSONUtil.getJSON(iamServiceAccountNode));
+			}
+		} catch (IOException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body("{\"errors\":[\"No Iam Service Account with " + iamSvcaccName + ".\"]}");
+		}
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body("{\"errors\":[\"No Iam Service Account with " + iamSvcaccName + ".\"]}");
+	}
+
+	/**
+	 * To add/write a given IAM Accesskey/SecretKey into IAM Service Account
+	 * @param token
+	 * @param awsAccountID
+	 * @param iamSvcName
+	 * @param iamServiceAccount
+	 * @return
+	 */
+	public ResponseEntity<String> writeIAMKey(String token, IAMServiceAccountSecret iamServiceAccountSecret) {
+		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+				.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY)
+				.put(LogMessage.MESSAGE,
+						String.format("Trying to write Keys for IAM Service Account [%s]", iamServiceAccountSecret.getUserName()))
+				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+		if (!isAuthorizedForIAMOnboardAndOffboard(token)) {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY)
+					.put(LogMessage.MESSAGE,
+							"Access denied. Not authorized to write accesskeys for IAM service accounts.")
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+					"{\"errors\":[\"Access denied. Not authorized to write accesskeys for IAM service accounts.\"]}");
+		}
+		
+		String iamSvcAccId = iamServiceAccountSecret.getAwsAccountId();
+		String iamSvcUsername = iamServiceAccountSecret.getUserName();
+		String uniqueIAMSvcAccName =  iamSvcAccId + "_" + iamSvcUsername;
+		String accessKeyId = iamServiceAccountSecret.getAccessKeyId();
+		//Check for account existence in t-vault.
+		// If the account does not exist, return appropriate error
+		JsonObject iamMetadataJson = getIAMMetadata(token, uniqueIAMSvcAccName);
+		if (null!= iamMetadataJson && iamMetadataJson.has("secret")) {
+			if (!iamMetadataJson.get("secret").isJsonNull()) {
+				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+						put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY).
+						put(LogMessage.MESSAGE, String.format("Succssfully retrieved the metadata for [%s]", uniqueIAMSvcAccName)).
+						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+						build()));
+
+				JsonArray svcSecretArray = null;
+				try {
+					svcSecretArray = iamMetadataJson.get("secret").getAsJsonArray();
+				} catch (IllegalStateException e) {
+					log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+							put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+							put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY).
+							put(LogMessage.MESSAGE, String.format("Failed to get secrets details from metadata. Invalid metadata for [%s].", uniqueIAMSvcAccName)).
+							put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+							build()));
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey. Invalid information (metadata) found for the account.\"]}");
+				}
+				if (null != svcSecretArray && svcSecretArray.size() == 2) {
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey. There are already two accesskeys available for this IAM Service Account.\"]}");
+				}
+				// If the account already has the key, return appropriate error.
+				for (int i = 0; i < svcSecretArray.size(); i++) {
+					JsonObject iamSecret = (JsonObject) svcSecretArray.get(i);
+					if (iamSecret.has(IAMServiceAccountConstants.ACCESS_KEY_ID)) {
+						String accessKeyIdFromMetaData = iamSecret.get(IAMServiceAccountConstants.ACCESS_KEY_ID).getAsString();
+						if (accessKeyIdFromMetaData.equals((accessKeyId)) ) {
+							return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey. The given AccesKey is already available in T-Vault. Please delete it and add again.\"]}");
+						}
+					}
+				}
+			}
+		}
+		else {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+					put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY).
+					put(LogMessage.MESSAGE, String.format("Failed to get secrets details from metadata. Invalid metadata for [%s].", uniqueIAMSvcAccName)).
+					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+					build()));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account access key. Either account does not exist or invalid information (metadata) found for the account.\"]}");
+		}
+
+
+		List<String> accessKeys = null;
+		ResponseEntity<String> listResponse = getListOfIAMServiceAccountAccessKeysFromSecretsMount(token, iamSvcUsername,  iamSvcAccId);
+		if (listResponse.getStatusCode().equals(HttpStatus.OK)) {
+			ObjectMapper objMapper = new ObjectMapper();
+			try {
+				IAMServiceAccountNode iamServiceAccountNode = objMapper.readValue(listResponse.getBody(), IAMServiceAccountNode.class);
+				if (iamServiceAccountNode != null && null != iamServiceAccountNode.getFolders()) {
+					accessKeys = iamServiceAccountNode.getFolders();
+				}
+			} catch (IOException e) {
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+						put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY).
+						put(LogMessage.MESSAGE, String.format ("Error getting list of existing Keys [%s] for the IAM account [%s]", e.getMessage(), uniqueIAMSvcAccName)).
+						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+						build()));
+			}
+		}
+		int accessKeyIndex = 1;
+		if (accessKeys == null || accessKeys.size() ==0) {
+			accessKeyIndex = 1;
+		}
+		else if (accessKeys.size() ==1) {
+			if (accessKeys.contains("secret_1")) {
+				accessKeyIndex = 2;
+			}
+			else {
+				accessKeyIndex = 1;
+			}
+		}
+		else {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey since the account already contains two sets of keys.\"]}");
+		}
+		
+		String path = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + uniqueIAMSvcAccName + "/" + IAMServiceAccountConstants.IAM_SECRET_FOLDER_PREFIX + (accessKeyIndex);
+		boolean keyAdded = iamServiceAccountUtils.writeIAMSvcAccSecret(token, path, iamSvcUsername, iamServiceAccountSecret);
+		if (keyAdded) {
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+					put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY).
+					put(LogMessage.MESSAGE, "Successfully added accesskey for the IAM service account to the secrets mount").
+					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+					build()));
+			Response metadataUdpateResponse = iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, iamSvcAccId, iamSvcUsername, iamServiceAccountSecret);
+			if (null != metadataUdpateResponse && HttpStatus.NO_CONTENT.equals(metadataUdpateResponse.getHttpstatus())) {
+				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+						put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY).
+						put(LogMessage.MESSAGE, "Updated IAM service account metadata with new AccessKeyId").
+						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+						build()));
+				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Successfully added accesskey for the IAM service account\"]}");
+			}
+			else {
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+						put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY).
+						put(LogMessage.MESSAGE, "Failed to add IAM Service account accesskey.").
+						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+						build()));
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey. Metadata update failed.\"]}");
+			}
+		}
+		else {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
+					put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY).
+					put(LogMessage.MESSAGE, "Failed to add IAM Service account access key.").
+					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
+					build()));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey.\"]}");
+		}
+	}
+	
 	/**
 	 * populate access keys from metadata
 	 *
@@ -5024,5 +5217,6 @@ public class  IAMServiceAccountsService {
 					build()));
 		}
 		return folderKeyIndex;
-	}
+    }
+
 }

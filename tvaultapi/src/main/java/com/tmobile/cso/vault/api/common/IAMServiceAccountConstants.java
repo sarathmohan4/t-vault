@@ -78,6 +78,8 @@ public final class IAMServiceAccountConstants {
 	public static final String GET_IAMAPPROLE_TOKEN = "getIAMApproleToken";
 	public static final String DELETE_AWSROLE_ASSOCIATION = "Remove AwsRole Association On IAM Service Account Offboard";
 	public static final String DELETE_IAMSVCACC_ACCESSKEY_MSG = "Delete IAM service account access key";
+	public static final String IAM_SVCACC_WRITEKEY="writeIAMKey";
+	public static final String IAM_SVCACC_WRITEKEY_TITLE="Write IAM Service Account Keys";
 	public static final String GET_IAMSVCACC_ACCESSKEY_LIST_MSG = "Get the list of IAM service account access keys";
 	public static final String CREATE_IAM_SVCACC_SECRET_TITLE = "Create IAM Service Account Secrets";
 	public static final String CREATE_IAM_SECRET = "createAccessKeys";

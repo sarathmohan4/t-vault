@@ -63,6 +63,7 @@ import com.tmobile.cso.vault.api.model.IAMServiceAccountApprole;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountGroup;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountOffboardRequest;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountRotateRequest;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountSecret;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountUser;
 import com.tmobile.cso.vault.api.model.UserDetails;
 import com.tmobile.cso.vault.api.service.IAMServiceAccountsService;
@@ -580,6 +581,30 @@ public class IAMServiceAccountsControllerTest {
 	}
 
 	@Test
+	public void test_writeIAMKey() throws Exception {
+		String iamSvcaccName = "testaccount";
+		String awsAccountId = "1234567890";
+		String accessKeyId = "testaccesskey01";
+		String accessKeySecret = "testsecret";
+		Long expiryDateEpoch = new Long(1627603345);
+		String createDate = "July 30, 2021 12:02:25 AM";
+		String status = "";
+		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
+		
+		String inputJson = getJSON(iamServiceAccount);
+		String responseJson = "{\"messages\":[\"Successfully added accesskey for the IAM service account\"]}";
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);
+		when(iamServiceAccountsService.writeIAMKey(Mockito.any(), Mockito.any()))
+				.thenReturn(responseEntityExpected);
+		MvcResult result = mockMvc
+				.perform(MockMvcRequestBuilders.post("/v2/iam/iamserviceaccounts/keys")
+						.requestAttr(USER_DETAILS_STRING, userDetails).header(VAULT_TOKEN_STRING, token)
+						.header(CONTENT_TYPE_STRING, CONTENT_TYPE_VALUE_STRING).content(inputJson))
+				.andExpect(status().isOk()).andReturn();
+		String actual = result.getResponse().getContentAsString();
+		assertEquals(responseJson, actual);
+	}
+	@Test
 	public void testDeleteIAMServiceAccountCreds() throws Exception {
 		IAMServiceAccountAccessKey iamServiceAccountAccessKey = new IAMServiceAccountAccessKey("testaccesskey555", "testiamname", "1234567890");
 		String inputJson = getJSON(iamServiceAccountAccessKey);
@@ -610,4 +635,5 @@ public class IAMServiceAccountsControllerTest {
 		String actual = result.getResponse().getContentAsString();
 		assertEquals(expected, actual);
 	}
+	
 }
