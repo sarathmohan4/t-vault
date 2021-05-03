@@ -101,6 +101,8 @@ public class IAMServiceAccountUtilsTest {
         ReflectionTestUtils.setField(iamServiceAccountUtils, "iamPortalAuthEndpoint", "testendpoint");
         ReflectionTestUtils.setField(iamServiceAccountUtils, "iamPortalDomain", "testdomain");
         ReflectionTestUtils.setField(iamServiceAccountUtils, "iamPortalrotateSecretEndpoint", "testendpoint");
+        ReflectionTestUtils.setField(iamServiceAccountUtils, "iamPortalCreateKeyEndpoint", "testendpoint");
+
         when(ControllerUtil.getReqProcessor()).thenReturn(reqProcessor);
         Map<String, String> currentMap = new HashMap<>();
         currentMap.put("apiurl", "http://localhost:8080/vault/v2/sdb");
@@ -726,4 +728,42 @@ public class IAMServiceAccountUtilsTest {
         List<String> currentpolicies = iamServiceAccountUtils.getIdentityPoliciesAsListFromTokenLookupJson(new ObjectMapper(), policyJson);
     }
 
+    @Test
+    public void test_createAccessKeys() throws IOException {
+        String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+        String iamServiceAccountName = "svc_vault_test5";
+        String awsAccountId = "1234567890";
+        String accessKeyId = "testaccesskey";
+        String iamSecret = "abcdefgh";
+        when(ControllerUtil.getSscred()).thenReturn(new SSCred());
+        when(ControllerUtil.getIamUsername()).thenReturn("M2UyNTA0MGYtODIwNS02ZWM2LTI4Y2ItOGYwZTQ1NDI1YjQ4");
+        when(ControllerUtil.getIamPassword()).thenReturn("MWFjOGM1ZTgtZjE5Ny0yMTVlLTNmODUtZWIwMDc3ZmY3NmQw");
+
+        when(httpUtils.getHttpClient()).thenReturn(httpClient);
+        when(httpClient.execute(any())).thenReturn(httpResponse);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+        when(httpResponse.getEntity()).thenReturn(mockHttpEntity);
+
+        String responseString = "{\"accessKeyId\": \"AKIA2GBSJB3123\",\"accessKeySecret\": \"abcdefgh\",\"awsAccountId\": \"1234567890\",\"createDate\": \"2021-05-03T08:56:42.000+0000\",\"expiryDate\": null,\"expiryDateEpoch\": 1627808202000,\"status\": \"Active\",\"userName\": \"svc_vault_test5\"}";
+        String responseStringToken = "{\"auth\": {\"client_token\": \""+token+"\"}}";
+        when(mockHttpEntity.getContent()).thenAnswer(new Answer() {
+            private int count = 0;
+
+            public Object answer(InvocationOnMock invocation) {
+                if (count++ == 1)
+                    return new ByteArrayInputStream(responseString.getBytes());
+
+                return new ByteArrayInputStream(responseStringToken.getBytes());
+            }
+        });
+
+        IAMServiceAccountSecret expectedIamServiceAccountSecret = new IAMServiceAccountSecret(iamServiceAccountName, accessKeyId, iamSecret, 1609754282000L, awsAccountId, "", "");
+
+        IAMServiceAccountSecretResponse expectedIamServiceAccountSecretResponse = new IAMServiceAccountSecretResponse();
+        expectedIamServiceAccountSecretResponse.setIamServiceAccountSecret(expectedIamServiceAccountSecret);
+        expectedIamServiceAccountSecretResponse.setStatusCode(200);
+        IAMServiceAccountSecretResponse iamServiceAccountSecretResponse = iamServiceAccountUtils.createAccessKeys(awsAccountId, iamServiceAccountName);
+        assertEquals(expectedIamServiceAccountSecretResponse.getIamServiceAccountSecret().getAccessKeySecret(), iamServiceAccountSecretResponse.getIamServiceAccountSecret().getAccessKeySecret());
+    }
 }
