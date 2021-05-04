@@ -3866,42 +3866,6 @@ public class IAMServiceAccountServiceTest {
 		assertEquals(expectedResponse, actualResponse);
 	}
 
-	@Ignore
-	@Test
-	public void test_deleteIAMServiceAccountCreds_failed_EmptySecrets() {
-		String iamServiceAccountName = "svc_vault_test5";
-		String token = "123123123123";
-		String awsAccountId = "1234567890";
-		String path = "metadata/iamsvcacc/1234567890_svc_vault_test5";
-		String iamSecret = "abcdefgh";
-		String accessKeyId = "testaccesskey";
-		Response responseNoContent = getMockResponse(HttpStatus.NO_CONTENT, true, "");
-		String iamMetaDataStr = "{ \"data\": {\"userName\": \"svc_vault_test5\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount1\", \"createdAtEpoch\": 1609754282000, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[{\"accessKeyId\":\"testaccesskey\", \"expiryDuration\":12345}]}, \"path\": \"iamsvcacc/1234567890_svc_vault_test5\"}";
-		String iamMetaDataStrActivated = "{ \"data\": {\"userName\": \"svc_vault_test5\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount1\", \"createdAtEpoch\": 1609754282000, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": true, \"secret\":[{\"accessKeyId\":\"testaccesskey\", \"expiryDuration\":12345}]}, \"path\": \"iamsvcacc/1234567890_svc_vault_test5\"}";
-
-		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"w_iamsvcacc_1234567890_svc_vault_test5 \"]}");
-		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
-		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("w_iamsvcacc_1234567890_svc_vault_test5");
-		try {
-			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
-			when(iamServiceAccountUtils.getIdentityPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(new ArrayList<>());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		when(tokenUtils.getSelfServiceToken()).thenReturn(token);
-
-		when(reqProcessor.process("/read", "{\"path\":\""+path+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true,
-				iamMetaDataStr));
-		IAMServiceAccountAccessKey iamServiceAccountAccessKey = new IAMServiceAccountAccessKey(accessKeyId, iamServiceAccountName, awsAccountId);
-		when(reqProcessor.process(eq("/delete"), Mockito.any(), eq(token))).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, ""));
-		ResponseEntity<String> expectedResponse =  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to delete IAM Service account access key. Invalid metadata.\"]}");
-		ResponseEntity<String> actualResponse = iamServiceAccountsService.deleteIAMServiceAccountCreds(userDetails, token, iamServiceAccountAccessKey);
-		assertEquals(expectedResponse, actualResponse);
-	}
-
 	@Test
 	public void test_writeIAMKey_successful() throws Exception {
 		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
