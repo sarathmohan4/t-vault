@@ -590,7 +590,7 @@ public class IAMServiceAccountsControllerTest {
 		String createDate = "July 30, 2021 12:02:25 AM";
 		String status = "";
 		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
-		
+
 		String inputJson = getJSON(iamServiceAccount);
 		String responseJson = "{\"messages\":[\"Successfully added accesskey for the IAM service account\"]}";
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);
@@ -635,5 +635,20 @@ public class IAMServiceAccountsControllerTest {
 		String actual = result.getResponse().getContentAsString();
 		assertEquals(expected, actual);
 	}
-	
+
+	@Test
+	public void testCreateAccessKeys() throws Exception {
+		IAMServiceAccountAccessKey iamServiceAccountAccessKey = new IAMServiceAccountAccessKey("testaccesskey555", "testiamname", "1234567890");
+		String inputJson = getJSON(iamServiceAccountAccessKey);
+		String responseJson = "{\"messages\":[\"Successfully created access key secrets for IAM Service Account\"]}";
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);
+		when(iamServiceAccountsService.createAccessKeys(eq(userDetails), eq("5PDrOhsy4ig8L3EpsJZSLAMg"), eq("testiamname"), eq("1234567890"))).thenReturn(responseEntityExpected);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/v2/iamserviceaccounts/1234567890/testiamname/keys").requestAttr("UserDetails", userDetails)
+				.header("vault-token", "5PDrOhsy4ig8L3EpsJZSLAMg")
+				.header("Content-Type", "application/json;charset=UTF-8")
+				.content(inputJson))
+				.andExpect(status().isOk())
+				.andExpect(content().string(containsString(responseJson)));
+	}
 }

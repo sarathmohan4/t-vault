@@ -421,7 +421,7 @@ public class IAMServiceAccountsController {
 	 * @return
 	 */
 	@ApiOperation(value = "${IAMServiceAccountsController.createAccessKeys.value}", notes = "${IAMServiceAccountsController.createAccessKeys.notes}")
-	@PostMapping(value = "/v2/iamserviceaccounts/{aws_account_id}/{iam_svc_name}/createkeys", produces = "application/json")
+	@PostMapping(value = "/v2/iamserviceaccounts/{aws_account_id}/{iam_svc_name}/keys", produces = "application/json")
 	public ResponseEntity<String> createAccessKeys(HttpServletRequest request,
 														@RequestHeader(value = "vault-token") String token,
 			@PathVariable("aws_account_id") String awsAccountId, @PathVariable("iam_svc_name") String iamSvcName) {

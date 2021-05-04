@@ -63,7 +63,7 @@ const getUserDetails = (user) =>
 
 const createIamServiceAccountSecret = (svcName, iamAccountId) =>
   api.post(
-    `/iamserviceaccounts/${iamAccountId}/${encodeURIComponent(svcName)}/createkeys`,{});
+    `/iamserviceaccounts/${iamAccountId}/${encodeURIComponent(svcName)}/keys`,{});
 
 export default {
   getIamServiceAccounts,
