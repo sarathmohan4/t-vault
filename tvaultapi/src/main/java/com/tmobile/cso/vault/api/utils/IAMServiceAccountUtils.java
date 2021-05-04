@@ -959,17 +959,3 @@ public class IAMServiceAccountUtils {
         return metadataResponse;
     }
 }
-
-class HttpCertRequestInterceptor implements ClientHttpRequestInterceptor {
-	  private String token;
-	  public HttpCertRequestInterceptor(String token){
-		  this.token= token;
-	  }
-	  @Override
-	  public ClientHttpResponse intercept(HttpRequest request, byte[] body,
-	      ClientHttpRequestExecution execution) throws IOException {
-	    HttpRequestWrapper requestWrapper = new HttpRequestWrapper(request);
-	    requestWrapper.getHeaders().add("Authorization", token);
-	    return execution.execute(requestWrapper, body);
-	  }
-}
