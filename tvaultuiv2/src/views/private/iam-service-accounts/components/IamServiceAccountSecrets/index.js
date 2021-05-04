@@ -423,7 +423,7 @@ const IamServiceAccountSecrets = (props) => {
           setResponse({ status: 'loading' });
           setSuccessErrorDetails({
             title: 'Access key created successfully!',
-            desc: `Access key for IAM Service account ${accountDetail?.name} has been created successfully! </br> Please update the dependent applications with the new AccessKeySecret. You may also want to assign permissions for other users or groups to view or modify this service account. Please do so by clicking the "Permission" button on the next screen.`,
+            desc: `Access key for IAM Service account ${accountDetail?.name} has been created successfully! </br> Please update the dependent applications with the new AccessKeySecret. If you are the owner of this IAM Service Account you may also want to assign permissions for other users or groups to view or modify this service account. Please do so by clicking the "Permission" button on the next screen.`,
           });
           setSuccessErrorModal(true);
           await getSecrets();
