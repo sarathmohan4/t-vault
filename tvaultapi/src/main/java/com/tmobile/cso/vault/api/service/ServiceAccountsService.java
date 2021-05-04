@@ -290,7 +290,10 @@ public class  ServiceAccountsService {
 						}
 					}
 					else if (attr.get("lockouttime") != null) {
-						adServiceAccount.setLockStatus("locked");
+						String lockoutTime = (String) attr.get("lockouttime").get();
+						if (!StringUtils.isEmpty(lockoutTime) && !lockoutTime.equals("0")) {
+							adServiceAccount.setLockStatus("locked");
+						}
 					}
 					if (attr.get("description") != null) {
 						adServiceAccount.setPurpose((String) attr.get("description").get());

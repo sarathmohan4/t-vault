@@ -35,6 +35,11 @@ import SuccessAndErrorModal from '../../../../../components/SuccessAndErrorModal
 import BackdropLoader from '../../../../../components/Loaders/BackdropLoader';
 import NamedButton from '../../../../../components/NamedButton';
 import addFolderPlus from '../../../../../assets/folder-plus.svg';
+import {
+  IconEdit,
+  IconRelease,
+  IconDeleteActive,
+} from '../../../../../assets/SvgIcons';
 
 const UserList = styled.div`
   display: flex;
@@ -387,6 +392,45 @@ const IamServiceAccountSecrets = (props) => {
   };
 
   /**
+   * @function onDeleteConfirmedClicked
+   * @description function to delete accesskey when the confirm is clicked.
+   */
+  const onDeleteConfirmedClicked = () => {
+    const payload = {
+      accessKeyId: secretsData?.accessKeyId,
+      accountId: secretsData?.awsAccountId,
+      userName: secretsData.userName,
+    };
+    setOpenConfirmationModal({
+      status: 'close',
+      type: 'delete',
+      title: '',
+      description: '',
+    });
+    setResponse({ status: 'loading' });
+    handleToggle(folderDetails.name);
+    apiService
+      .deleteIamServiceAccountAccessKey(payload)
+      .then(async (res) => {
+        if (res?.data) {
+          setResponseType(1);
+          setToastMessage(
+            res.data.messages[0] || 'Access key deleted successfully!'
+          );
+          await getSecrets();
+        }
+      })
+      .catch((err) => {
+        setResponse({ status: 'success' });
+        setResponseType(-1);
+        if (err?.response?.data?.errors && err?.response?.data?.errors[0]) {
+          setToastMessage(err?.response?.data?.errors[0]);
+        }
+        getSecrets();
+      });
+  };
+
+  /**
    * @function createAccesskey
    * @description function to create access key for the IAM service account.
    */
@@ -423,7 +467,7 @@ const IamServiceAccountSecrets = (props) => {
           setResponse({ status: 'loading' });
           setSuccessErrorDetails({
             title: 'Access key created successfully!',
-            desc: `Access key for IAM Service account ${accountDetail?.name} has been created successfully! </br> Please update the dependent applications with the new AccessKeySecret. You may also want to assign permissions for other users or groups to view or modify this service account. Please do so by clicking the "Permission" button on the next screen.`,
+            desc: `Access key for IAM Service account ${accountDetail?.name} has been created successfully! </br> Please update the dependent applications with the new AccessKeySecret. If you are the owner of this IAM Service Account you may also want to assign permissions for other users or groups to view or modify this service account. Please do so by clicking the "Permission" button on the next screen.`,
           });
           setSuccessErrorModal(true);
           await getSecrets();
@@ -450,6 +494,20 @@ const IamServiceAccountSecrets = (props) => {
       title: 'Confirmation',
       description:
         'Are you sure you want to rotate the password for this IAM Service Account?',
+    });
+  };
+
+  /**
+   * @function onDeleteClicked
+   * @description function to open the confirmation modal for delete.
+   */
+  const onDeleteClicked = () => {
+    setOpenConfirmationModal({
+      status: 'open',
+      type: 'delete',
+      title: 'Confirmation',
+      description:
+        'Are you sure you want to delete this IAM service account access key ?',
     });
   };
 
@@ -504,13 +562,17 @@ const IamServiceAccountSecrets = (props) => {
                 label={
                   openConfirmationModal?.type === 'create'
                     ? 'Create'
-                    : 'Rotate'
+                    : (openConfirmationModal?.type === 'delete'
+                    ? 'Delete'
+                    : 'Rotate')
                 }
                 color="secondary"
                 onClick={
                   openConfirmationModal?.type === 'create'
                     ? () => onCreateAccessKeyConfirm()
-                    : () => onRotateConfirmedClicked()
+                    : (openConfirmationModal?.type === 'delete'
+                    ? () => onDeleteConfirmedClicked()
+                    : () => onRotateConfirmedClicked())
                 }
                 width={isMobileScreen ? '100%' : '45%'}
               />
@@ -646,6 +708,12 @@ const IamServiceAccountSecrets = (props) => {
                               <PopperItem onClick={() => onRotateClicked()}>
                                 <img alt="refersh-ic" src={refreshIcon} />
                                 <span>Rotate Secret</span>
+                              </PopperItem>
+                            )}
+                            {accountDetail.permission === 'write' && (
+                              <PopperItem onClick={() => onDeleteClicked()}>
+                                <IconDeleteActive />
+                                <span>Delete Access Key</span>
                               </PopperItem>
                             )}
                             {secretsData.accessKeySecret !== null && (

@@ -126,6 +126,7 @@ public class SecretServiceTest {
         when(ControllerUtil.addDefaultSecretKey(jsonStr)).thenReturn("{\"path\":\"shared/mysafe01/myfolder\",\"data\":{\"secret3\":\"value1\",\"secret2\":\"value2\"}}");
         when(ControllerUtil.areSecretKeysValid(Mockito.any())).thenReturn(true);
         when(ControllerUtil.isPathValid("shared/mysafe01/myfolder")).thenReturn(true);
+        when(ControllerUtil.isValidFolderPath("shared/mysafe01/myfolder")).thenReturn(true);
         when(reqProcessor.process("/write",jsonStr,token)).thenReturn(response);
 
         String path ="shared/mysafe01/myfolder";
@@ -159,6 +160,7 @@ public class SecretServiceTest {
         when(ControllerUtil.addDefaultSecretKey(jsonStr)).thenReturn("{\"path\":\"shared/mysafe01/myfolder\",\"data\":{\"secret3\":\"value1\",\"secret2\":\"value2\"}}");
         when(ControllerUtil.areSecretKeysValid(Mockito.any())).thenReturn(true);
         when(ControllerUtil.isPathValid("shared/mysafe01/myfolder")).thenReturn(true);
+        when(ControllerUtil.isValidFolderPath("shared/mysafe01/myfolder")).thenReturn(true);
         when(reqProcessor.process("/write",jsonStr,token)).thenReturn(response);
 
         String path ="shared/mysafe01/myfolder";
@@ -193,6 +195,7 @@ public class SecretServiceTest {
         when(ControllerUtil.addDefaultSecretKey(jsonStr)).thenReturn("{\"path\":\"shared/mysafe01/myfolder\",\"data\":{\"secret3\":\"value1\",\"secret2\":\"value2\"}}");
         when(ControllerUtil.areSecretKeysValid(Mockito.any())).thenReturn(true);
         when(ControllerUtil.isPathValid("shared/mysafe01/myfolder")).thenReturn(true);
+        when(ControllerUtil.isValidFolderPath("shared/mysafe01/myfolder")).thenReturn(true);
         when(reqProcessor.process("/write",jsonStr,token)).thenReturn(response);
 
         String path ="shared/mysafe01/myfolder";
@@ -226,6 +229,7 @@ public class SecretServiceTest {
         when(ControllerUtil.addDefaultSecretKey(jsonStr)).thenReturn("{\"path\":\"shared/mysafe01/myfolder\",\"data\":{\"secret3\":\"value1\",\"secret2\":\"value2\"}}");
         when(ControllerUtil.areSecretKeysValid(Mockito.any())).thenReturn(true);
         when(ControllerUtil.isPathValid("shared/mysafe01/myfolder")).thenReturn(true);
+        when(ControllerUtil.isValidFolderPath("shared/mysafe01/myfolder")).thenReturn(true);
         when(reqProcessor.process("/write",jsonStr,token)).thenReturn(response);
 
         String path ="shared/mysafe01/myfolder";
@@ -463,6 +467,7 @@ public class SecretServiceTest {
         when(ControllerUtil.addDefaultSecretKey(jsonStr)).thenReturn("{\"path\":\"shared/mysafe01/myfolder\",\"data\":{\"secret1\":\"value1\",\"secret2\":\"value2\"}}");
         when(ControllerUtil.areSecretKeysValid(jsonStr)).thenReturn(true);
         when(ControllerUtil.isPathValid("shared/mysafe01/myfolder")).thenReturn(true);
+        when(ControllerUtil.isValidFolderPath("shared/mysafe01/myfolder")).thenReturn(true);
         when(reqProcessor.process("/write",jsonStr,token)).thenReturn(response);
 
         String path ="shared/mysafe01/myfolder";

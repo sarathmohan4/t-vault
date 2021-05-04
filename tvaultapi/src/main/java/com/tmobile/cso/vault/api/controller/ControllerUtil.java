@@ -3353,4 +3353,18 @@ public final class ControllerUtil {
 		}
 		return access;
 	}
+
+	/**
+	 * To check if the path of write secret api contains a folder
+	 * @param path
+	 * @return
+	 */
+	public static boolean isValidFolderPath(String path){
+		String paths[] =  path.split("/");
+		if(paths.length>=3){
+			return true;
+		}else{
+			return false;
+		}
+	}
 }

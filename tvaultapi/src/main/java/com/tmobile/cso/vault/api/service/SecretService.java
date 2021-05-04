@@ -190,7 +190,7 @@ public class  SecretService {
 		} catch (IOException e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid request.Check json data\"]}");
 		}
-		if(ControllerUtil.isPathValid(path) && !path.contains(TVaultConstants.VERSION_FOLDER_PREFIX)){
+		if(ControllerUtil.isPathValid(path) && ControllerUtil.isValidFolderPath(path) && !path.contains(TVaultConstants.VERSION_FOLDER_PREFIX)){
 			// Check if the user has explicit write permission. Safe owners (implicit write permission) will be denied from write operation
 			if (!hasExplicitWritePermission( userDetails, secret.getPath())) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
