@@ -65,6 +65,9 @@ const createIamServiceAccountSecret = (svcName, iamAccountId) =>
   api.post(
     `/iamserviceaccounts/${iamAccountId}/${encodeURIComponent(svcName)}/keys`,{});
 
+const deleteIamServiceAccountAccessKey = (payload) =>
+  api.delete('/iamserviceaccount/secrets/keys', payload);
+
 export default {
   getIamServiceAccounts,
   getIamServiceAccountList,
@@ -84,4 +87,5 @@ export default {
   getIamServiceAccountPassword,
   getIamSvcAccountSecrets,
   createIamServiceAccountSecret,
+  deleteIamServiceAccountAccessKey,
 };
