@@ -50,7 +50,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
@@ -61,9 +61,9 @@ import com.tmobile.cso.vault.api.model.IAMServiceAccountAWSRole;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountAccessKey;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountApprole;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountGroup;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountKey;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountOffboardRequest;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountRotateRequest;
-import com.tmobile.cso.vault.api.model.IAMServiceAccountSecret;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountUser;
 import com.tmobile.cso.vault.api.model.UserDetails;
 import com.tmobile.cso.vault.api.service.IAMServiceAccountsService;
@@ -583,14 +583,14 @@ public class IAMServiceAccountsControllerTest {
 	@Test
 	public void test_writeIAMKey() throws Exception {
 		String iamSvcaccName = "testaccount";
-		String awsAccountId = "1234567890";
-		String accessKeyId = "testaccesskey01";
+		String awsAccountId = "123456789012";
+		String accessKeyId = "testaccesskey011";
 		String accessKeySecret = "testsecret";
 		Long expiryDateEpoch = new Long(1627603345);
 		String createDate = "July 30, 2021 12:02:25 AM";
+		String expiryDate = "Oct 30, 2021 12:02:25 AM";
 		String status = "";
-		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
-
+		IAMServiceAccountKey iamServiceAccount = new IAMServiceAccountKey(accessKeyId, accessKeySecret, expiryDateEpoch, iamSvcaccName, awsAccountId, expiryDate, createDate, status);
 		String inputJson = getJSON(iamServiceAccount);
 		String responseJson = "{\"messages\":[\"Successfully added accesskey for the IAM service account\"]}";
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(responseJson);

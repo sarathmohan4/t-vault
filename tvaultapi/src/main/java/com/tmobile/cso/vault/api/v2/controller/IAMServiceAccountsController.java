@@ -41,6 +41,7 @@ import com.tmobile.cso.vault.api.model.IAMServiceAccountAWSRole;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountAccessKey;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountApprole;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountGroup;
+import com.tmobile.cso.vault.api.model.IAMServiceAccountKey;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountOffboardRequest;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountRotateRequest;
 import com.tmobile.cso.vault.api.model.IAMServiceAccountSecret;
@@ -392,7 +393,16 @@ public class IAMServiceAccountsController {
 	 */
 	@ApiOperation(value = "${IAMServiceAccountsController.writeKeys.value}", notes = "${IAMServiceAccountsController.writeKeys.notes}", hidden = false)
 	@PostMapping(value = "/v2/iam/iamserviceaccounts/keys", produces = "application/json")
-	public ResponseEntity<String> writeIAMKey(@RequestHeader(value = "vault-token") String token, @Valid @RequestBody IAMServiceAccountSecret iamServiceAccountSecret) throws IOException {
+	public ResponseEntity<String> writeIAMKey(@RequestHeader(value = "vault-token") String token, @Valid @RequestBody IAMServiceAccountKey iamServiceAccountKey) throws IOException {
+		IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret();
+		iamServiceAccountSecret.setAccessKeyId(iamServiceAccountKey.getAccessKeyId());
+		iamServiceAccountSecret.setAccessKeySecret(iamServiceAccountKey.getAccessKeySecret());
+		iamServiceAccountSecret.setExpiryDateEpoch(iamServiceAccountKey.getExpiryDateEpoch());
+		iamServiceAccountSecret.setUserName(iamServiceAccountKey.getUserName());
+		iamServiceAccountSecret.setAwsAccountId(iamServiceAccountKey.getAwsAccountId());
+		iamServiceAccountSecret.setExpiryDate(iamServiceAccountKey.getExpiryDate());
+		iamServiceAccountSecret.setCreateDate(iamServiceAccountKey.getCreateDate());
+		iamServiceAccountSecret.setStatus(iamServiceAccountKey.getStatus());
 		return iamServiceAccountsService.writeIAMKey(token, iamServiceAccountSecret);
 	}
 	
