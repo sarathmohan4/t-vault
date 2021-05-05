@@ -18,12 +18,13 @@ public class IAMServiceAccountKey implements Serializable {
 	 */
 	private static final long serialVersionUID = 3639469557176102034L;
 	
+	@NotNull
 	@Size(min = 16, max = 128, message = "AccessKeyId specified should be minimum 16 chanracters and maximum 128 characters only")
 	private String accessKeyId;
 	
     private String accessKeySecret;
 	@NotNull
-	@Min(1)
+	@Min(0)
 	private Long expiryDateEpoch;
 	@NotBlank
 	@Size(min = 1, max = 64, message = "UserName specified should be minimum 1 character and maximum 64 characters only")

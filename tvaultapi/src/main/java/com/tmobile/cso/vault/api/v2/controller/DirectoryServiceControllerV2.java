@@ -52,7 +52,7 @@ public class DirectoryServiceControllerV2 {
 	@GetMapping(value="/v2/ldap/corpusers",produces="application/json")
 	public ResponseEntity<DirectoryObjects> searchByCorpId(@ApiParam(name="CorpId", defaultValue="") 
 	@RequestParam(name="CorpId", defaultValue="") String corpId ){
-		return directoryService.searchByCorpId(corpId);
+		return directoryService.getUserDetails(corpId);
 	}
 	
 	@ApiOperation(value = "${DirectoryServiceControllerV2.searchByGroup.value}", notes = "${DirectoryServiceControllerV2.searchByGroup.notes}")

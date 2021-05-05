@@ -766,4 +766,40 @@ public class IAMServiceAccountUtilsTest {
         IAMServiceAccountSecretResponse iamServiceAccountSecretResponse = iamServiceAccountUtils.createAccessKeys(awsAccountId, iamServiceAccountName);
         assertEquals(expectedIamServiceAccountSecretResponse.getIamServiceAccountSecret().getAccessKeySecret(), iamServiceAccountSecretResponse.getIamServiceAccountSecret().getAccessKeySecret());
     }
+    
+    @Test
+    public void test_updateIAMSvcAccMetadata_success() {
+        String iamServiceAccountName = "svc_vault_test5";
+        String token = "123123123123";
+        String awsAccountId = "1234567890";
+        String path = "metadata/iamsvcacc/1234567890_svc_vault_test5";
+        String iamSecret = "abcdefgh";
+        String accessKeyId = "testaccesskey";
+
+        Response response = getMockResponse(HttpStatus.OK, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDuration\": 1609668443000}]}}");
+        when(reqProcessor.process(eq("/read"),Mockito.any(),eq(token))).thenReturn(response);
+        Response response204 = getMockResponse(HttpStatus.NO_CONTENT, true, "");
+
+        when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response204);
+        Response actualResponse = iamServiceAccountUtils.updateIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId);
+        assertEquals(HttpStatus.NO_CONTENT, actualResponse.getHttpstatus());
+    }
+
+    @Test
+    public void test_updateIAMSvcAccMetadata_failed() {
+        String iamServiceAccountName = "svc_vault_test5";
+        String token = "123123123123";
+        String awsAccountId = "1234567890";
+        String path = "metadata/iamsvcacc/1234567890_svc_vault_test5";
+        String iamSecret = "abcdefgh";
+        String accessKeyId = "testaccesskey";
+
+        Response response = getMockResponse(HttpStatus.FORBIDDEN, true, "{ \"data\": {\"secret\": [{\"accessKeyId\": \"testaccesskey\", \"expiryDuration\": 1609668443000}]}}");
+        when(reqProcessor.process(eq("/read"),Mockito.any(),eq(token))).thenReturn(response);
+        Response response204 = getMockResponse(HttpStatus.NO_CONTENT, true, "");
+
+        when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response204);
+        Response actualResponse = iamServiceAccountUtils.updateIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId);
+        assertEquals(HttpStatus.FORBIDDEN, actualResponse.getHttpstatus());
+    }
 }

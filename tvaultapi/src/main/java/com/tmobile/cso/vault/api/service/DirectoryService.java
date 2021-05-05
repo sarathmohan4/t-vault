@@ -109,7 +109,28 @@ public class  DirectoryService {
 		return ResponseEntity.status(HttpStatus.OK).body(users);
 	}
 	
-	
+	/**
+	 * Method to get the user details
+	 * @param corpId
+	 * @return
+	 */
+	public ResponseEntity<DirectoryObjects> getUserDetails(String corpId) {
+		AndFilter andFilter = new AndFilter();
+		andFilter.and(new EqualsFilter("cn", corpId));
+		andFilter.and(new EqualsFilter(OBJCLASS, "user"));
+
+		List<DirectoryUser> allPersons = getAllPersons(andFilter);
+		// Get user details from Corp domain (For sprint users)
+		if(CollectionUtils.isEmpty(allPersons) || (!CollectionUtils.isEmpty(allPersons) && StringUtils.isEmpty(allPersons.get(0).getUserEmail()))){
+			allPersons =  getAllPersonsFromCorp(andFilter);
+		}
+		DirectoryObjects users = new DirectoryObjects();
+		DirectoryObjectsList usersList = new DirectoryObjectsList();
+		usersList.setValues(allPersons.toArray(new DirectoryUser[allPersons.size()]));
+		users.setData(usersList);
+		return ResponseEntity.status(HttpStatus.OK).body(users);
+	}
+
 	/**
 	 * Get userDetails By CorpID
 	 * @param corpId
