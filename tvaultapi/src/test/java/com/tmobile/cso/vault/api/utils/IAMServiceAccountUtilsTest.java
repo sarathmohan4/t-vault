@@ -768,7 +768,7 @@ public class IAMServiceAccountUtilsTest {
     }
     
     @Test
-    public void test_updateIAMSvcAccMetadata_success() {
+    public void test_deleteAccessKeyFromIAMSvcAccMetadata_success() {
         String iamServiceAccountName = "svc_vault_test5";
         String token = "123123123123";
         String awsAccountId = "1234567890";
@@ -781,12 +781,12 @@ public class IAMServiceAccountUtilsTest {
         Response response204 = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 
         when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response204);
-        Response actualResponse = iamServiceAccountUtils.updateIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId);
+        Response actualResponse = iamServiceAccountUtils.deleteAccessKeyFromIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId);
         assertEquals(HttpStatus.NO_CONTENT, actualResponse.getHttpstatus());
     }
 
     @Test
-    public void test_updateIAMSvcAccMetadata_failed() {
+    public void test_deleteAccessKeyFromIAMSvcAccMetadata_failed() {
         String iamServiceAccountName = "svc_vault_test5";
         String token = "123123123123";
         String awsAccountId = "1234567890";
@@ -799,7 +799,7 @@ public class IAMServiceAccountUtilsTest {
         Response response204 = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 
         when(reqProcessor.process(eq("/write"), Mockito.any(), eq(token))).thenReturn(response204);
-        Response actualResponse = iamServiceAccountUtils.updateIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId);
+        Response actualResponse = iamServiceAccountUtils.deleteAccessKeyFromIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId);
         assertEquals(HttpStatus.FORBIDDEN, actualResponse.getHttpstatus());
     }
 }

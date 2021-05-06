@@ -3672,8 +3672,9 @@ public class IAMServiceAccountServiceTest {
 		when(iamServiceAccountUtils.deleteIAMAccesskeyFromIAM(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(true);
 		IAMServiceAccountAccessKey iamServiceAccountAccessKey = new IAMServiceAccountAccessKey(accessKeyId, iamServiceAccountName, awsAccountId);
 		when(reqProcessor.process(eq("/delete"), Mockito.any(), eq(token))).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, ""));
-
-		when(iamServiceAccountUtils.updateIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId)).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, iamMetaDataStr));
+		when(reqProcessor.process(eq("/iam/list"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"folder_1\"]}"));
+		when(reqProcessor.process(eq("/iamsvcacct"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"data\":{\"accessKeyId\":\"testaccesskey\",\"accessKeySecret\":\"assOOetcHce1VugthF6KE9hqv2PWWbX3ULrpe1T\",\"awsAccountId\":\"1234567890\",\"expiryDateEpoch\":1609845308000,\"userName\":\"svc_vault_test5\",\"expiryDate\":\"2021-01-05 16:45:08\"}}"));
+		when(iamServiceAccountUtils.deleteAccessKeyFromIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId)).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, iamMetaDataStr));
 
 		ResponseEntity<String> expectedResponse =  ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"IAM Service account access key deleted successfully\"]}");
 		ResponseEntity<String> actualResponse = iamServiceAccountsService.deleteIAMServiceAccountCreds(userDetails, token, iamServiceAccountAccessKey);
@@ -3713,7 +3714,7 @@ public class IAMServiceAccountServiceTest {
 		IAMServiceAccountAccessKey iamServiceAccountAccessKey = new IAMServiceAccountAccessKey(accessKeyId, iamServiceAccountName, awsAccountId);
 		when(reqProcessor.process(eq("/delete"), Mockito.any(), eq(token))).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, ""));
 
-		when(iamServiceAccountUtils.updateIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId)).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, iamMetaDataStr));
+		when(iamServiceAccountUtils.deleteAccessKeyFromIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId)).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, iamMetaDataStr));
 
 		ResponseEntity<String> expectedResponse =  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to delete IAM Service account access key from IAM.\"]}");
 		ResponseEntity<String> actualResponse = iamServiceAccountsService.deleteIAMServiceAccountCreds(userDetails, token, iamServiceAccountAccessKey);
@@ -3752,8 +3753,9 @@ public class IAMServiceAccountServiceTest {
 		when(iamServiceAccountUtils.deleteIAMAccesskeyFromIAM(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(true);
 		IAMServiceAccountAccessKey iamServiceAccountAccessKey = new IAMServiceAccountAccessKey(accessKeyId, iamServiceAccountName, awsAccountId);
 		when(reqProcessor.process(eq("/delete"), Mockito.any(), eq(token))).thenReturn(getMockResponse(HttpStatus.NO_CONTENT, true, ""));
-
-		when(iamServiceAccountUtils.updateIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId)).thenReturn(getMockResponse(HttpStatus.BAD_REQUEST, true, iamMetaDataStr));
+		when(reqProcessor.process(eq("/iam/list"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"folder_1\"]}"));
+		when(reqProcessor.process(eq("/iamsvcacct"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"data\":{\"accessKeyId\":\"testaccesskey\",\"accessKeySecret\":\"assOOetcHce1VugthF6KE9hqv2PWWbX3ULrpe1T\",\"awsAccountId\":\"1234567890\",\"expiryDateEpoch\":1609845308000,\"userName\":\"svc_vault_test5\",\"expiryDate\":\"2021-01-05 16:45:08\"}}"));
+		when(iamServiceAccountUtils.deleteAccessKeyFromIAMSvcAccMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId)).thenReturn(getMockResponse(HttpStatus.BAD_REQUEST, true, iamMetaDataStr));
 
 		ResponseEntity<String> expectedResponse =  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to add IAM Service account accesskey. Metadata update failed.\"]}");
 		ResponseEntity<String> actualResponse = iamServiceAccountsService.deleteIAMServiceAccountCreds(userDetails, token, iamServiceAccountAccessKey);
@@ -3791,6 +3793,8 @@ public class IAMServiceAccountServiceTest {
 		when(iamServiceAccountUtils.deleteIAMAccesskeyFromIAM(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(true);
 		IAMServiceAccountAccessKey iamServiceAccountAccessKey = new IAMServiceAccountAccessKey(accessKeyId, iamServiceAccountName, awsAccountId);
 		when(reqProcessor.process(eq("/delete"), Mockito.any(), eq(token))).thenReturn(getMockResponse(HttpStatus.FORBIDDEN, true, ""));
+		when(reqProcessor.process(eq("/iam/list"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"folder_1\"]}"));
+		when(reqProcessor.process(eq("/iamsvcacct"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"data\":{\"accessKeyId\":\"testaccesskey\",\"accessKeySecret\":\"assOOetcHce1VugthF6KE9hqv2PWWbX3ULrpe1T\",\"awsAccountId\":\"1234567890\",\"expiryDateEpoch\":1609845308000,\"userName\":\"svc_vault_test5\",\"expiryDate\":\"2021-01-05 16:45:08\"}}"));
 		ResponseEntity<String> expectedResponse =  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to delete IAM Service account access key. Invalid metadata.\"]}");
 		ResponseEntity<String> actualResponse = iamServiceAccountsService.deleteIAMServiceAccountCreds(userDetails, token, iamServiceAccountAccessKey);
 		assertEquals(expectedResponse, actualResponse);

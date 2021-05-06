@@ -868,18 +868,18 @@ public class IAMServiceAccountUtils {
     }
 
     /**
-     * Method to update the IAM service account metadata for delete access key and secret.
+     * Method to delete the IAM service account access key from the metadata.
      * @param token
      * @param awsAccountId
      * @param iamServiceAccountName
      * @param accessKeyId
      * @return
      */
-    public Response updateIAMSvcAccMetadata(String token, String awsAccountId, String iamServiceAccountName, String accessKeyId){
+    public Response deleteAccessKeyFromIAMSvcAccMetadata(String token, String awsAccountId, String iamServiceAccountName, String accessKeyId){
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-                put(LogMessage.ACTION, IAMServiceAccountConstants.UPDATE_IAM_SVCACC_METADATA).
-                put(LogMessage.MESSAGE, String.format ("Trying to delete access key from IAM service account metadata [%s] for the access key [%s]", iamServiceAccountName, accessKeyId)).
+                put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG).
+                put(LogMessage.MESSAGE, String.format ("Trying to delete the access key [%s] from the IAM service account metadata [%s]", accessKeyId, iamServiceAccountName)).
                 put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                 build()));
 
@@ -903,7 +903,7 @@ public class IAMServiceAccountUtils {
             } catch (IOException e) {
                 log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                         put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-                        put(LogMessage.ACTION, IAMServiceAccountConstants.UPDATE_IAM_SVCACC_METADATA).
+                        put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG).
                         put(LogMessage.MESSAGE, String.format ("Error updating metadataMap for type [%s] and path [%s] message [%s]", typeSecret, path, e.getMessage())).
                         put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                         build()));
@@ -929,11 +929,18 @@ public class IAMServiceAccountUtils {
                 } catch (JsonProcessingException e) {
                     log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                             put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-                            put(LogMessage.ACTION, IAMServiceAccountConstants.UPDATE_IAM_SVCACC_METADATA).
+                            put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG).
                             put(LogMessage.MESSAGE, String.format ("Error in updating metadataJson for type [%s] and path [%s] with message [%s]", typeSecret, path, e.getMessage())).
                             put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                             build()));
                 }
+
+                log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                        put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                        put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG).
+                        put(LogMessage.MESSAGE, String.format ("Access key [%s] for the IAM service account [%s] deleted from metadata successfully", accessKeyId, iamServiceAccountName)).
+                        put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                        build()));
 
                 String writeJson = new StringBuilder().append(PATHSTR).append(path).append(DATASTR).append(metadataJson).append("}").toString();
                 metadataResponse = requestProcessor.process(WRITESTR,writeJson,token);
@@ -941,7 +948,7 @@ public class IAMServiceAccountUtils {
             }
             log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                     put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-                    put(LogMessage.ACTION, IAMServiceAccountConstants.UPDATE_IAM_SVCACC_METADATA).
+                    put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG).
                     put(LogMessage.MESSAGE, String.format ("Error parsing metadata items for IAM Service account [%s]", uniqueIAMSvcaccName)).
                     put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                     build()));
@@ -952,7 +959,7 @@ public class IAMServiceAccountUtils {
         }
         log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-                put(LogMessage.ACTION, IAMServiceAccountConstants.UPDATE_IAM_SVCACC_METADATA).
+                put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG).
                 put(LogMessage.MESSAGE, String.format ("Error reading metadata for IAM Service account [%s]", uniqueIAMSvcaccName)).
                 put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                 build()));
