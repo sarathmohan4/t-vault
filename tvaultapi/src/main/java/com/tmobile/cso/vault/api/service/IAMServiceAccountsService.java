@@ -4605,7 +4605,7 @@ public class  IAMServiceAccountsService {
 		if (!hasResetPermissionForIAMServiceAccount(token, uniqueIAMSvcaccName)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
-					put(LogMessage.ACTION, IAMServiceAccountConstants.ROTATE_IAM_SVCACC_TITLE).
+					put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG).
 					put(LogMessage.MESSAGE, String.format("Access denited. No permisison to delete IAM service account access key for [%s].", uniqueIAMSvcaccName)).
 					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 					build()));
@@ -4704,17 +4704,16 @@ public class  IAMServiceAccountsService {
 	 */
 	private ResponseEntity<String> deleteIAMSvcAccAccessKeyFromVaultAndIAM(String token, String awsAccountId,
 			String iamSvcName, String accessKeyId, JsonObject iamMetadataJson) {
-		boolean isDeletedVault = false;
-		boolean isKeyDeletedIAM = iamServiceAccountUtils.deleteIAMAccesskeyFromIAM(awsAccountId, iamSvcName, accessKeyId);
-		if(isKeyDeletedIAM) {
+		boolean isKeyDeletedFromVault = false;
+		boolean isKeyDeletedFromIAM = iamServiceAccountUtils.deleteIAMAccesskeyFromIAM(awsAccountId, iamSvcName, accessKeyId);
+		if(isKeyDeletedFromIAM) {
 			log.info(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 					put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG).
-					put(LogMessage.MESSAGE, String.format ("IAM Service account [%s] access key deleted successfully from IAM for  " +
-									"AccessKeyId [%s]", iamSvcName, accessKeyId)).
+					put(LogMessage.MESSAGE, String.format ("IAM Service account [%s] access key [%s] deleted successfully from IAM ", iamSvcName, accessKeyId)).
 					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 					build()));
-			isDeletedVault = deleteIAMSvcAccAccessKeySecretFromVault(token, awsAccountId, iamSvcName, accessKeyId, iamMetadataJson);
+			isKeyDeletedFromVault = deleteIAMSvcAccAccessKeySecretFromVault(token, awsAccountId, iamSvcName, accessKeyId, iamMetadataJson);
 		}else {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
@@ -4725,15 +4724,14 @@ public class  IAMServiceAccountsService {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Failed to delete IAM Service account access key from IAM.\"]}");
 		}
 
-		if(isDeletedVault) {
+		if(isKeyDeletedFromVault) {
 			log.info(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 					put(LogMessage.ACTION, IAMServiceAccountConstants.DELETE_IAMSVCACC_ACCESSKEY_MSG).
-					put(LogMessage.MESSAGE, String.format ("IAM Service account [%s] access key delete successfully completed for  " +
-									"AccessKeyId [%s]", iamSvcName, accessKeyId)).
+					put(LogMessage.MESSAGE, String.format ("IAM Service account [%s] access key [%s] deleted successfully from permission path", iamSvcName, accessKeyId)).
 					put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 					build()));
-			Response metadataUdpateResponse = iamServiceAccountUtils.updateIAMSvcAccMetadata(token, awsAccountId, iamSvcName, accessKeyId);
+			Response metadataUdpateResponse = iamServiceAccountUtils.deleteAccessKeyFromIAMSvcAccMetadata(token, awsAccountId, iamSvcName, accessKeyId);
 			if (null != metadataUdpateResponse && HttpStatus.NO_CONTENT.equals(metadataUdpateResponse.getHttpstatus())) {
 				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
@@ -4814,7 +4812,9 @@ public class  IAMServiceAccountsService {
 			JsonObject iamSecret = (JsonObject) svcSecretArray.get(i);
 			if (iamSecret.has(IAMServiceAccountConstants.ACCESS_KEY_ID) && accessKeyId
 					.equals(iamSecret.get(IAMServiceAccountConstants.ACCESS_KEY_ID).getAsString())) {
-				String folderPath = new StringBuilder(IAMServiceAccountConstants.IAM_SVCC_ACC_PATH).append(uniqueSvcAccName).append("/secret_").append((i + 1)).toString();
+				// get the correct secret folder name for an accesskeyid
+				String folderName = getSecretFolderNameForAccessKeyId(token, uniqueSvcAccName, accessKeyId);
+				String folderPath = new StringBuilder(IAMServiceAccountConstants.IAM_SVCC_ACC_PATH).append(uniqueSvcAccName).append("/").append(folderName).toString();
 				Response deleteFolderResponse = reqProcessor.process(DELETEPATH, PATHSTR + folderPath + "\"}", token);
 				if (deleteFolderResponse.getHttpstatus().equals(HttpStatus.NO_CONTENT)
 						|| deleteFolderResponse.getHttpstatus().equals(HttpStatus.OK)) {
