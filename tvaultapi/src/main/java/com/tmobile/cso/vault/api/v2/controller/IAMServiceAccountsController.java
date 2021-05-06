@@ -150,7 +150,7 @@ public class IAMServiceAccountsController {
 	 * @return
 	 */
 	@ApiOperation(value = "${IAMServiceAccountsController.getIAMServiceAccountDetail.value}", notes = "${IAMServiceAccountsController.getIAMServiceAccountDetail.notes}", hidden = true)
-	@GetMapping(value = "/v2/iamserviceaccounts/{iam_svc_name}", produces = "application/json")
+	@GetMapping(value = "/v2/iamserviceaccounts/{iam_svc_name:.+}", produces = "application/json")
 	public ResponseEntity<String> getIAMServiceAccountDetail(HttpServletRequest request,
 			@RequestHeader(value = "vault-token") String token, @PathVariable("iam_svc_name") String iamsvcname){
 		return iamServiceAccountsService.getIAMServiceAccountDetail(token, iamsvcname);
