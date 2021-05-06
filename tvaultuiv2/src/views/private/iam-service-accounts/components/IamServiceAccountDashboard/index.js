@@ -460,6 +460,7 @@ const IamServiceAccountDashboard = () => {
           icon={svcIcon}
           showActions={false}
           listIconStyles={listIconStyles}
+          showToolTip
         />
         <BorderLine />
         {(account.permission === 'write' || account.active === false) &&

@@ -7,6 +7,8 @@ import ComponentError from '../../errorBoundaries/ComponentError/component-error
 import { TitleOne } from '../../styles/GlobalStyles';
 import ListItemIcon from '../../assets/icon_safes.svg';
 import PopperElement from '../Popper';
+import mediaBreakpoints from '../../breakpoints';
+import TooltipComponent from '../Tooltip';
 
 const FolderWrap = styled('div')`
   position: relative;
@@ -16,11 +18,9 @@ const FolderWrap = styled('div')`
   text-decoration: none;
   align-items: center;
   justify-content: space-between;
-  overflow: hidden;
 `;
 const ListItemDetailBox = styled('div')`
   padding-left: 1.7rem;
-  width: 80%;
 `;
 const ListItemAvatarWrap = styled.div`
   .MuiAvatar-root {
@@ -73,6 +73,22 @@ const ListTitleStyles = css`
   overflow: hidden;
   white-space: nowrap;
 `;
+const extraCss = css`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.6rem;
+  width: 25rem;
+  ${mediaBreakpoints.belowLarge} {
+    width: 17rem;
+  }
+  ${mediaBreakpoints.medium} {
+    width: 12rem;
+  }
+  ${mediaBreakpoints.small} {
+    width: 15rem;
+  }
+`;
 
 const ListItem = (props) => {
   const {
@@ -83,9 +99,16 @@ const ListItem = (props) => {
     showActions,
     popperListItems,
     listIconStyles,
+    showToolTip,
   } = props;
   const [anchorEl, setAnchorEl] = useState(null);
-
+  const renderTitle = () => {
+    return (
+      <TitleOne color="#d0d0d0" extraCss={extraCss}>
+        {title}
+      </TitleOne>
+    );
+  };
   return (
     <ComponentError>
       <FolderWrap>
@@ -94,12 +117,21 @@ const ListItem = (props) => {
             <Avatar alt="ListItem_icon" src={icon} classes={listIconStyles} />
           </ListItemAvatarWrap>
           <ListItemDetailBox>
-            <TitleOne extraCss={ListTitleStyles}>
-              {title}
-              <Flag fontSize="0.85rem" fontStyle="italic">
-                {flag}
-              </Flag>
-            </TitleOne>
+            {showToolTip ? (
+              <TooltipComponent
+                title={title}
+                renderContent={renderTitle()}
+                certificate="top"
+              />
+            ) : (
+              <TitleOne extraCss={ListTitleStyles}>
+                {title}
+                <Flag fontSize="0.85rem" fontStyle="italic">
+                  {flag}
+                </Flag>
+              </TitleOne>
+            )}
+
             <Flag fontSize="1.3rem">{subTitle}</Flag>
           </ListItemDetailBox>
         </LabelWrap>
@@ -140,6 +172,7 @@ ListItem.propTypes = {
   showActions: PropTypes.bool.isRequired,
   popperListItems: PropTypes.arrayOf(PropTypes.any),
   listIconStyles: PropTypes.objectOf(PropTypes.any),
+  showToolTip: PropTypes.bool,
 };
 ListItem.defaultProps = {
   subTitle: '',
@@ -148,5 +181,6 @@ ListItem.defaultProps = {
   icon: ListItemIcon,
   popperListItems: [],
   listIconStyles: {},
+  showToolTip: false,
 };
 export default ListItem;
