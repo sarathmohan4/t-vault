@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
@@ -13,19 +14,28 @@ const TooltipText = styled.span`
   z-index: 1;
   font-size: 1.4rem;
   font-weight: bold;
-  right: ${(props) => (props.Transfer === 'Transfer' ? '120%' : (props.certificate === 'top' ? '':'94%'))};
-  top: ${props => props.certificate === 'top' ? '110%' : '1%'};
+  right: ${(props) =>
+    props.Transfer === 'Transfer'
+      ? '120%'
+      : props.certificate === 'top'
+      ? ''
+      : '94%'};
+  top: ${(props) => (props.certificate === 'top' ? '110%' : '1%')};
   min-width: 7rem;
+  word-break: break-all;
   ::after {
     content: ' ';
     position: absolute;
     bottom: 30%;
-    right: ${props => props.certificate === 'top' ? '' : '-14%'};
-    bottom: ${props => props.certificate === 'top' ? '100%' : ''};
-    margin-left:  ${props => props.certificate === 'top' ? '-50%' : '-5px'};
+    right: ${(props) => (props.certificate === 'top' ? '' : '-14%')};
+    bottom: ${(props) => (props.certificate === 'top' ? '100%' : '')};
+    margin-left: ${(props) => (props.certificate === 'top' ? '-50%' : '-5px')};
     border-width: 5px;
     border-style: solid;
-    border-color: ${props=>props.certificate !== 'top' ? 'transparent transparent transparent #fff' : 'transparent transparent #fff transparent'}
+    border-color: ${(props) =>
+      props.certificate !== 'top'
+        ? 'transparent transparent transparent #fff'
+        : 'transparent transparent #fff transparent'};
   }
 `;
 
@@ -37,12 +47,14 @@ const Tooltip = styled.div`
 `;
 
 const TooltipComponent = (props) => {
-  const { title, renderContent,certificate } = props;
+  const { title, renderContent, certificate } = props;
 
   return (
     <Tooltip>
       {renderContent}
-      <TooltipText Transfer={title} certificate={certificate}>{title}</TooltipText>
+      <TooltipText Transfer={title} certificate={certificate}>
+        {title}
+      </TooltipText>
     </Tooltip>
   );
 };
@@ -55,6 +67,6 @@ TooltipComponent.propTypes = {
 
 TooltipComponent.defaultProps = {
   certificate: '',
-}
+};
 
 export default TooltipComponent;
