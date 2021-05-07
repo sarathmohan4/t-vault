@@ -183,6 +183,7 @@ const Grid = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 2rem 2.5rem;
+  padding-bottom: 0rem;
 `;
 const GridColumn = styled.div`
   display: flex;
@@ -250,6 +251,12 @@ const InfoText = styled.div`
   font-size: 1.3rem;
   color: #8b8ea6;
   margin: 0.8rem 0;
+`;
+
+const InfoNoteText = styled.div`
+  font-size: 1.1rem;
+  color: #8b8ea6;
+  padding: 0.5rem 1rem;
 `;
 
 const InputLabelWithInfo = styled(InputLabel)`
@@ -1079,7 +1086,7 @@ const OnBoardForm = (props) => {
                                 </CollapseTitle>
                               </GridItem>
                               <GridItem>
-                                <CollapseTitle>Lock Status</CollapseTitle>
+                                <CollapseTitle>Lock Status **</CollapseTitle>
                                 <CollapseTitle color="#fff">
                                   {serviceAccountDetails?.lockStatus}
                                 </CollapseTitle>
@@ -1112,6 +1119,9 @@ const OnBoardForm = (props) => {
                               </GridItem>
                             </GridColumn>
                           </Grid>
+                          <InfoNoteText>
+                          ** Once unlocked, "Lock status" will be updated after next successful login.
+                          </InfoNoteText>
                         </ServiceAcoountHelp>
                       </ServiceAccountDetailWrap>
                     </InputFieldLabelWrapper>
