@@ -3180,12 +3180,16 @@ public class IAMServiceAccountServiceTest {
 		IAMSecrets iamSecret = new IAMSecrets();
 		iamSecret.setAccessKeyId("testaccesskey555");
 		iamSecrets.add(iamSecret);
+		iamSecret.setAccessKeyId("testaccesskey555");
+		iamSecrets.add(iamSecret);
 		serviceAccount.setSecret(iamSecrets);
 
 		// System under test
 		String expectedResponse = "{\"errors\":[\"Failed to onboard IAM service account. Invalid secret data in request.\"]}";
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedResponse);
 
+		when(reqProcessor.process(eq("/iam/onboardedlist"), Mockito.any(), eq(token))).thenReturn(getMockResponse(
+				HttpStatus.OK, true, "{\"keys\":[\"12234237890_svc_tvt_test13\",\"1223455345_svc_tvt_test9\"]}"));
 		// Mock approle permission check
 		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
@@ -3252,12 +3256,16 @@ public class IAMServiceAccountServiceTest {
 		IAMSecrets iamSecret = new IAMSecrets();
 		iamSecret.setAccessKeyId("testaccesskey555");
 		iamSecrets.add(iamSecret);
+		iamSecret.setAccessKeyId("testaccesskey555");
+		iamSecrets.add(iamSecret);
 		serviceAccount.setSecret(iamSecrets);
 
 		// System under test
 		String expectedResponse = "{\"errors\":[\"Failed to onboard IAM service account. Invalid secret data in request.\"]}";
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedResponse);
 
+		when(reqProcessor.process(eq("/iam/onboardedlist"), Mockito.any(), eq(token))).thenReturn(getMockResponse(
+				HttpStatus.OK, true, "{\"keys\":[\"12234237890_svc_tvt_test13\",\"1223455345_svc_tvt_test9\"]}"));
 		// Mock approle permission check
 		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);

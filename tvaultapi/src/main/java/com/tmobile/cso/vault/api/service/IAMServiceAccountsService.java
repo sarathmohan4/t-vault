@@ -324,7 +324,7 @@ public class  IAMServiceAccountsService {
 		iamServiceAccountSecret.setUserName(iamServiceAccount.getUserName());
 		iamServiceAccountSecret.setAwsAccountId(iamServiceAccount.getAwsAccountId());
 		iamServiceAccountSecret.setAccessKeyId(iamSecrets.getAccessKeyId());
-		iamServiceAccountSecret.setExpiryDateEpoch(iamSecrets.getExpiryDateEpoch());
+		iamServiceAccountSecret.setExpiryDateEpoch(iamServiceAccount.getExpiryDateEpoch());
 		return iamServiceAccountSecret;
 	}
 
@@ -340,7 +340,7 @@ public class  IAMServiceAccountsService {
 			}
 			for (IAMSecrets iamSecrets : iamServiceAccount.getSecret()) {
 				if (iamSecrets.getAccessKeyId() == null || iamSecrets.getAccessKeyId().length() < 16
-						|| iamSecrets.getAccessKeyId().length() > 128 || iamSecrets.getExpiryDateEpoch() == null) {
+						|| iamSecrets.getAccessKeyId().length() > 128) {
 					return false;
 				}
 			}
