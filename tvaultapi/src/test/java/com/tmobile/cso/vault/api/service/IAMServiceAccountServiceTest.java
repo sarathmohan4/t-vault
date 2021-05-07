@@ -4247,6 +4247,7 @@ public class IAMServiceAccountServiceTest {
 		IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret();
 
 		iamServiceAccountSecret.setAccessKeyId("testaccesskey");
+		iamServiceAccountSecret.setExpiryDateEpoch(244253345456L);
 		IAMServiceAccountSecretResponse iamServiceAccountSecretResponse = new IAMServiceAccountSecretResponse();
 		iamServiceAccountSecretResponse.setStatusCode(200);
 		iamServiceAccountSecretResponse.setIamServiceAccountSecret(iamServiceAccountSecret);
@@ -4353,6 +4354,7 @@ public class IAMServiceAccountServiceTest {
 		IAMServiceAccountSecret iamServiceAccountSecret = new IAMServiceAccountSecret();
 
 		iamServiceAccountSecret.setAccessKeyId("testaccesskey");
+		iamServiceAccountSecret.setExpiryDateEpoch(244253345456L);
 		IAMServiceAccountSecretResponse iamServiceAccountSecretResponse = new IAMServiceAccountSecretResponse();
 		iamServiceAccountSecretResponse.setStatusCode(200);
 		iamServiceAccountSecretResponse.setIamServiceAccountSecret(iamServiceAccountSecret);
