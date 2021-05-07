@@ -100,7 +100,8 @@ const AddGroup = (props) => {
     access,
     isSvcAccount,
     isCertificate,
-    isIamAzureSvcAccount,
+    isAzureSvcAccount,
+    isIamSvcAccount
   } = props;
   const [radioValue, setRadioValue] = useState('read');
   const [searchValue, setSearchValue] = useState('');
@@ -196,8 +197,10 @@ const AddGroup = (props) => {
   );
 
   useEffect(() => {
-    if (isIamAzureSvcAccount) {
+    if (isAzureSvcAccount) {
       setRadioArray(['read', 'rotate', 'deny']);
+    } else if (isIamSvcAccount) {
+      setRadioArray(['read', 'write', 'deny']);
     } else if (isCertificate) {
       setRadioArray(['read', 'deny']);
     } else if (isSvcAccount) {
@@ -205,7 +208,7 @@ const AddGroup = (props) => {
     } else {
       setRadioArray(['read', 'write', 'deny']);
     }
-  }, [isIamAzureSvcAccount, isSvcAccount, isCertificate]);
+  }, [isAzureSvcAccount, isIamSvcAccount, isSvcAccount, isCertificate]);
 
   const onSearchChange = (e) => {
     if (e && e?.target?.value) {
@@ -325,7 +328,8 @@ AddGroup.propTypes = {
   isSvcAccount: PropTypes.bool,
   isCertificate: PropTypes.bool,
   groups: PropTypes.objectOf(PropTypes.any),
-  isIamAzureSvcAccount: PropTypes.bool,
+  isAzureSvcAccount: PropTypes.bool,
+  isIamSvcAccount: PropTypes.bool,
 };
 
 AddGroup.defaultProps = {
@@ -336,7 +340,8 @@ AddGroup.defaultProps = {
   groups: {},
   isSvcAccount: false,
   isCertificate: false,
-  isIamAzureSvcAccount: false,
+  isAzureSvcAccount: false,
+  isIamSvcAccount: false,
 };
 
 export default AddGroup;

@@ -174,11 +174,7 @@ const AppRoles = (props) => {
    */
   const onEditClick = (key, value) => {
     setEditClicked(true);
-    if (value === 'write') {
-      setEditAccess('rotate');
-    } else {
-      setEditAccess(value);
-    }
+    setEditAccess(value);
     setEditRole(key);
     setResponse({ status: 'edit' });
   };
@@ -210,7 +206,7 @@ const AppRoles = (props) => {
             roles={accountMetaData?.response['app-roles']}
             handleSaveClick={(role, access) => onSubmit(role, access)}
             handleCancelClick={() => onCancelClicked()}
-            isIamAzureSvcAccount
+            isIamSvcAccount
           />
         )}
         {response.status === 'edit' && (
@@ -220,7 +216,7 @@ const AppRoles = (props) => {
             access={editAccess}
             editClicked={editClicked}
             role={editRole}
-            isIamAzureSvcAccount
+            isIamSvcAccount
           />
         )}
 
@@ -235,7 +231,7 @@ const AppRoles = (props) => {
                     list={accountMetaData.response['app-roles']}
                     onEditClick={(key, value) => onEditClick(key, value)}
                     onDeleteClick={(key, value) => onDeleteClick(key, value)}
-                    isIamAzureSvcAccount
+                    isIamSvcAccount
                   />
                 )}
               {(!accountMetaData.response['app-roles'] ||

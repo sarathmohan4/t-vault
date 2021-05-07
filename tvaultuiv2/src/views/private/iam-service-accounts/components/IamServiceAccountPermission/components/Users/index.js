@@ -190,11 +190,7 @@ const Users = (props) => {
    * @param {value} value permission given to the user.
    */
   const onEditClick = (key, value) => {
-    if (value === 'write') {
-      setEditAccess('rotate');
-    } else {
-      setEditAccess(value);
-    }
+    setEditAccess(value);
     setEditUser(key);
     setResponse({ status: 'edit' });
   };
@@ -217,7 +213,7 @@ const Users = (props) => {
             users={accountMetaData?.response?.users}
             handleSaveClick={(user, access) => onSubmit(user, access)}
             handleCancelClick={onCancelClicked}
-            isIamAzureSvcAccount
+            isIamSvcAccount
           />
         )}
         {response.status === 'edit' && (
@@ -226,7 +222,7 @@ const Users = (props) => {
             handleCancelClick={onCancelClicked}
             username={editUser}
             access={editAccess}
-            isIamAzureSvcAccount
+            isIamSvcAccount
           />
         )}
         {response.status === 'success' &&
@@ -237,7 +233,7 @@ const Users = (props) => {
                 userDetails?.length > 0 && (
                   <UserPermissionsList
                     list={accountMetaData.response.users}
-                    isIamAzureSvcAccount
+                    isIamSvcAccount
                     onEditClick={(key, value) => onEditClick(key, value)}
                     onDeleteClick={(key, value) => onDeleteClick(key, value)}
                     userDetails={userDetails}

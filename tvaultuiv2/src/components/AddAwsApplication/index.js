@@ -85,7 +85,8 @@ const AddAwsApplication = (props) => {
     handleCancelClick,
     isSvcAccount,
     isCertificate,
-    isIamAzureSvcAccount,
+    isAzureSvcAccount,
+    isIamSvcAccount,
   } = props;
   const [awsAuthenticationType, setAwsAuthenticationType] = useState('ec2');
   const [roleName, setRoleName] = useState('');
@@ -229,8 +230,10 @@ const AddAwsApplication = (props) => {
   };
 
   useEffect(() => {
-    if (isIamAzureSvcAccount) {
+    if (isAzureSvcAccount) {
       setRadioArray(['read', 'rotate', 'deny']);
+    } else if (isIamSvcAccount) {
+      setRadioArray(['read', 'write', 'deny']);
     } else if (isCertificate) {
       setRadioArray(['read', 'deny']);
     } else if (isSvcAccount) {
@@ -238,7 +241,7 @@ const AddAwsApplication = (props) => {
     } else {
       setRadioArray(['read', 'write', 'deny']);
     }
-  }, [isIamAzureSvcAccount, isSvcAccount, isCertificate]);
+  }, [isAzureSvcAccount, isIamSvcAccount, isSvcAccount, isCertificate]);
 
   const testIfNumberInput = (event) => {
     const re = /^[0-9\b]+$/;
@@ -460,7 +463,8 @@ AddAwsApplication.propTypes = {
   handleSaveClick: PropTypes.func,
   isSvcAccount: PropTypes.bool,
   isCertificate: PropTypes.bool,
-  isIamAzureSvcAccount: PropTypes.bool,
+  isAzureSvcAccount: PropTypes.bool,
+  isIamSvcAccount: PropTypes.bool,
   roles: PropTypes.objectOf(PropTypes.any),
 };
 
@@ -469,7 +473,8 @@ AddAwsApplication.defaultProps = {
   handleSaveClick: () => {},
   isSvcAccount: false,
   isCertificate: false,
-  isIamAzureSvcAccount: false,
+  isAzureSvcAccount: false,
+  isIamSvcAccount: false,
   roles: {},
 };
 export default AddAwsApplication;

@@ -84,7 +84,8 @@ const EditAwsApplication = (props) => {
     access,
     isSvcAccount,
     isCertificate,
-    isIamAzureSvcAccount,
+    isAzureSvcAccount,
+    isIamSvcAccount,
   } = props;
   const [radioValue, setRadioValue] = useState('read');
   const [value, setValue] = useState('');
@@ -106,8 +107,10 @@ const EditAwsApplication = (props) => {
   }, [radioValue, access]);
 
   useEffect(() => {
-    if (isIamAzureSvcAccount) {
+    if (isAzureSvcAccount) {
       setRadioArray(['read', 'rotate', 'deny']);
+    } else if (isIamSvcAccount) {
+      setRadioArray(['read', 'write', 'deny']);
     } else if (isCertificate) {
       setRadioArray(['read', 'deny']);
     } else if (isSvcAccount) {
@@ -115,7 +118,7 @@ const EditAwsApplication = (props) => {
     } else {
       setRadioArray(['read', 'write', 'deny']);
     }
-  }, [isIamAzureSvcAccount, isSvcAccount, isCertificate]);
+  }, [isAzureSvcAccount, isIamSvcAccount, isSvcAccount, isCertificate]);
 
   return (
     <ComponentError>
@@ -169,13 +172,15 @@ EditAwsApplication.propTypes = {
   awsName: PropTypes.string.isRequired,
   isSvcAccount: PropTypes.bool,
   isCertificate: PropTypes.bool,
-  isIamAzureSvcAccount: PropTypes.bool,
+  isAzureSvcAccount: PropTypes.bool,
+  isIamSvcAccount: PropTypes.bool,
 };
 
 EditAwsApplication.defaultProps = {
   isSvcAccount: false,
   isCertificate: false,
-  isIamAzureSvcAccount: false,
+  isAzureSvcAccount: false,
+  isIamSvcAccount: false,
 };
 
 export default EditAwsApplication;

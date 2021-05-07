@@ -210,8 +210,12 @@ export const formatSecondsToTime = (seconds) => {
 export const checkAccess = (access, type) => {
   let val = '';
   if (access === 'write' || access === 'reset') {
-    if (type?.toLowerCase() === 'iamsvcaccount') {
+    if (type?.toLowerCase() === 'azuresvcaccount') {
       val = 'rotate';
+      return val;
+    }
+    if (type?.toLowerCase() === 'iamsvcaccount') {
+      val = 'write';
       return val;
     }
     val = 'reset';

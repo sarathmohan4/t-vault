@@ -68,7 +68,7 @@ const Groups = (props) => {
 
   const constructPayload = (groupname, access) => {
     const data = {
-      access: checkAccess(access, 'iamsvcaccount'),
+      access: checkAccess(access, 'azuresvcaccount'),
       azureSvcAccName: azureMetaData.servicePrincipalName,
       groupname,
     };
@@ -208,7 +208,7 @@ const Groups = (props) => {
             groups={azureMetaData?.groups}
             handleSaveClick={(group, access) => onSubmit(group, access)}
             handleCancelClick={onCancelClicked}
-            isIamAzureSvcAccount
+            isAzureSvcAccount
           />
         )}
         {response.status === 'edit' && (
@@ -219,7 +219,7 @@ const Groups = (props) => {
             handleCancelClick={onCancelClicked}
             groupname={editGroup}
             access={editAccess}
-            isIamAzureSvcAccount
+            isAzureSvcAccount
           />
         )}
         {response.status === 'success' && (
@@ -230,7 +230,7 @@ const Groups = (props) => {
                   list={azureMetaData.groups}
                   onEditClick={(key, value) => onEditClick(key, value)}
                   onDeleteClick={(key, value) => onDeleteClick(key, value)}
-                  isIamAzureSvcAccount
+                  isAzureSvcAccount
                 />
               )}
             {(!azureMetaData.groups ||

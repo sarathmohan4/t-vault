@@ -71,7 +71,7 @@ public class  IAMServiceAccountsService {
 	private String iamMasterPolicyName;
 
 	private static Logger log = LogManager.getLogger(IAMServiceAccountsService.class);
-	private static final String[] ACCESS_PERMISSIONS = { "read", IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING, "deny", "sudo" };
+	private static final String[] ACCESS_PERMISSIONS = { "read", IAMServiceAccountConstants.IAM_WRITE_PERMISSION_STRING, "deny", "sudo" };
 
 	@Autowired
 	private AccessService accessService;
@@ -112,7 +112,7 @@ public class  IAMServiceAccountsService {
 	private static final String ACCOUNTSTR = "account [%s].";
 	private static final String DELETEPATH = "/delete";
 	private static final String PATHSTR = "{\"path\":\"";
-	private static final String INVALIDVALUEERROR = "{\"errors\":[\"Invalid value specified for access. Valid values are read, rotate, deny\"]}";
+	private static final String INVALIDVALUEERROR = "{\"errors\":[\"Invalid value specified for access. Valid values are read, write, deny\"]}";
 	private static final String POLICYSTR = "policy is [%s]";
 	private static final String GROUPPATH = "/auth/ldap/groups";
 	private static final String GROUPNAME = "{\"groupname\":\"";
@@ -211,7 +211,7 @@ public class  IAMServiceAccountsService {
 			// Add self support group to IAM service account (if available)
 			if (!StringUtils.isEmpty(iamServiceAccount.getAdSelfSupportGroup())) {
 				IAMServiceAccountGroup iamServiceAccountGroup = new IAMServiceAccountGroup(iamServiceAccount.getUserName(),
-						iamServiceAccount.getAdSelfSupportGroup(), IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING,
+						iamServiceAccount.getAdSelfSupportGroup(), IAMServiceAccountConstants.IAM_WRITE_PERMISSION_STRING,
 						iamServiceAccount.getAwsAccountId());
 				ResponseEntity<String> addGroupResponse = addGroupToIAMServiceAccount(token, iamServiceAccountGroup, userDetails, true);
 
@@ -377,7 +377,7 @@ public class  IAMServiceAccountsService {
 		if (HttpStatus.OK.equals(addUserToIAMSvcAccResponse.getStatusCode())) {
 			// Add default rotate permission to owner
 			iamServiceAccountUser = new IAMServiceAccountUser(iamServiceAccount.getUserName(),
-					iamServiceAccount.getOwnerNtid(), IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING, iamServiceAccount.getAwsAccountId());
+					iamServiceAccount.getOwnerNtid(), IAMServiceAccountConstants.IAM_WRITE_PERMISSION_STRING, iamServiceAccount.getAwsAccountId());
 			ResponseEntity<String> addWritePermissionToIAMSvcAccResponse = addUserToIAMServiceAccount(token, userDetails,
 					iamServiceAccountUser, true);
 			if (HttpStatus.OK.equals(addWritePermissionToIAMSvcAccResponse.getStatusCode())) {
@@ -1022,9 +1022,6 @@ public class  IAMServiceAccountsService {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(INVALIDVALUEERROR);
 		}
-		if (iamServiceAccountGroup.getAccess().equalsIgnoreCase(IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING)) {
-			iamServiceAccountGroup.setAccess(TVaultConstants.WRITE_POLICY);
-		}
 
 		if (TVaultConstants.USERPASS.equals(vaultAuthMethod)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
@@ -1331,10 +1328,6 @@ public class  IAMServiceAccountsService {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(INVALIDVALUEERROR);
 		}
-		if (iamServiceAccountUser.getAccess().equalsIgnoreCase(IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING)) {
-			iamServiceAccountUser.setAccess(TVaultConstants.WRITE_POLICY);
-		}
-
 		String uniqueIAMSvcaccName = iamServiceAccountUser.getAwsAccountId() + "_" + iamServiceAccountUser.getIamSvcAccName();
 
 		boolean isAuthorized = isAuthorizedToAddPermissionInIAMSvcAcc(userDetails, uniqueIAMSvcaccName, token, isPartOfOnboard);
@@ -1351,7 +1344,7 @@ public class  IAMServiceAccountsService {
 								.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 								.build()));
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-						"{\"errors\":[\"Failed to add user permission to IAM Service account. Only Sudo and Rotate permissions can be added as part of Onboard.\"]}");
+						"{\"errors\":[\"Failed to add user permission to IAM Service account. Only Sudo and Write permissions can be added as part of Onboard.\"]}");
 			}
 
 			if (isOwnerPemissionGettingChanged(iamServiceAccountUser, userDetails.getUsername(), isPartOfOnboard)) {
@@ -1976,9 +1969,6 @@ public class  IAMServiceAccountsService {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(INVALIDVALUEERROR);
 		}
-		if (iamServiceAccountUser.getAccess().equalsIgnoreCase(IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING)) {
-			iamServiceAccountUser.setAccess(TVaultConstants.WRITE_POLICY);
-		}
 
 		String uniqueIAMSvcaccName = iamServiceAccountUser.getAwsAccountId() + "_" + iamServiceAccountUser.getIamSvcAccName();
 
@@ -2271,9 +2261,6 @@ public class  IAMServiceAccountsService {
 
         	return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(INVALIDVALUEERROR);
-		}
-		if (iamServiceAccountGroup.getAccess().equalsIgnoreCase(IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING)) {
-			iamServiceAccountGroup.setAccess(TVaultConstants.WRITE_POLICY);
 		}
 
         String iamSvcAccountName = iamServiceAccountGroup.getAwsAccountId() + "_" + iamServiceAccountGroup.getIamSvcAccName();
@@ -2670,9 +2657,7 @@ public class  IAMServiceAccountsService {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(INVALIDVALUEERROR);
 		}
-		if (iamServiceAccountApprole.getAccess().equalsIgnoreCase(IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING)) {
-			iamServiceAccountApprole.setAccess(TVaultConstants.WRITE_POLICY);
-		}
+
 		String uniqueIAMSvcaccName = iamServiceAccountApprole.getAwsAccountId() + "_" + iamServiceAccountApprole.getIamSvcAccName();
 		String approleName = iamServiceAccountApprole.getApprolename();
 		String access = iamServiceAccountApprole.getAccess();
@@ -3198,7 +3183,7 @@ public class  IAMServiceAccountsService {
 											build()));
 									return ResponseEntity.status(HttpStatus.OK).body("{\"errors\":[\"Failed to activate IAM Service account. IAM secrets are rotated and saved in T-Vault. However failed to add permission to owner. Owner info not found in Metadata.\"]}");
 								}
-								IAMServiceAccountUser iamServiceAccountUser = new IAMServiceAccountUser(iamServiceAccountName, ownerNTId, IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING, awsAccountId);
+								IAMServiceAccountUser iamServiceAccountUser = new IAMServiceAccountUser(iamServiceAccountName, ownerNTId, IAMServiceAccountConstants.IAM_WRITE_PERMISSION_STRING, awsAccountId);
 
 								ResponseEntity<String> addUserToIAMSvcAccResponse = addUserToIAMServiceAccount(token, userDetails, iamServiceAccountUser, false);
 								if (HttpStatus.OK.equals(addUserToIAMSvcAccResponse.getStatusCode())) {
@@ -4288,9 +4273,6 @@ public class  IAMServiceAccountsService {
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(INVALIDVALUEERROR);
 		}
-		if (iamServiceAccountAWSRole.getAccess().equalsIgnoreCase(IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING)) {
-			iamServiceAccountAWSRole.setAccess(TVaultConstants.WRITE_POLICY);
-		}
 		String roleName = iamServiceAccountAWSRole.getRolename();
 		String iamSvcName = iamServiceAccountAWSRole.getIamSvcAccName().toLowerCase();
 		String awsAcountId = iamServiceAccountAWSRole.getAwsAccountId();
@@ -4455,9 +4437,6 @@ public class  IAMServiceAccountsService {
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(INVALIDVALUEERROR);
-		}
-		if (iamServiceAccountAWSRole.getAccess().equalsIgnoreCase(IAMServiceAccountConstants.IAM_ROTATE_MSG_STRING)) {
-			iamServiceAccountAWSRole.setAccess(TVaultConstants.WRITE_POLICY);
 		}
 		String roleName = iamServiceAccountAWSRole.getRolename();
 		String iamSvcName = iamServiceAccountAWSRole.getIamSvcAccName().toLowerCase();
@@ -5116,7 +5095,7 @@ public class  IAMServiceAccountsService {
         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                 put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
-                put(LogMessage.MESSAGE, String.format ("Trying to rotate secret for the IAM Service account [%s] " +
+                put(LogMessage.MESSAGE, String.format ("Trying to create secret for the IAM Service account [%s] " +
                                 " in aws account [%s]", iamSvcName, awsAccountId)).
                 put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                 build()));

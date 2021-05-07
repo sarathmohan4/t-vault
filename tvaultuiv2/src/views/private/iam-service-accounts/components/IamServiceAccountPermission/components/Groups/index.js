@@ -186,11 +186,7 @@ const Groups = (props) => {
    * @param {value} value permission given to the group.
    */
   const onEditClick = (key, value) => {
-    if (value === 'write') {
-      setEditAccess('rotate');
-    } else {
-      setEditAccess(value);
-    }
+    setEditAccess(value);
     setEditGroup(key);
     setResponse({ status: 'edit' });
   };
@@ -213,7 +209,7 @@ const Groups = (props) => {
             groups={accountMetaData?.response?.groups}
             handleSaveClick={(group, access) => onSubmit(group, access)}
             handleCancelClick={onCancelClicked}
-            isIamAzureSvcAccount
+            isIamSvcAccount
           />
         )}
 
@@ -225,7 +221,7 @@ const Groups = (props) => {
             handleCancelClick={onCancelClicked}
             groupname={editGroup}
             access={editAccess}
-            isIamAzureSvcAccount
+            isIamSvcAccount
           />
         )}
         {accountMetaData &&
@@ -238,7 +234,7 @@ const Groups = (props) => {
                     list={accountMetaData.response.groups}
                     onEditClick={(key, value) => onEditClick(key, value)}
                     onDeleteClick={(key, value) => onDeleteClick(key, value)}
-                    isIamAzureSvcAccount
+                    isIamSvcAccount
                   />
                 )}
               {(!accountMetaData.response.groups ||
