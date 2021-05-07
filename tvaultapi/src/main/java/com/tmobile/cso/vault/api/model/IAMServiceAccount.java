@@ -24,7 +24,6 @@ import javax.validation.constraints.*;
 
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -33,7 +32,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class IAMServiceAccount implements Serializable {
 
 	private static final long serialVersionUID = -9011756132661399159L;
-	
+
 	@NotBlank
 	@Size(min = 1, max = 64, message = "UserName specified should be minimum 1 character and maximum 64 characters only")
 	@Pattern(regexp = "^[a-zA-Z0-9+=,.@_-]+$", message = "Name can have alphabets, numbers, plus (+), equal (=), comma (,), period (.), at (@), underscore (_), and hyphen (-)  only")
@@ -90,12 +89,16 @@ public class IAMServiceAccount implements Serializable {
     @Max(7776000000L)
     private Long expiryDuration;
 
+    @NotNull
+	@Min(0)
+    private Long expiryDateEpoch;
+
 	public IAMServiceAccount() {
 	}
 
 	public IAMServiceAccount(String userName, String awsAccountId, String awsAccountName, Long createdAtEpoch,
 			String ownerNtid, String ownerEmail, String applicationId, String applicationName, String applicationTag,
-			List<IAMSecrets> secret, String adSelfSupportGroup, Long expiryDuration) {
+			List<IAMSecrets> secret, String adSelfSupportGroup, Long expiryDuration, Long expiryDateEpoch) {
 		super();
 		this.userName = userName;
 		this.awsAccountId = awsAccountId;
@@ -109,6 +112,7 @@ public class IAMServiceAccount implements Serializable {
 		this.secret = secret;
 		this.adSelfSupportGroup = adSelfSupportGroup;
 		this.expiryDuration = expiryDuration;
+		this.expiryDateEpoch = expiryDateEpoch;
 	}
 
 	/**
@@ -275,21 +279,21 @@ public class IAMServiceAccount implements Serializable {
         this.expiryDuration = expiryDuration;
     }
 
-    @Override
-    public String toString() {
-        return "IAMServiceAccount{" +
-                "userName='" + userName + '\'' +
-                ", awsAccountId='" + awsAccountId + '\'' +
-                ", awsAccountName='" + awsAccountName + '\'' +
-                ", createdAtEpoch=" + createdAtEpoch +
-                ", ownerNtid='" + ownerNtid + '\'' +
-                ", ownerEmail='" + ownerEmail + '\'' +
-                ", applicationId='" + applicationId + '\'' +
-                ", applicationName='" + applicationName + '\'' +
-                ", applicationTag='" + applicationTag + '\'' +
-                ", secret=" + secret +
-                ", adSelfSupportGroup='" + adSelfSupportGroup + '\'' +
-                ", expiryDuration=" + expiryDuration +
-                '}';
-    }
+    public Long getExpiryDateEpoch() {
+		return expiryDateEpoch;
+	}
+
+	public void setExpiryDateEpoch(Long expiryDateEpoch) {
+		this.expiryDateEpoch = expiryDateEpoch;
+	}
+
+	@Override
+	public String toString() {
+		return "IAMServiceAccount [userName=" + userName + ", awsAccountId=" + awsAccountId + ", awsAccountName="
+				+ awsAccountName + ", createdAtEpoch=" + createdAtEpoch + ", ownerNtid=" + ownerNtid + ", ownerEmail="
+				+ ownerEmail + ", applicationId=" + applicationId + ", applicationName=" + applicationName
+				+ ", applicationTag=" + applicationTag + ", secret=" + secret + ", adSelfSupportGroup="
+				+ adSelfSupportGroup + ", expiryDuration=" + expiryDuration + ", expiryDateEpoch=" + expiryDateEpoch
+				+ "]";
+	}
 }

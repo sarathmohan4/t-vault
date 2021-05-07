@@ -121,6 +121,7 @@ public class IAMServiceAccountsControllerTest {
 		iamServiceAccount.setApplicationTag("App1");
 		iamServiceAccount.setCreatedAtEpoch(125L);
 		iamServiceAccount.setSecret(generateIAMSecret());
+		iamServiceAccount.setExpiryDateEpoch(7776000000L);
 		return iamServiceAccount;
 	}
 

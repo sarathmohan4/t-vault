@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -323,7 +324,7 @@ public class  IAMServiceAccountsService {
 		iamServiceAccountSecret.setUserName(iamServiceAccount.getUserName());
 		iamServiceAccountSecret.setAwsAccountId(iamServiceAccount.getAwsAccountId());
 		iamServiceAccountSecret.setAccessKeyId(iamSecrets.getAccessKeyId());
-		iamServiceAccountSecret.setExpiryDateEpoch(iamSecrets.getExpiryDateEpoch());
+		iamServiceAccountSecret.setExpiryDateEpoch(iamServiceAccount.getExpiryDateEpoch());
 		return iamServiceAccountSecret;
 	}
 
@@ -339,7 +340,7 @@ public class  IAMServiceAccountsService {
 			}
 			for (IAMSecrets iamSecrets : iamServiceAccount.getSecret()) {
 				if (iamSecrets.getAccessKeyId() == null || iamSecrets.getAccessKeyId().length() < 16
-						|| iamSecrets.getAccessKeyId().length() > 128 || iamSecrets.getExpiryDateEpoch() == null) {
+						|| iamSecrets.getAccessKeyId().length() > 128) {
 					return false;
 				}
 			}
@@ -657,7 +658,7 @@ public class  IAMServiceAccountsService {
 			for (IAMSecrets iamSecrets : iamServiceAccount.getSecret()) {
 				IAMSecretsMetadata iamSecretsMetadata = new IAMSecretsMetadata();
 				iamSecretsMetadata.setAccessKeyId(iamSecrets.getAccessKeyId());
-				iamSecretsMetadata.setExpiryDuration(iamSecrets.getExpiryDateEpoch());
+				iamSecretsMetadata.setExpiryDuration(iamServiceAccount.getExpiryDateEpoch());
 				iamSecretsMetadatas.add(iamSecretsMetadata);
 			}
 		}
@@ -667,11 +668,15 @@ public class  IAMServiceAccountsService {
 			iamServiceAccountMetadataDetails.setAdSelfSupportGroup(iamServiceAccount.getAdSelfSupportGroup());
 		}
 
-		// Service account level expiry data
+		// Service account level expiry duration
 		iamServiceAccountMetadataDetails.setExpiryDuration(iamServiceAccount.getExpiryDuration());
 
 		// Setting activated status to true on onboard
 		iamServiceAccountMetadataDetails.setAccountActivated(true);
+
+		// Setting the expiry date epoch to service account level
+		iamServiceAccountMetadataDetails.setExpiryDateEpoch(iamServiceAccount.getExpiryDateEpoch());
+
 		return iamServiceAccountMetadataDetails;
 	}
 
@@ -3486,7 +3491,10 @@ public class  IAMServiceAccountsService {
 						put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 						build()));
 				Response metadataUdpateResponse = iamServiceAccountUtils.updateIAMSvcAccNewAccessKeyIdInMetadata(token, awsAccountId, iamServiceAccountName, accessKeyId, iamServiceAccountSecret);
-				if (null != metadataUdpateResponse && HttpStatus.NO_CONTENT.equals(metadataUdpateResponse.getHttpstatus())) {
+				if (null != metadataUdpateResponse
+						&& HttpStatus.NO_CONTENT.equals(metadataUdpateResponse.getHttpstatus())) {
+					updateIAMSvcAccSecretWithLatestExpiryDate(token, awsAccountId, iamServiceAccountName, accessKeyId,
+							iamServiceAccountSecret.getExpiryDateEpoch());
 					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 							put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 							put(LogMessage.ACTION, "rotate IAM Service Account By AccessKeyId").
@@ -5041,6 +5049,10 @@ public class  IAMServiceAccountsService {
 					build()));
 			Response metadataUdpateResponse = iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, iamSvcAccId, iamSvcUsername, iamServiceAccountSecret);
 			if (null != metadataUdpateResponse && HttpStatus.NO_CONTENT.equals(metadataUdpateResponse.getHttpstatus())) {
+				int expiryDateValue = iamServiceAccountSecret.getExpiryDateEpoch().compareTo(0L);
+				if(expiryDateValue > 0) {
+					updateIAMSvcAccSecretWithLatestExpiryDate(token, iamSvcAccId, iamSvcUsername, iamServiceAccountSecret.getAccessKeyId(), iamServiceAccountSecret.getExpiryDateEpoch());
+				}
 				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 						put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY).
@@ -5185,7 +5197,10 @@ public class  IAMServiceAccountsService {
                             put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
                             build()));
                     Response metadataUdpateResponse = iamServiceAccountUtils.addIAMSvcAccNewAccessKeyIdToMetadata(token, awsAccountId, iamSvcName, iamServiceAccountSecret);
-                    if (null != metadataUdpateResponse && HttpStatus.NO_CONTENT.equals(metadataUdpateResponse.getHttpstatus())) {
+					if (null != metadataUdpateResponse
+							&& HttpStatus.NO_CONTENT.equals(metadataUdpateResponse.getHttpstatus())) {
+						updateIAMSvcAccSecretWithLatestExpiryDate(token, awsAccountId, iamSvcName,
+								iamServiceAccountSecret.getAccessKeyId(), iamServiceAccountSecret.getExpiryDateEpoch());
                         log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
                                 put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
                                 put(LogMessage.ACTION, IAMServiceAccountConstants.CREATE_IAM_SVCACC_SECRET_TITLE).
@@ -5278,4 +5293,93 @@ public class  IAMServiceAccountsService {
 		return folderKeyIndex;
     }
 
+    /**
+     * To update the latest expiryDateEpoch to the existing secrets.
+     * @param token
+     * @param awsAccountID
+     * @param iamSvcName
+     * @param accessKey
+     * @param expiryDateEpoch
+     * @return
+     */
+    private boolean updateIAMSvcAccSecretWithLatestExpiryDate(String token, String awsAccountID, String iamSvcName, String accessKey, Long expiryDateEpoch) {
+		iamSvcName = iamSvcName.toLowerCase();
+		String iamSvcNamePath = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + awsAccountID + '_' + iamSvcName;
+		String uniqueIAMSvcName = awsAccountID + '_' + iamSvcName;
+		try {
+			ResponseEntity<String> response = readFolders(token, iamSvcNamePath);
+			ObjectMapper mapper = new ObjectMapper();
+			if (HttpStatus.OK.equals(response.getStatusCode())) {
+				IAMServiceAccountNode iamServiceAccountNode = mapper.readValue(response.getBody(),
+						IAMServiceAccountNode.class);
+				if (iamServiceAccountNode.getFolders() != null) {
+					for (String folderName : iamServiceAccountNode.getFolders()) {
+						ResponseEntity<String> responseEntity = getIAMServiceAccountSecretKey(token,
+								uniqueIAMSvcName, folderName);
+						if (HttpStatus.OK.equals(responseEntity.getStatusCode())) {
+							IAMServiceAccountSecret iamServiceAccountSecret = mapper.readValue(responseEntity.getBody(),
+									IAMServiceAccountSecret.class);
+							int expiryDateValue = expiryDateEpoch.compareTo(0L);
+							if (!accessKey.equals(iamServiceAccountSecret.getAccessKeyId()) && (expiryDateValue > 0)) {
+								iamServiceAccountSecret.setExpiryDateEpoch(expiryDateEpoch);
+								// Save secret in iamavcacc mount
+								String path = new StringBuilder().append(IAMServiceAccountConstants.IAM_SVCC_ACC_PATH).append(uniqueIAMSvcName).append("/").append(folderName).toString();
+								if (iamServiceAccountUtils.writeIAMSvcAccSecret(token, path, iamSvcName, iamServiceAccountSecret)) {
+									log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+											put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+											put(LogMessage.ACTION, "rotate IAM Service Account By AccessKeyId").
+											put(LogMessage.MESSAGE, "Secret saved to IAM service account mount").
+											put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+											build()));
+									return true;
+								}
+								break;
+							}
+						} else {
+							log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+				                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+				                    put(LogMessage.ACTION, "writeIAMSvcAccSecrets").
+				                    put(LogMessage.MESSAGE, String.format ("No secret found for the IAM Service Account [%s] and accessKeyId [%s] ",iamSvcName, accessKey)).
+				                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+				                    build()));
+							return false;
+						}
+					}
+					return true;
+				} else {
+					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+							put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+							put(LogMessage.ACTION, "rotate IAM Service Account By AccessKeyId").
+							put(LogMessage.MESSAGE, String.format ("No secret found for the IAM Service Account [%s] and accessKeyId [%s] ",iamSvcName, accessKey)).
+							put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+							build()));
+					return true;
+				}
+			} else if (HttpStatus.FORBIDDEN.equals(response.getStatusCode())) {
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+	                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+	                    put(LogMessage.ACTION, "writeIAMSvcAccSecrets").
+	                    put(LogMessage.MESSAGE, String.format ("Access denied: No permission to read secret for IAM service account [%s] ",iamSvcName)).
+	                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+	                    build()));
+				return false;
+			} else {
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+	                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+	                    put(LogMessage.ACTION, "writeIAMSvcAccSecrets").
+	                    put(LogMessage.MESSAGE, String.format ("aws_account_id [%s] or iam_svc_name [%s] not found.",awsAccountID, iamSvcName)).
+	                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+	                    build()));
+				return false;
+			}
+		}catch (IOException ex) {
+            log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
+                    put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
+                    put(LogMessage.ACTION, "writeIAMSvcAccSecrets").
+                    put(LogMessage.MESSAGE, "Failed to write IAMServiceAccountSecret as string json").
+                    put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
+                    build()));
+            return false;
+        }
+    }
 }

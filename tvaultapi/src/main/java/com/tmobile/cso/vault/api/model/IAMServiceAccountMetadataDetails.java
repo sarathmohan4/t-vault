@@ -56,6 +56,8 @@ public class IAMServiceAccountMetadataDetails implements Serializable {
 
 	private Long expiryDuration;
 
+	private Long expiryDateEpoch;
+
 	/**
 	 * @return the userName
 	 */
@@ -227,22 +229,21 @@ public class IAMServiceAccountMetadataDetails implements Serializable {
 		this.expiryDuration = expiryDuration;
 	}
 
+	public Long getExpiryDateEpoch() {
+		return expiryDateEpoch;
+	}
+
+	public void setExpiryDateEpoch(Long expiryDateEpoch) {
+		this.expiryDateEpoch = expiryDateEpoch;
+	}
+
 	@Override
 	public String toString() {
-		return "IAMServiceAccountMetadataDetails{" +
-				"userName='" + userName + '\'' +
-				", awsAccountId='" + awsAccountId + '\'' +
-				", awsAccountName='" + awsAccountName + '\'' +
-				", createdAtEpoch=" + createdAtEpoch +
-				", ownerNtid='" + ownerNtid + '\'' +
-				", ownerEmail='" + ownerEmail + '\'' +
-				", applicationId='" + applicationId + '\'' +
-				", applicationName='" + applicationName + '\'' +
-				", applicationTag='" + applicationTag + '\'' +
-				", accountActivated=" + accountActivated +
-				", secret=" + secret +
-				", adSelfSupportGroup='" + adSelfSupportGroup + '\'' +
-				", expiryDuration=" + expiryDuration +
-				'}';
+		return "IAMServiceAccountMetadataDetails [userName=" + userName + ", awsAccountId=" + awsAccountId
+				+ ", awsAccountName=" + awsAccountName + ", createdAtEpoch=" + createdAtEpoch + ", ownerNtid="
+				+ ownerNtid + ", ownerEmail=" + ownerEmail + ", applicationId=" + applicationId + ", applicationName="
+				+ applicationName + ", applicationTag=" + applicationTag + ", accountActivated=" + accountActivated
+				+ ", secret=" + secret + ", adSelfSupportGroup=" + adSelfSupportGroup + ", expiryDuration="
+				+ expiryDuration + ", expiryDateEpoch=" + expiryDateEpoch + "]";
 	}
 }

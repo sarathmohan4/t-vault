@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
@@ -89,6 +90,7 @@ public class IAMServiceAccountUtils {
     private static final String PATHSTR = "{\"path\":\"";
     private static final String DATASTR = "\",\"data\":";
     private static final String WRITESTR = "/write";
+    private static final String EXPIRY_DATE_EPOCH = "expiryDateEpoch";
 
     /**
      * To get approle token fro IAM Portal approle.
@@ -482,9 +484,8 @@ public class IAMServiceAccountUtils {
 	            if(null != currentSecretData) {
 	                List<IAMSecretsMetadata> newSecretData = new ArrayList<>();
 	                newSecretData = addMetadataToSecretData(currentSecretData,accessKeyId,newSecretData,iamServiceAccountSecret);
-	               
-
 	                metadataMap.put(typeSecret, newSecretData);
+	                metadataMap.put(EXPIRY_DATE_EPOCH, iamServiceAccountSecret.getExpiryDateEpoch());
 	                String metadataJson = "";
 	                try {
 	                    metadataJson = objMapper.writeValueAsString(metadataMap);
@@ -589,8 +590,8 @@ public class IAMServiceAccountUtils {
           IAMSecretsMetadata iamSecretsMetadata = currentSecretData.get(i);
           if (accessKeyId.equals(iamSecretsMetadata.getAccessKeyId())) {
               iamSecretsMetadata.setAccessKeyId(iamServiceAccountSecret.getAccessKeyId());
-              iamSecretsMetadata.setExpiryDuration(iamServiceAccountSecret.getExpiryDateEpoch());
           }
+          iamSecretsMetadata.setExpiryDuration(iamServiceAccountSecret.getExpiryDateEpoch());
           newSecretData.add(iamSecretsMetadata);
       }
 	  return newSecretData;
@@ -825,13 +826,18 @@ public class IAMServiceAccountUtils {
                 List<IAMSecretsMetadata> currentSecretData = objectMapper.convertValue((List<IAMSecretsMetadata>) metadataMap.get(typeSecret), new TypeReference<List<IAMSecretsMetadata>>() { });
                 IAMSecretsMetadata iamSecretsMetadata = new IAMSecretsMetadata(iamServiceAccountSecret.getAccessKeyId(), iamServiceAccountSecret.getExpiryDateEpoch());
                 List<IAMSecretsMetadata> newSecretData = new ArrayList<>();
-                if(null != currentSecretData) {
-                    newSecretData.addAll(currentSecretData);
-                }
-                newSecretData.add(iamSecretsMetadata);
+				if (null != currentSecretData) {
+					for (IAMSecretsMetadata currentIAMSecretsMetadata : currentSecretData) {
+						currentIAMSecretsMetadata.setExpiryDuration(iamSecretsMetadata.getExpiryDuration());
+						newSecretData.add(currentIAMSecretsMetadata);
+					}
+				}
+				newSecretData.add(iamSecretsMetadata);
 
-                metadataMap.put(typeSecret, newSecretData);
-                String metadataJson = "";
+				metadataMap.put(typeSecret, newSecretData);
+				metadataMap.put(EXPIRY_DATE_EPOCH, iamSecretsMetadata.getExpiryDuration());
+
+				String metadataJson = "";
                 try {
                     metadataJson = objMapper.writeValueAsString(metadataMap);
                 } catch (JsonProcessingException e) {
