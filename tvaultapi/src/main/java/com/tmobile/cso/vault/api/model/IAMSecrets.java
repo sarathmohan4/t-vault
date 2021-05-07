@@ -18,14 +18,9 @@
 package com.tmobile.cso.vault.api.model;
 
 import java.io.Serializable;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
+import io.swagger.annotations.ApiModelProperty;
 
 public class IAMSecrets implements Serializable {
 
@@ -34,6 +29,7 @@ public class IAMSecrets implements Serializable {
 	@Size(min = 16, max = 128, message = "AccessKeyId specified should be minimum 16 chanracters and maximum 128 characters only")
 	private String accessKeyId;
 
+	@ApiModelProperty(hidden = true)
 	private Long expiryDateEpoch;
 
 	public IAMSecrets() {
@@ -41,7 +37,6 @@ public class IAMSecrets implements Serializable {
 	}
 
 	/**
-	 *
 	 * @param accessKeyId
 	 * @param expiryDateEpoch
 	 */
