@@ -674,8 +674,10 @@ const IamServiceAccountSecrets = (props) => {
                               />
                             )}
                             <div className="expirationDate">
-                              <div className="expiry">Expires: </div>
-                              <div>{formatDate(secretsData.expiryDate)}</div>
+                              <div className="expiry">{(secretsData.expiryDateEpoch > 0) ? "Expires:" : ""} </div>
+                              <div>{
+                                (secretsData.expiryDateEpoch > 0) ? formatDate(secretsData.expiryDate) : ""
+                                }</div>
                             </div>
                           </InfoWrapper>
                         </SecretDetailsWrap>
