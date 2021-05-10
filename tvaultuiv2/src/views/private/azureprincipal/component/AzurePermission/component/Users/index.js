@@ -75,7 +75,7 @@ const Users = (props) => {
   const onDeleteClick = async (username, access) => {
     setResponse({ status: 'loading' });
     const payload = {
-      access: checkAccess(access, 'iamsvcaccount'),
+      access: checkAccess(access, 'azuresvcaccount'),
       azureSvcAccName: azureMetaData.servicePrincipalName,
       username,
     };
@@ -126,7 +126,7 @@ const Users = (props) => {
    */
   const onSubmit = async (username, access) => {
     const value = {
-      access: checkAccess(access, 'iamsvcaccount'),
+      access: checkAccess(access, 'azuresvcaccount'),
       azureSvcAccName: azureMetaData.servicePrincipalName,
       username,
     };
@@ -148,7 +148,7 @@ const Users = (props) => {
   const onEditSaveClicked = (username, access) => {
     setResponse({ status: 'loading' });
     const payload = {
-      access: checkAccess(access, 'iamsvcaccount'),
+      access: checkAccess(access, 'azuresvcaccount'),
       azureSvcAccName: azureMetaData.servicePrincipalName,
       username,
     };
@@ -211,7 +211,7 @@ const Users = (props) => {
             users={azureMetaData?.users}
             handleSaveClick={(user, access) => onSubmit(user, access)}
             handleCancelClick={onCancelClicked}
-            isIamAzureSvcAccount
+            isAzureSvcAccount
           />
         )}
         {response?.status === 'edit' && (
@@ -220,7 +220,7 @@ const Users = (props) => {
             handleCancelClick={onCancelClicked}
             username={editUser}
             access={editAccess}
-            isIamAzureSvcAccount
+            isAzureSvcAccount
           />
         )}
         {response.status === 'success' && azureMetaData && (
@@ -230,7 +230,7 @@ const Users = (props) => {
               userDetails?.length > 0 && (
                 <UserPermissionsList
                   list={azureMetaData.users}
-                  isIamAzureSvcAccount
+                  isAzureSvcAccount
                   onEditClick={(key, value) => onEditClick(key, value)}
                   onDeleteClick={(key, value) => onDeleteClick(key, value)}
                   userDetails={userDetails}

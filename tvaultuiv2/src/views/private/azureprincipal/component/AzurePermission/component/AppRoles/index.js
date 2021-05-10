@@ -73,7 +73,7 @@ const AppRoles = (props) => {
 
   const constructPayload = (approlename, access) => {
     const data = {
-      access: checkAccess(access, 'iamsvcaccount'),
+      access: checkAccess(access, 'azuresvcaccount'),
       approlename,
       azureSvcAccName: azureMetaData.servicePrincipalName,
     };
@@ -209,7 +209,7 @@ const AppRoles = (props) => {
             roles={azureMetaData['app-roles']}
             handleSaveClick={(role, access) => onSubmit(role, access)}
             handleCancelClick={() => onCancelClicked()}
-            isIamAzureSvcAccount
+            isAzureSvcAccount
           />
         )}
         {response.status === 'edit' && (
@@ -219,7 +219,7 @@ const AppRoles = (props) => {
             access={editAccess}
             editClicked={editClicked}
             role={editRole}
-            isIamAzureSvcAccount
+            isAzureSvcAccount
           />
         )}
 
@@ -231,7 +231,7 @@ const AppRoles = (props) => {
                   list={azureMetaData['app-roles']}
                   onEditClick={(key, value) => onEditClick(key, value)}
                   onDeleteClick={(key, value) => onDeleteClick(key, value)}
-                  isIamAzureSvcAccount
+                  isAzureSvcAccount
                 />
               )}
             {(!azureMetaData['app-roles'] ||

@@ -47,7 +47,7 @@ public final class IAMServiceAccountConstants {
 	public static final String ADD_AWS_ROLE_MSG = "Add AWS Role to IAM Service Account";
 	public static final String REMOVE_AWS_ROLE_MSG = "Remove AWS Role from IAM Service Account";
 	
-	public static final String IAM_ROTATE_MSG_STRING = "rotate";
+	public static final String IAM_WRITE_PERMISSION_STRING = "write";
 	public static final String IAM_GROUP_MSG_STRING = "groups";
 	public static final String IAM_ACCESS_MSG_STRING = "access";
 	public static final String USERNAME_PARAM_STRING = "{\"username\":\"";

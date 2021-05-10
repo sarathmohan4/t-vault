@@ -117,7 +117,8 @@ const AddAppRole = (props) => {
     access,
     isSvcAccount,
     isCertificate,
-    isIamAzureSvcAccount,
+    isAzureSvcAccount,
+    isIamSvcAccount,
   } = props;
   const [radioValue, setRadioValue] = useState('read');
   const [selectedValue, setSelectedValue] = useState('');
@@ -191,8 +192,10 @@ const AddAppRole = (props) => {
   }, [selectedValue, roles, radioValue, menu, access, editClicked]);
 
   useEffect(() => {
-    if (isIamAzureSvcAccount) {
+    if (isAzureSvcAccount) {
       setRadioArray(['read', 'rotate', 'deny']);
+    } else if (isIamSvcAccount) {
+      setRadioArray(['read', 'write', 'deny']);
     } else if (isCertificate) {
       setRadioArray(['read', 'deny']);
     } else if (isSvcAccount) {
@@ -200,7 +203,7 @@ const AddAppRole = (props) => {
     } else {
       setRadioArray(['read', 'write', 'deny']);
     }
-  }, [isIamAzureSvcAccount, isSvcAccount, isCertificate]);
+  }, [isAzureSvcAccount, isIamSvcAccount, isSvcAccount, isCertificate]);
 
   return (
     <ComponentError>
@@ -275,7 +278,8 @@ AddAppRole.propTypes = {
   access: PropTypes.string,
   isSvcAccount: PropTypes.bool,
   isCertificate: PropTypes.bool,
-  isIamAzureSvcAccount: PropTypes.bool,
+  isAzureSvcAccount: PropTypes.bool,
+  isIamSvcAccount: PropTypes.bool,
   roles: PropTypes.objectOf(PropTypes.any),
 };
 
@@ -285,7 +289,8 @@ AddAppRole.defaultProps = {
   editClicked: false,
   isSvcAccount: false,
   isCertificate: false,
-  isIamAzureSvcAccount: false,
+  isAzureSvcAccount: false,
+  isIamSvcAccount: false,
   roles: {},
 };
 

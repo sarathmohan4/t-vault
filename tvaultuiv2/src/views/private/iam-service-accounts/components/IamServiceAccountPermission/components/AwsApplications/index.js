@@ -203,11 +203,7 @@ const AwsApplications = (props) => {
    * @param {value} value permission given to the aws configuration.
    */
   const onEditClick = (key, value) => {
-    if (value === 'write') {
-      setEditAccess('rotate');
-    } else {
-      setEditAccess(value);
-    }
+    setEditAccess(value);
     setEditAws(key);
     setResponse({ status: 'edit' });
   };
@@ -232,7 +228,7 @@ const AwsApplications = (props) => {
             handleSaveClick={(data, access) => onSubmit(data, access)}
             handleCancelClick={onCancelClicked}
             handleModalClose={() => onCancelClicked()}
-            isIamAzureSvcAccount
+            isIamSvcAccount
           />
         )}
         {response.status === 'edit' && (
@@ -243,7 +239,7 @@ const AwsApplications = (props) => {
             handleCancelClick={onCancelClicked}
             awsName={editAws}
             access={editAccess}
-            isIamAzureSvcAccount
+            isIamSvcAccount
           />
         )}
         {accountMetaData &&
@@ -257,7 +253,7 @@ const AwsApplications = (props) => {
                     list={accountMetaData.response['aws-roles']}
                     onEditClick={(key, value) => onEditClick(key, value)}
                     onDeleteClick={(key, value) => onDeleteClick(key, value)}
-                    isIamAzureSvcAccount
+                    isIamSvcAccount
                   />
                 )}
               {(!accountMetaData.response['aws-roles'] ||

@@ -72,7 +72,7 @@ const AwsApplications = (props) => {
 
   const constructPayload = (rolename, access) => {
     const data = {
-      access: checkAccess(access, 'iamsvcaccount'),
+      access: checkAccess(access, 'azuresvcaccount'),
       azureSvcAccName: azureMetaData.servicePrincipalName,
       rolename,
     };
@@ -229,7 +229,7 @@ const AwsApplications = (props) => {
             handleSaveClick={(data, access) => onSubmit(data, access)}
             handleCancelClick={onCancelClicked}
             handleModalClose={() => onCancelClicked()}
-            isIamAzureSvcAccount
+            isAzureSvcAccount
           />
         )}
         {response.status === 'edit' && (
@@ -240,7 +240,7 @@ const AwsApplications = (props) => {
             handleCancelClick={onCancelClicked}
             awsName={editAws}
             access={editAccess}
-            isIamAzureSvcAccount
+            isAzureSvcAccount
           />
         )}
         {azureMetaData && response.status === 'success' && (
@@ -251,7 +251,7 @@ const AwsApplications = (props) => {
                   list={azureMetaData['aws-roles']}
                   onEditClick={(key, value) => onEditClick(key, value)}
                   onDeleteClick={(key, value) => onDeleteClick(key, value)}
-                  isIamAzureSvcAccount
+                  isAzureSvcAccount
                 />
               )}
             {(!azureMetaData['aws-roles'] ||
