@@ -287,7 +287,7 @@ public class  IAMServiceAccountsService {
 							.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 					return ResponseEntity.status(HttpStatus.OK).body(
 							"{\"messages\":[\"Successfully completed onboarding of IAM service account. But failed " +
-									"to add rotate permission to "+iamServiceAccount.getAdSelfSupportGroup()+"\"]}");
+									"to add write permission to "+iamServiceAccount.getAdSelfSupportGroup()+"\"]}");
 				}
 				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
