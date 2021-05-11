@@ -484,7 +484,7 @@ public class IAMServiceAccountServiceTest {
 		when(ControllerUtil.updateMetadata(any(), any())).thenReturn(responseNoContent);
 
 		// System under test
-		String expectedResponse = "{\"messages\":[\"Successfully completed onboarding of IAM service account. But failed to add rotate permission to group1\"]}";
+		String expectedResponse = "{\"messages\":[\"Successfully completed onboarding of IAM service account. But failed to add write permission to group1\"]}";
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(expectedResponse);
 
 		when(reqProcessor.process(eq("/sdb"), Mockito.any(), eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true,
