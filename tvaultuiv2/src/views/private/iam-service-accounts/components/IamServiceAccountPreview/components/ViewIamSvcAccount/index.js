@@ -180,19 +180,18 @@ const ViewIamSvcAccountDetails = (props) => {
 
                 <InfoLine>
                   <Span>
-                    <strong>Step 2: Service Account Activation: </strong>
+                    <strong>Step 2: Service Account AccessKey Creation: </strong>
                   </Span>
-                  The IAM service account owner will Activate (rotate) the
-                  account password once after on-boarding the account into
-                  T-Vault. This process ensures that the secrets in T-Vault and
-                  IAM portal are in sync.
+                  The IAM service account owner and users/groups with write
+                  permission can create AccessKeys once after on-boarding
+                  account into T-Vault. Maximum of 2 Access keys can be created
+                  for an IAM Service Account.
                 </InfoLine>
                 <InfoLine>
                   <Span>
                     <strong>Step 3: Granting Permissions: </strong>
                   </Span>
-                  When an IAM service account is activated in T-Vault, the
-                  account owner can grant specific permissions to other users
+                  The account owner can grant specific permissions to other users
                   and groups allowing others to read and/or rotate the secrets
                   for the IAM service account as well through T-Vault.
                 </InfoLine>
