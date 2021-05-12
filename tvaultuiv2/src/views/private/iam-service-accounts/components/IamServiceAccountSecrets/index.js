@@ -585,7 +585,7 @@ const IamServiceAccountSecrets = (props) => {
         {response.status !== 'loading' && (
           <>
             {accountDetail?.name && (Object.keys(accountSecretData)?.length == 0 ||
-              accountSecretData?.folders?.length <= 1) && (!disabledPermission || accountDetail.permission === 'write')&& (
+              accountSecretData?.folders?.length <= 1) && (accountDetail.permission === 'write')&& (
               <UserList>
                 <NamedButton
                   label="Create Access Key"
@@ -761,7 +761,7 @@ const IamServiceAccountSecrets = (props) => {
             description={
               accountSecretError || response.message || 'Something went wrong!'
             }
-            actionButton={!disabledPermission && (
+            actionButton={accountDetail.permission === 'write' && (
               <ButtonComponent
                 label="Create"
                 icon="add"
