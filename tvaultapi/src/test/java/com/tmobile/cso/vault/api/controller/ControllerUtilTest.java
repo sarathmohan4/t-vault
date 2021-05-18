@@ -688,8 +688,8 @@ public class ControllerUtilTest {
     @Test
     public void test_convertAppRoleInputsToLowerCase() throws IOException {
         String [] policies = {"default"};
-        AppRole appRole = new AppRole("approle1", policies, true, 1, 100, 0);
-        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_num_uses\":0,\"token_ttl\":null,\"token_max_ttl\":null}";
+        AppRole appRole = new AppRole("approle1", policies, true, 1, 100);
+        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_ttl\":null,\"token_max_ttl\":null}";
         when(JSONUtil.getObj(jsonStr, AppRole.class)).thenReturn(appRole);
         when(JSONUtil.getJSON(appRole)).thenReturn(jsonStr);
         String json = ControllerUtil.convertAppRoleInputsToLowerCase(jsonStr);
@@ -725,7 +725,7 @@ public class ControllerUtilTest {
     public void test_areAppRoleInputsValid()  {
         String [] policies = {"default"};
         ReflectionTestUtils.setField(ControllerUtil.class, "approleAllowedCharacters", "[a-z0-9_-]+");
-        AppRole appRole = new AppRole("role1", policies, true, 1, 100, 0);
+        AppRole appRole = new AppRole("role1", policies, true, 1, 100);
         boolean valid = ControllerUtil.areAppRoleInputsValid(appRole);
         assertTrue(valid);
     }
@@ -734,7 +734,7 @@ public class ControllerUtilTest {
     public void test_areAppRoleInputsValid_invalid()  {
         String [] policies = {"default"};
         ReflectionTestUtils.setField(ControllerUtil.class, "approleAllowedCharacters", "[a-z0-9_-]+");
-        AppRole appRole = new AppRole("", policies, true, 1, 100, 0);
+        AppRole appRole = new AppRole("", policies, true, 1, 100);
         boolean valid = ControllerUtil.areAppRoleInputsValid(appRole);
         assertFalse(valid);
     }
@@ -742,8 +742,8 @@ public class ControllerUtilTest {
     @Test
     public void test_getAppRoleObjFromString() throws IOException {
         String [] policies = {"default"};
-        String jsonStr = "{\"role_name\":\"role1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_num_uses\":0,\"token_ttl\":null,\"token_max_ttl\":null}";
-        AppRole appRole = new AppRole("role1", policies, true, 1, 100, 0);
+        String jsonStr = "{\"role_name\":\"role1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_ttl\":null,\"token_max_ttl\":null}";
+        AppRole appRole = new AppRole("role1", policies, true, 1, 100);
         when(JSONUtil.getObj(jsonStr, AppRole.class)).thenReturn(appRole);
         AppRole appRoleActual = ControllerUtil.getAppRoleObjFromString(jsonStr);
         assertEquals(appRole, appRoleActual);
@@ -752,7 +752,7 @@ public class ControllerUtilTest {
     @Test
     public void test_getAppRoleObjFromString_failure() throws IOException {
         String [] policies = {"default"};
-        String jsonStr = "{\"role_names\":\"role1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_num_uses\":0,\"token_ttl\":null,\"token_max_ttl\":null}";
+        String jsonStr = "{\"role_names\":\"role1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_ttl\":null,\"token_max_ttl\":null}";
         when(JSONUtil.getObj(jsonStr, AppRole.class)).thenThrow(Exception.class);
         AppRole appRoleActual = ControllerUtil.getAppRoleObjFromString(jsonStr);
         assertEquals(null, appRoleActual);

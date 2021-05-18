@@ -559,7 +559,6 @@ public class  AppRoleService {
 						((Boolean)appRoleMap.get("bind_secret_id")).booleanValue(),
 						((Integer) appRoleMap.get("secret_id_num_uses")),
 						((Integer) appRoleMap.get("secret_id_ttl")),
-						(Integer)appRoleMap.get("token_num_uses"),
 						(Integer)appRoleMap.get("token_ttl"),
 						(Integer)appRoleMap.get("token_max_ttl")
 						);

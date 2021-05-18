@@ -86,7 +86,6 @@
       		{"name":"bound_cidr_list"},
       		{"name":"secret_id_num_uses"},
       		{"name":"secret_id_ttl"},
-      		{"name":"token_num_uses"},
       		{"name":"token_ttl"},
       		{"name":"token_max_ttl"}
         ]

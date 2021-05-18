@@ -151,8 +151,8 @@ public class AppRoleServiceTest {
         Response responseList = getMockResponse(HttpStatus.OK, true, "{\"keys\": [ \"role1\" ]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String [] policies = {"default"};
-        AppRole appRole = new AppRole("approle1", policies, true, 1, 100, 0);
-        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_num_uses\":0,\"token_ttl\":null,\"token_max_ttl\":null}";
+        AppRole appRole = new AppRole("approle1", policies, true, 1, 100);
+        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_ttl\":null,\"token_max_ttl\":null}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AppRole created successfully\"]}");
 
         Map<String,Object> appRolesList = new HashMap<>();
@@ -183,8 +183,8 @@ public class AppRoleServiceTest {
 
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String [] policies = {"default"};
-        AppRole appRole = new AppRole("selfservicesupportrole", policies, true, 1, 100, 0);
-        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_num_uses\":0,\"token_ttl\":null,\"token_max_ttl\":null}";
+        AppRole appRole = new AppRole("selfservicesupportrole", policies, true, 1, 100);
+        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_ttl\":null,\"token_max_ttl\":null}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: no permission to create an approle named "+appRole.getRole_name()+"\"]}");
         UserDetails userDetails = getMockUser(true);
         when(ControllerUtil.areAppRoleInputsValid(appRole)).thenReturn(true);
@@ -204,8 +204,8 @@ public class AppRoleServiceTest {
         when(ControllerUtil.hideSelfSupportAdminAppRoleFromResponse(Mockito.any(),Mockito.any(),Mockito.any())).thenReturn(responseAfterHide);
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String [] policies = {"default"};
-        AppRole appRole = new AppRole("approle1", policies, true, 1, 100, 0);
-        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_num_uses\":0,\"token_ttl\":null,\"token_max_ttl\":null}";
+        AppRole appRole = new AppRole("approle1", policies, true, 1, 100);
+        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_ttl\":null,\"token_max_ttl\":null}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"AppRole creation failed.\"]}");
 
         Map<String,Object> appRolesList = new HashMap<>();
@@ -239,8 +239,8 @@ public class AppRoleServiceTest {
         when(ControllerUtil.hideSelfSupportAdminAppRoleFromResponse(Mockito.any(),Mockito.any(),Mockito.any())).thenReturn(responseAfterHide);
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String [] policies = {"default"};
-        AppRole appRole = new AppRole("approle1", policies, true, 1, 100, 0);
-        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_num_uses\":0,\"token_ttl\":null,\"token_max_ttl\":null}";
+        AppRole appRole = new AppRole("approle1", policies, true, 1, 100);
+        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_ttl\":null,\"token_max_ttl\":null}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"AppRole creation failed.\"]}");
 
         Map<String,Object> appRolesList = new HashMap<>();
@@ -269,8 +269,8 @@ public class AppRoleServiceTest {
         Response responseList = getMockResponse(HttpStatus.OK, true, "{\"keys\": [ \"approle1\" ]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String [] policies = {"default"};
-        AppRole appRole = new AppRole("approle1", policies, true, 1, 100, 0);
-        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_num_uses\":0,\"token_ttl\":null,\"token_max_ttl\":null}";
+        AppRole appRole = new AppRole("approle1", policies, true, 1, 100);
+        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_ttl\":null,\"token_max_ttl\":null}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"AppRole already exists and can't be created\"]}");
 
         Map<String,Object> appRolesList = new HashMap<>();
@@ -299,8 +299,8 @@ public class AppRoleServiceTest {
         Response response =getMockResponse(HttpStatus.BAD_REQUEST, true, "");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String [] policies = {"default"};
-        AppRole appRole = new AppRole("", policies, true, 1, 100, 0);
-        String jsonStr = "{\"role_name\":\"\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_num_uses\":0,\"token_ttl\":null,\"token_max_ttl\":null}";
+        AppRole appRole = new AppRole("", policies, true, 1, 100);
+        String jsonStr = "{\"role_name\":\"\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_ttl\":null,\"token_max_ttl\":null}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid input values for AppRole creation\"]}");
         
         when(reqProcessor.process("/auth/approle/role/create", jsonStr,token)).thenReturn(response);
@@ -325,8 +325,8 @@ public class AppRoleServiceTest {
 
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         String [] policies = {"default"};
-        AppRole appRole = new AppRole("", policies, true, 1, 100, 0);
-        String jsonStr = "{\"role_name\":\"\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_num_uses\":0,\"token_ttl\":null,\"token_max_ttl\":null}";
+        AppRole appRole = new AppRole("", policies, true, 1, 100);
+        String jsonStr = "{\"role_name\":\"\",\"policies\":[\"default\"],\"bind_secret_id\":true,\"secret_id_num_uses\":\"1\",\"secret_id_ttl\":\"100m\",\"token_ttl\":null,\"token_max_ttl\":null}";
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
         
         when(reqProcessor.process("/auth/approle/role/create", jsonStr,token)).thenReturn(response);
@@ -497,7 +497,7 @@ public class AppRoleServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"AppRole deleted\"]}");
         AppRole appRole = new AppRole();
         appRole.setRole_name(appRoleId);
-        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":null,\"bind_secret_id\":false,\"secret_id_num_uses\":null,\"secret_id_ttl\":null,\"token_num_uses\":null,\"token_ttl\":null,\"token_max_ttl\":null}";
+        String jsonStr = "{\"role_name\":\"approle1\",\"policies\":null,\"bind_secret_id\":false,\"secret_id_num_uses\":null,\"secret_id_ttl\":null,\"token_ttl\":null,\"token_max_ttl\":null}";
 
         when(JSONUtil.getJSON(appRole)).thenReturn(jsonStr);
         when(reqProcessor.process("/auth/approle/role/delete",jsonStr,token)).thenReturn(response);
@@ -1359,7 +1359,7 @@ public class AppRoleServiceTest {
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
         
-        AppRole appRoleExpected = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRoleExpected = new AppRole(role_name, policies, true, 0, 0);
         
         String responseJson = new ObjectMapper().writeValueAsString(appRoleExpected);
         Response response = getMockResponse(HttpStatus.OK, true, responseJson);
@@ -1371,7 +1371,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         
@@ -1392,7 +1391,7 @@ public class AppRoleServiceTest {
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
         
-        AppRole appRoleExpected = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRoleExpected = new AppRole(role_name, policies, true, 0, 0);
         
         String responseJson = new ObjectMapper().writeValueAsString(appRoleExpected);
         Response response = getMockResponse(HttpStatus.NOT_FOUND, true, responseJson);
@@ -1404,7 +1403,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         
@@ -1520,7 +1518,7 @@ public class AppRoleServiceTest {
         ArrayList<String> policiesList = new ArrayList<String>();
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
-        AppRole appRole = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRole = new AppRole(role_name, policies, true, 0, 0);
         String appRoleResponseJson = new ObjectMapper().writeValueAsString(appRole);
         Response appRoleResponse = getMockResponse(HttpStatus.OK, true, appRoleResponseJson);
         Map<String, Object> appRoleResponseMap = new HashMap<>();
@@ -1530,7 +1528,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         when(reqProcessor.process("/auth/approle/role/read", "{\"role_name\":\""+role_name+"\"}",userDetails.getSelfSupportToken())).thenReturn(appRoleResponse);
@@ -1575,7 +1572,7 @@ public class AppRoleServiceTest {
         ArrayList<String> policiesList = new ArrayList<String>();
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
-        AppRole appRole = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRole = new AppRole(role_name, policies, true, 0, 0);
         String appRoleResponseJson = new ObjectMapper().writeValueAsString(appRole);
         Response appRoleResponse = getMockResponse(HttpStatus.OK, true, appRoleResponseJson);
         Map<String, Object> appRoleResponseMap = new HashMap<>();
@@ -1585,7 +1582,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         when(reqProcessor.process("/auth/approle/role/read", "{\"role_name\":\""+role_name+"\"}",userDetails.getSelfSupportToken())).thenReturn(appRoleResponse);
@@ -1649,7 +1645,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         when(reqProcessor.process("/auth/approle/role/read", "{\"role_name\":\""+role_name+"\"}",userDetails.getSelfSupportToken())).thenReturn(appRoleResponse);
@@ -1706,7 +1701,7 @@ public class AppRoleServiceTest {
         ArrayList<String> policiesList = new ArrayList<String>();
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
-        AppRole appRole = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRole = new AppRole(role_name, policies, true, 0, 0);
         String appRoleResponseJson = new ObjectMapper().writeValueAsString(appRole);
         Response appRoleResponse = getMockResponse(HttpStatus.OK, true, appRoleResponseJson);
         Map<String, Object> appRoleResponseMap = new HashMap<>();
@@ -1716,7 +1711,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         when(reqProcessor.process("/auth/approle/role/read", "{\"role_name\":\""+role_name+"\"}",userDetails.getSelfSupportToken())).thenReturn(appRoleResponse);
@@ -1763,7 +1757,7 @@ public class AppRoleServiceTest {
         ArrayList<String> policiesList = new ArrayList<String>();
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
-        AppRole appRole = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRole = new AppRole(role_name, policies, true, 0, 0);
         String appRoleResponseJson = new ObjectMapper().writeValueAsString(appRole);
         Response appRoleResponse = getMockResponse(HttpStatus.OK, true, appRoleResponseJson);
         Map<String, Object> appRoleResponseMap = new HashMap<>();
@@ -1773,7 +1767,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         when(reqProcessor.process("/auth/approle/role/read", "{\"role_name\":\""+role_name+"\"}",userDetails.getSelfSupportToken())).thenReturn(appRoleResponse);
@@ -1935,7 +1928,7 @@ public class AppRoleServiceTest {
         ArrayList<String> policiesList = new ArrayList<String>();
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
-        AppRole appRole = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRole = new AppRole(role_name, policies, true, 0, 0);
         
         String appRoleResponseJson = new ObjectMapper().writeValueAsString(appRole);
         Response appRoleResponse = getMockResponse(HttpStatus.OK, true, appRoleResponseJson);
@@ -1947,7 +1940,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         
@@ -2032,7 +2024,7 @@ public class AppRoleServiceTest {
         ArrayList<String> policiesList = new ArrayList<String>();
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
-        AppRole appRole = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRole = new AppRole(role_name, policies, true, 0, 0);
         
         String appRoleResponseJson = new ObjectMapper().writeValueAsString(appRole);
         Response appRoleResponse = getMockResponse(HttpStatus.OK, true, appRoleResponseJson);
@@ -2044,7 +2036,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         
@@ -2129,7 +2120,7 @@ public class AppRoleServiceTest {
         ArrayList<String> policiesList = new ArrayList<String>();
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
-        AppRole appRole = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRole = new AppRole(role_name, policies, true, 0, 0);
         
         String appRoleResponseJson = new ObjectMapper().writeValueAsString(appRole);
         Response appRoleResponse = getMockResponse(HttpStatus.OK, true, appRoleResponseJson);
@@ -2141,7 +2132,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         
@@ -2222,7 +2212,7 @@ public class AppRoleServiceTest {
         ArrayList<String> policiesList = new ArrayList<String>();
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
-        AppRole appRole = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRole = new AppRole(role_name, policies, true, 0, 0);
         String appRoleResponseJson = new ObjectMapper().writeValueAsString(appRole);
         Response appRoleResponse = getMockResponse(HttpStatus.OK, true, appRoleResponseJson);
         Map<String, Object> appRoleResponseMap = new HashMap<>();
@@ -2232,7 +2222,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         when(reqProcessor.process("/auth/approle/role/read", "{\"role_name\":\""+role_name+"\"}",userDetails.getSelfSupportToken())).thenReturn(appRoleResponse);
@@ -2276,7 +2265,7 @@ public class AppRoleServiceTest {
         ArrayList<String> policiesList = new ArrayList<String>();
         policiesList.add("r_shared_safe01");
         String[] policies = policiesList.toArray(new String[policiesList.size()]);
-        AppRole appRole = new AppRole(role_name, policies, true, 0, 0, 0);
+        AppRole appRole = new AppRole(role_name, policies, true, 0, 0);
         String appRoleResponseJson = new ObjectMapper().writeValueAsString(appRole);
         Response appRoleResponse = getMockResponse(HttpStatus.OK, true, appRoleResponseJson);
         Map<String, Object> appRoleResponseMap = new HashMap<>();
@@ -2286,7 +2275,6 @@ public class AppRoleServiceTest {
         dataMap.put("bind_secret_id",new Boolean(true));
         dataMap.put("secret_id_num_uses", new Integer(0));
         dataMap.put("secret_id_ttl", new Integer(0));
-        dataMap.put("token_num_uses", new Integer(0));
         dataMap.put("token_ttl", new Integer(0));
         dataMap.put("token_max_ttl", new Integer(0));
         when(reqProcessor.process("/auth/approle/role/read", "{\"role_name\":\""+role_name+"\"}",userDetails.getSelfSupportToken())).thenReturn(appRoleResponse);
@@ -2334,7 +2322,7 @@ public class AppRoleServiceTest {
 		ArrayList<String> policiesList = new ArrayList<String>();
 		policiesList.add("r_shared_safe01");
 		String[] policies = policiesList.toArray(new String[policiesList.size()]);
-		AppRole appRole = new AppRole(rolename, policies, true, 0, 0, 0);
+		AppRole appRole = new AppRole(rolename, policies, true, 0, 0);
 		UserDetails userDetails = getMockUser("testuser1", false);
 		ResponseEntity<String> responseEntityActual = appRoleService.updateAppRole(token, appRole, userDetails);
 		assertNotNull(responseEntityActual);
@@ -2345,10 +2333,10 @@ public class AppRoleServiceTest {
 	public void test_updateAppRole_failure2() throws Exception {
 		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
 		String rolename = "rolename";
-		ArrayList<String> policiesList = new ArrayList<String>();
+		ArrayList<String> policiesList = new ArrayList<>();
 		policiesList.add("r_shared_safe01");
 		String[] policies = policiesList.toArray(new String[policiesList.size()]);
-		AppRole appRole = new AppRole(rolename, policies, true, 0, 0, 0);
+		AppRole appRole = new AppRole(rolename, policies, true, 0, 0);
 		UserDetails userDetails = getMockUser("testuser1", false);
 		Response response3 = new Response();
 		response3.setHttpstatus(HttpStatus.OK);

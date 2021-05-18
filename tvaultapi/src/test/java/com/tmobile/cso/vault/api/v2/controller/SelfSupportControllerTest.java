@@ -462,7 +462,7 @@ public class SelfSupportControllerTest {
         UserDetails userDetails = getMockUser(false);
         when(selfSupportService.createAppRole( Mockito.any(AppRole.class), eq(userDetails))).thenReturn(responseEntityExpected);
         String [] policies = {"default"};
-        AppRole appRole = new AppRole("approle1", policies, true, 1, 100, 0);
+        AppRole appRole = new AppRole("approle1", policies, true, 1, 100);
         String inputJson =new ObjectMapper().writeValueAsString(appRole);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/v2/ss/auth/approle/role").requestAttr("UserDetails", userDetails)
@@ -695,7 +695,7 @@ public class SelfSupportControllerTest {
     public void testUpdateAppRoleSuccess() throws Exception {
 
         String[] policies = {"default"};
-        AppRole appRole = new AppRole("approle1", policies, true, 1, 100, 0,0,0);
+        AppRole appRole = new AppRole("approle1", policies, true, 1, 100, 0,0);
 
         String inputJson =new ObjectMapper().writeValueAsString(appRole);
         String responseMessage = "{\"messages\":[\"AppRole updated successfully \"]}";

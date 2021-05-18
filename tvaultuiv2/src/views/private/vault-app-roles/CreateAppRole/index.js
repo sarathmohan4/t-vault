@@ -181,7 +181,6 @@ const CreateAppRole = (props) => {
     maxTokenTtl: '',
     tokenTtl: '',
     sectetIdNumUses: '',
-    tokenNumUses: '',
     secretIdTtl: '',
     tokenPolicies: '',
   };
@@ -212,7 +211,6 @@ const CreateAppRole = (props) => {
     maxTokenTtl,
     tokenTtl,
     sectetIdNumUses,
-    tokenNumUses,
     secretIdTtl,
     tokenPolicies,
   } = state;
@@ -319,7 +317,6 @@ const CreateAppRole = (props) => {
                 maxTokenTtl: res.data.data.token_max_ttl,
                 tokenTtl: res.data.data.token_ttl,
                 sectetIdNumUses: res.data.data.secret_id_num_uses,
-                tokenNumUses: res.data.data.token_num_uses,
                 secretIdTtl: res.data.data.secret_id_ttl,
                 tokenPolicies: array.join(','),
               },
@@ -341,7 +338,6 @@ const CreateAppRole = (props) => {
       secret_id_num_uses: sectetIdNumUses,
       secret_id_ttl: secretIdTtl,
       token_max_ttl: maxTokenTtl,
-      token_num_uses: tokenNumUses,
       token_ttl: tokenTtl,
     };
 
@@ -421,7 +417,6 @@ const CreateAppRole = (props) => {
       maxTokenTtl === '' ||
       tokenTtl === '' ||
       sectetIdNumUses === '' ||
-      tokenNumUses === '' ||
       secretIdTtl === '' ||
       appRoleError?.error
     );
@@ -558,30 +553,6 @@ const CreateAppRole = (props) => {
                     placeholder="secret_Id_Num_Uses"
                     fullWidth
                     name="sectetIdNumUses"
-                    onChange={(e) => onInputNumberChange(e)}
-                  />
-                </InputFieldLabelWrapper>
-              </Tooltip>
-              <Tooltip
-                classes={tooltipClasses}
-                arrow
-                title="Number of times the issued token can be used"
-                placement="top"
-              >
-                <InputFieldLabelWrapper>
-                  <InputLabelWrap>
-                    <InputLabelWithInfo>
-                      Token Number Uses
-                      <RequiredCircle margin="0.5rem" />
-                    </InputLabelWithInfo>
-
-                    <InfoIcon src={infoIcon} alt="info-icon-token-uses" />
-                  </InputLabelWrap>
-                  <TextFieldComponent
-                    value={tokenNumUses}
-                    placeholder="token_num_uses"
-                    fullWidth
-                    name="tokenNumUses"
                     onChange={(e) => onInputNumberChange(e)}
                   />
                 </InputFieldLabelWrapper>
