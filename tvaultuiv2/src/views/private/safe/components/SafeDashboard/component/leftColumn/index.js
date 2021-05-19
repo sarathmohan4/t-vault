@@ -101,6 +101,7 @@ const LeftColumn = (props) => {
                 icon={safeIcon}
                 manage={safe.manage}
                 listIconStyles={listIconStyles}
+                showToolTip
               />
               <BorderLine />
               {(safe.manage ||
