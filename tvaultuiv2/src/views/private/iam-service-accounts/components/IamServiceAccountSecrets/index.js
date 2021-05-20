@@ -584,7 +584,7 @@ const IamServiceAccountSecrets = (props) => {
         )}
         {response.status !== 'loading' && (
           <>
-            {accountDetail?.name && (Object.keys(accountSecretData)?.length == 0 ||
+            {accountDetail?.name && (Object.keys(accountSecretData)?.length === 0 ||
               accountSecretData?.folders?.length <= 1) && (accountDetail.permission === 'write')&& (
               <UserList>
                 <NamedButton
