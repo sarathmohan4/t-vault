@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import ReportProblemOutlinedIcon from '@material-ui/icons/ReportProblemOutlined';
 import PropTypes from 'prop-types';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -36,8 +35,6 @@ import BackdropLoader from '../../../../../components/Loaders/BackdropLoader';
 import NamedButton from '../../../../../components/NamedButton';
 import addFolderPlus from '../../../../../assets/folder-plus.svg';
 import {
-  IconEdit,
-  IconRelease,
   IconDeleteActive,
 } from '../../../../../assets/SvgIcons';
 
@@ -110,18 +107,6 @@ const FolderIcon = styled('img')`
   margin-left: 0.8rem;
 `;
 
-const Secret = styled.div`
-  -webkit-text-security: ${(props) => (props.viewSecret ? 'none' : 'disc')};
-  text-security: ${(props) => (props.viewSecret ? 'none' : 'disc')};
-  font-size: 1.2rem;
-  color: #5a637a;
-  word-break: break-all;
-  margin: 0 2rem;
-  ${mediaBreakpoints.semiMedium} {
-    margin: 1rem;
-  }
-`;
-
 const SecretInputfield = styled.input`
   padding: 0;
   outline: none;
@@ -163,15 +148,6 @@ const FolderIconWrap = styled('div')`
         props.theme.customColor.hoverColor.list || '#151820'};
       border-radius: 50%;
     }
-  }
-`;
-
-const LabelWrap = styled.div`
-  display: flex;
-  align-items: center;
-  padding-left: 2rem;
-  span {
-    margin-left: 1rem;
   }
 `;
 
@@ -235,14 +211,11 @@ const customBtnStyles = css`
 const IamServiceAccountSecrets = (props) => {
   const {
     accountDetail,
-    disabledPermission,
     accountSecretError,
     accountSecretData,
     value,
     getSecrets,
-    isIamSvcAccountActive,
     secretResponse,
-    refresh,
   } = props;
   const [response, setResponse] = useState({ status: 'loading' });
   const [secretsData, setSecretsData] = useState({});
