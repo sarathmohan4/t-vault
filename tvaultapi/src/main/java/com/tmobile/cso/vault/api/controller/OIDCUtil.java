@@ -513,7 +513,8 @@ public class OIDCUtil {
 			// Get correct case email from AAD
 			AADUserObject aadUserObject = getAzureUserObject(aliasName);
 			if (aadUserObject != null && StringUtils.isNotEmpty(aadUserObject.getEmail())) {
-				oidcLookupEntityRequest.setAlias_name(aadUserObject.getEmail());
+				aliasName = aadUserObject.getEmail();
+				oidcLookupEntityRequest.setAlias_name(aliasName);
 			}
 
             // Get polices from user entity. This will have only user policies.
