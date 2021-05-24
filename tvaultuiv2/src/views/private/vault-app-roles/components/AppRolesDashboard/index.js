@@ -408,6 +408,7 @@ const AppRolesDashboard = () => {
           icon={appRoleIcon}
           showActions={false}
           listIconStyles={listIconStyles}
+          showToolTip
         />
         <BorderLine />
         {appRole.name && !isMobileScreen ? (
