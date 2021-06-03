@@ -231,7 +231,9 @@ const AddGroup = (props) => {
     <ComponentError>
       <PermissionWrapper>
         <HeaderWrapper>
-          <Typography variant="h5">Add Group</Typography>
+          <Typography variant="h5">
+            {groupname && access ? 'Edit Group' : 'Add Group'}
+          </Typography>
           <div>
             <RequiredCircle />
             <RequiredText>Required</RequiredText>
@@ -307,7 +309,7 @@ const AddGroup = (props) => {
               />
             </CancelButton>
             <ButtonComponent
-              label={groupname && access ? 'Edit' : 'Save'}
+              label={groupname && access ? 'Update' : 'Save'}
               color="secondary"
               onClick={() => handleSaveClick(searchValue, radioValue)}
               disabled={disabledSave}

@@ -210,7 +210,9 @@ const AddAppRole = (props) => {
       <PermissionWrapper>
         {loader && <LoaderSpinner customStyle={customStyle} />}
         <HeaderWrapper>
-          <Typography variant="h5">Add App Role</Typography>
+          <Typography variant="h5">
+            {editClicked ? 'Edit App Role' : 'Add App Role'}
+          </Typography>
           <RequiredWrap>
             <RequiredCircle />
             <RequiredText>Required</RequiredText>
@@ -257,7 +259,7 @@ const AddAppRole = (props) => {
               />
             </CancelButton>
             <ButtonComponent
-              label={editClicked ? 'Edit' : 'Save'}
+              label={editClicked ? 'Update' : 'Save'}
               color="secondary"
               onClick={() => handleSaveClick(selectedValue, radioValue)}
               disabled={disabledSave}
