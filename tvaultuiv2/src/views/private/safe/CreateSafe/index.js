@@ -823,7 +823,7 @@ const CreateModal = (props) => {
                         </CancelButton>
                       )}
                       <ButtonComponent
-                        label={!editSafe ? 'Create' : 'Edit'}
+                        label={!editSafe ? 'Create' : 'Update'}
                         color="secondary"
                         icon={!editSafe ? 'add' : ''}
                         disabled={disabledSave}

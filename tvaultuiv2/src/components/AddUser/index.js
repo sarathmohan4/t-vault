@@ -265,7 +265,9 @@ const AddUser = (props) => {
     <ComponentError>
       <PermissionWrapper>
         <HeaderWrapper>
-          <Typography variant="h5">Add User</Typography>
+          <Typography variant="h5">
+            {username && access ? 'Edit User' : 'Add User'}
+          </Typography>
           <div>
             <RequiredCircle />
             <RequiredText>Required</RequiredText>
@@ -359,7 +361,7 @@ const AddUser = (props) => {
               />
             </CancelButton>
             <ButtonComponent
-              label={username && access ? 'Edit' : 'Save'}
+              label={username && access ? 'Update' : 'Save'}
               color="secondary"
               onClick={() => onSaveClick(searchValue, radioValue)}
               disabled={disabledSave}
