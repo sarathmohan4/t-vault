@@ -3294,7 +3294,7 @@ public class  IAMServiceAccountsService {
 		String iamSvcName = iamServiceAccountRotateRequest.getUserName().toLowerCase();
 		String uniqueIAMSvcaccName = awsAccountId + "_" + iamSvcName;
 
-		if (!hasResetPermissionForIAMServiceAccount(token, uniqueIAMSvcaccName)) {
+		if (!hasResetPermissionForIAMServiceAccount(token, uniqueIAMSvcaccName) && !(isAuthorizedForIAMOnboardAndOffboard(token))) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 					put(LogMessage.ACTION, IAMServiceAccountConstants.ROTATE_IAM_SVCACC_TITLE).
