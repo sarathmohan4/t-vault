@@ -2866,7 +2866,7 @@ public class ServiceAccountsServiceTest {
     }
 
     @Test
-    public void test_AssociateAppRole_failure_400_masterApprole() throws Exception {
+    public void test_AssociateAppRole_failure_400_SelfSupportAdminApprole() throws Exception {
 
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: no permission to associate this AppRole to any Service Account\"]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";

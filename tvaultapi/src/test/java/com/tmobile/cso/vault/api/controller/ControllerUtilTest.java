@@ -1206,22 +1206,22 @@ public class ControllerUtilTest {
     }  
     
     @Test
-    public void test_hideMasterAppRoleFromResponse_successfully() {
+    public void test_hideSelfSupportAdminAppRoleFromResponse_successfully() {
     	 
-    	Response response =  getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"demo\",\"iamportal_master_approle\",\"selfservicesupportrole\",\"vault-power-user-role\",\"vault2\",\"vaulttest\",\"vaulttest1\"]}");
+    	Response response =  getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"demo\",\"iamportal_admin_approle\",\"selfservicesupportrole\",\"vault-power-user-role\",\"vault2\",\"vaulttest\",\"vaulttest1\"]}");
     	Response responseExpected =  getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"demo\",\"vault-power-user-role\",\"vault2\",\"vaulttest\",\"vaulttest1\"]}");
     	List<String> policyLists = new ArrayList<>();
-    	Response actualResponse = ControllerUtil.hideMasterAppRoleFromResponse(response, null,null);
+    	Response actualResponse = ControllerUtil.hideSelfSupportAdminAppRoleFromResponse(response, null,null);
         assertEquals(HttpStatus.OK, actualResponse.getHttpstatus());
         }
     
     @Test
-    public void test_hideMasterAppRoleFromResponseOffset_successfully() {
+    public void test_hideSelfSupportAdminAppRoleFromResponseOffset_successfully() {
     	 
-    	Response response =  getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"demo\",\"iamportal_master_approle\",\"selfservicesupportrole\",\"vault-power-user-role\",\"vault2\",\"vaulttest\",\"vaulttest1\"]}");
+    	Response response =  getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"demo\",\"iamportal_admin_approle\",\"selfservicesupportrole\",\"vault-power-user-role\",\"vault2\",\"vaulttest\",\"vaulttest1\"]}");
     	Response responseExpected =  getMockResponse(HttpStatus.OK, true, "{\"keys\":[\"demo\",\"vault-power-user-role\",\"vault2\",\"vaulttest\",\"vaulttest1\"]}");
     	List<String> policyLists = new ArrayList<>();
-    	Response actualResponse = ControllerUtil.hideMasterAppRoleFromResponse(response, 25, 1);
+    	Response actualResponse = ControllerUtil.hideSelfSupportAdminAppRoleFromResponse(response, 25, 1);
         assertEquals(HttpStatus.OK, actualResponse.getHttpstatus());
         }
 }

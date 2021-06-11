@@ -2950,11 +2950,11 @@ public final class ControllerUtil {
 	}
 
     /**
-     * To hide the master approle from responses to UI
+     * To hide the selfsupport admin approle from responses to UI
      * @param response
      * @return
      */
-    public static Response hideMasterAppRoleFromResponse(Response response, Integer limit, Integer offset) {
+    public static Response hideSelfSupportAdminAppRoleFromResponse(Response response, Integer limit, Integer offset) {
         ObjectMapper objMapper = new ObjectMapper();
         String jsonStr = response.getResponse();
         Map<String,String[]> requestMap = null;
@@ -2965,7 +2965,7 @@ public final class ControllerUtil {
         }
         if (null != requestMap.get("keys")) {
 			List<String> policyList = new ArrayList<>(Arrays.asList((String[]) requestMap.get("keys")));
-			policyList.removeAll(Arrays.asList(TVaultConstants.MASTER_APPROLES));
+			policyList.removeAll(Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES));
 
 			limit = (limit == null)?policyList.size():limit;
 			offset = (offset == null)?0:offset;
