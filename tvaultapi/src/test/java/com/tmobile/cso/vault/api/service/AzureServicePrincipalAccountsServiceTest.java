@@ -129,7 +129,7 @@ public class AzureServicePrincipalAccountsServiceTest {
         Whitebox.setInternalState(OIDCUtil.class, "log", LogManager.getLogger(OIDCUtil.class));
         when(JSONUtil.getJSON(Mockito.any(ImmutableMap.class))).thenReturn("log");
         ReflectionTestUtils.setField(azureServicePrincipalAccountsService, "vaultAuthMethod", "ldap");
-		ReflectionTestUtils.setField(azureServicePrincipalAccountsService, "azureMasterPolicyName", "azure_master_policy");
+		ReflectionTestUtils.setField(azureServicePrincipalAccountsService, "azureSelfSupportAdminPolicyName", "azure_admin_policy");
         Map<String, String> currentMap = new HashMap<>();
         currentMap.put("apiurl", "http://localhost:8080/vault/v2/identity");
         currentMap.put("user", "");
@@ -315,10 +315,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 		Mockito.doNothing().when(emailUtils).sendHtmlEmalFromTemplate(Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any());
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("azure_master_policy");
+		currentPolicies.add("azure_admin_policy");
 		try {
 			when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -344,7 +344,7 @@ public class AzureServicePrincipalAccountsServiceTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedResponse);
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
 
@@ -415,10 +415,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedResponse);
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("azure_master_policy");
+		currentPolicies.add("azure_admin_policy");
 		try {
 			when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -488,10 +488,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.MULTI_STATUS).body(expectedResponse);
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("azure_master_policy");
+		currentPolicies.add("azure_admin_policy");
 		try {
 			when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -572,10 +572,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(expectedResponse);
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("azure_master_policy");
+		currentPolicies.add("azure_admin_policy");
 		try {
 			when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -675,10 +675,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 				"{\"data\":{\"isActivated\":true,\"managedBy\":\"normaluser\",\"name\":\"svc_vault_test5\",\"users\":{\"normaluser\":\"sudo\"}}}"));
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("azure_master_policy");
+		currentPolicies.add("azure_admin_policy");
 		try {
 			when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -743,10 +743,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 			String azureSvccAccPath = AzureServiceAccountConstants.AZURE_SVCC_ACC_PATH + azureSvcAccName;
 
 			// Mock approle permission check
-			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 			when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 			List<String> currentPolicies = new ArrayList<>();
-			currentPolicies.add("azure_master_policy");
+			currentPolicies.add("azure_admin_policy");
 			try {
 				when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 			} catch (IOException e) {
@@ -835,10 +835,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 			String azureSvcAccName =  serviceAccount.getAzureSvcAccName();
 
 			// Mock approle permission check
-			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 			when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 			List<String> currentPolicies = new ArrayList<>();
-			currentPolicies.add("azure_master_policy");
+			currentPolicies.add("azure_admin_policy");
 			try {
 				when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 			} catch (IOException e) {
@@ -933,10 +933,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 			String azureSvcAccName =  serviceAccount.getAzureSvcAccName();
 
 			// Mock approle permission check
-			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 			when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 			List<String> currentPolicies = new ArrayList<>();
-			currentPolicies.add("azure_master_policy");
+			currentPolicies.add("azure_admin_policy");
 			try {
 				when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 			} catch (IOException e) {
@@ -1031,7 +1031,7 @@ public class AzureServicePrincipalAccountsServiceTest {
 			String azureSvcAccName = serviceAccount.getAzureSvcAccName();
 
 			// Mock approle permission check
-			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 			when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 			List<String> currentPolicies = new ArrayList<>();
 			currentPolicies.add("default");
@@ -1062,10 +1062,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 			String azureSvcAccName =  serviceAccount.getAzureSvcAccName();
 
 			// Mock approle permission check
-			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 			when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 			List<String> currentPolicies = new ArrayList<>();
-			currentPolicies.add("azure_master_policy");
+			currentPolicies.add("azure_admin_policy");
 			try {
 				when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 			} catch (IOException e) {
@@ -1107,10 +1107,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 			String azureSvcAccName =  serviceAccount.getAzureSvcAccName();
 
 			// Mock approle permission check
-			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 			when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 			List<String> currentPolicies = new ArrayList<>();
-			currentPolicies.add("azure_master_policy");
+			currentPolicies.add("azure_admin_policy");
 			try {
 				when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 			} catch (IOException e) {
@@ -1196,10 +1196,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 			String azureSvcAccName = serviceAccount.getAzureSvcAccName();
 
 			// Mock approle permission check
-			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 			when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 			List<String> currentPolicies = new ArrayList<>();
-			currentPolicies.add("azure_master_policy");
+			currentPolicies.add("azure_admin_policy");
 			try {
 				when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 			} catch (IOException e) {
@@ -1295,10 +1295,10 @@ public class AzureServicePrincipalAccountsServiceTest {
 			String azureSvcAccName = serviceAccount.getAzureSvcAccName();
 
 			// Mock approle permission check
-			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_master_policy \"]}");
+			Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"azure_admin_policy \"]}");
 			when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 			List<String> currentPolicies = new ArrayList<>();
-			currentPolicies.add("azure_master_policy");
+			currentPolicies.add("azure_admin_policy");
 			try {
 				when(azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 			} catch (IOException e) {
@@ -2741,7 +2741,7 @@ public class AzureServicePrincipalAccountsServiceTest {
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: no permission to associate this AppRole to any Azure Service Principal\"]}");
         String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
         UserDetails userDetails = getMockUser(false);
-        AzureServiceAccountApprole azureServiceAccountApprole = new AzureServiceAccountApprole("svc_vault_test2", "azure_master_approle", "read");
+        AzureServiceAccountApprole azureServiceAccountApprole = new AzureServiceAccountApprole("svc_vault_test2", "azure_admin_approle", "read");
         ResponseEntity<String> responseEntityActual =  azureServicePrincipalAccountsService.associateApproletoAzureServiceAccount(userDetails, token, azureServiceAccountApprole);
 
         assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());

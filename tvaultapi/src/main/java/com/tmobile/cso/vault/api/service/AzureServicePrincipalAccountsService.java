@@ -104,8 +104,8 @@ public class AzureServicePrincipalAccountsService {
 	@Autowired
 	private AWSIAMAuthService awsiamAuthService;
 
-	@Value("${azurePortal.auth.masterPolicy}")
-	private String azureMasterPolicyName;
+	@Value("${azurePortal.auth.adminPolicy}")
+	private String azureSelfSupportAdminPolicyName;
 	
 	private static final String[] ACCESS_PERMISSIONS = { "read", "rotate", "deny", "sudo" };
 	
@@ -259,7 +259,7 @@ public class AzureServicePrincipalAccountsService {
 			try {
 				currentPolicies = azureServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(objectMapper,
 						responseJson);
-				if (currentPolicies.contains(azureMasterPolicyName)) {
+				if (currentPolicies.contains(azureSelfSupportAdminPolicyName)) {
 					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String> builder()
 							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 							.put(LogMessage.ACTION, AzureServiceAccountConstants.AZURE_SVCACC_CREATION_TITLE)
@@ -4083,7 +4083,7 @@ public class AzureServicePrincipalAccountsService {
 			azureServiceAccountApprole.setAccess(TVaultConstants.WRITE_POLICY);
 		}
 		
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(azureServiceAccountApprole.getApprolename())) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(azureServiceAccountApprole.getApprolename())) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, AzureServiceAccountConstants.ADD_APPROLE_TO_AZURESVCACC_MSG)
@@ -4313,7 +4313,7 @@ public class AzureServicePrincipalAccountsService {
 		approleName = (approleName != null) ? approleName.toLowerCase() : approleName;
 		access = (access != null) ? access.toLowerCase() : access;
 
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(azureServiceAccountApprole.getApprolename())) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(azureServiceAccountApprole.getApprolename())) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
 					"{\"errors\":[\"Access denied: no permission to remove this AppRole to any Service Account\"]}");
 		}

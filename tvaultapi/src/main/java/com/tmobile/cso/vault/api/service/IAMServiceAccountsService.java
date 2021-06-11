@@ -67,8 +67,8 @@ public class  IAMServiceAccountsService {
 	@Value("${ad.notification.fromemail}")
 	private String supportEmail;
 
-	@Value("${iamPortal.auth.masterPolicy}")
-	private String iamMasterPolicyName;
+	@Value("${iamPortal.auth.adminPolicy}")
+	private String iamSelfSupportAdminPolicyName;
 
 	private static Logger log = LogManager.getLogger(IAMServiceAccountsService.class);
 	private static final String[] ACCESS_PERMISSIONS = { "read", IAMServiceAccountConstants.IAM_WRITE_PERMISSION_STRING, "deny", "sudo" };
@@ -419,7 +419,7 @@ public class  IAMServiceAccountsService {
 			String responseJson = response.getResponse();
 			try {
 				currentPolicies = iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(objectMapper, responseJson);
-				if (currentPolicies.contains(iamMasterPolicyName)) {
+				if (currentPolicies.contains(iamSelfSupportAdminPolicyName)) {
 					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 							.put(LogMessage.ACTION, "IsAuthorizedForIAMOnboardAndOffboard")
@@ -2662,7 +2662,7 @@ public class  IAMServiceAccountsService {
 		String approleName = iamServiceAccountApprole.getApprolename();
 		String access = iamServiceAccountApprole.getAccess();
 		
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(iamServiceAccountApprole.getApprolename())) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(iamServiceAccountApprole.getApprolename())) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
 					"{\"errors\":[\"Access denied: no permission to associate this AppRole to any IAM Service Account\"]}");
 		}
@@ -2901,7 +2901,7 @@ public class  IAMServiceAccountsService {
 		approleName = (approleName != null) ? approleName.toLowerCase() : approleName;
 		access = (access != null) ? access.toLowerCase() : access;
 
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(iamServiceAccountApprole.getApprolename())) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(iamServiceAccountApprole.getApprolename())) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, IAMServiceAccountConstants.REMOVE_APPROLE_TO_IAMSVCACC_MSG)

@@ -59,7 +59,7 @@ public class TVaultConstants {
     public static final String AWS_USERS_METADATA_MOUNT_PATH = "metadata/awsrole_users";	
     public static final String SELF_SERVICE_APPROLE_NAME = "selfservicesupportrole";
     public static final String SECRET = "secret";
-    public static final boolean HIDEMASTERAPPROLE = true;
+    public static final boolean HIDESELFSUPPORTADMINAPPROLE = true;
     public static final String APPROLE_DELETE_OPERATION="DELETE";
     public static final String APPROLE_READ_OPERATION="READ";
     public static final String APPROLE_UPDATE_OPERATION="UPDATE";
@@ -164,7 +164,7 @@ public class TVaultConstants {
 
     public static final String IAM_SVC_PATH = "metadata/iamsvcacc/";
     public static final String IAM_SVC_ACC_PATH_PREFIX="iamsvcacc";
-    public static final String[] MASTER_APPROLES = { SELF_SERVICE_APPROLE_NAME, "iamportal_master_approle", "azure_master_approle"};
+    public static final String[] SELF_SUPPORT_ADMIN_APPROLES = { SELF_SERVICE_APPROLE_NAME, "iamportal_admin_approle", "azure_admin_approle"};
     public static final String SPRINT_EMIAL_DOMAIN = "sprint.com";
     public static final String NULL_STRING = "null";
     public static final String RECURSIVE_DELETE_SDB = "recursivedeletesdb";

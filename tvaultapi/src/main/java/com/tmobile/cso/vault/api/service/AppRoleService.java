@@ -124,7 +124,7 @@ public class  AppRoleService {
 		}
 
 		
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(appRole.getRole_name())) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(appRole.getRole_name())) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body("{\"errors\":[\"Access denied: no permission to create an approle named "
 							+ appRole.getRole_name() + "\"]}");
@@ -216,7 +216,7 @@ public class  AppRoleService {
 	 */
 	public ResponseEntity<String> readAppRole(String token, String rolename){
 
-		if (TVaultConstants.HIDEMASTERAPPROLE && Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename)) {
+		if (TVaultConstants.HIDESELFSUPPORTADMINAPPROLE && Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename)) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: no permission to read this AppRole\"]}");
 		}
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -278,8 +278,8 @@ public class  AppRoleService {
 			      put(LogMessage.STATUS, response.getHttpstatus().toString()).
 			      put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 			      build()));
-		if (response!= null && HttpStatus.OK.equals(response.getHttpstatus()) && TVaultConstants.HIDEMASTERAPPROLE) {
-			response = ControllerUtil.hideMasterAppRoleFromResponse(response, limit, offset);
+		if (response!= null && HttpStatus.OK.equals(response.getHttpstatus()) && TVaultConstants.HIDESELFSUPPORTADMINAPPROLE) {
+			response = ControllerUtil.hideSelfSupportAdminAppRoleFromResponse(response, limit, offset);
 		}
 		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 	}
@@ -311,8 +311,8 @@ public class  AppRoleService {
 			      put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 			      build()));
 		if (HttpStatus.OK.equals(response.getHttpstatus())) {
-			if (TVaultConstants.HIDEMASTERAPPROLE) {
-				response = ControllerUtil.hideMasterAppRoleFromResponse(response, limit, offset);
+			if (TVaultConstants.HIDESELFSUPPORTADMINAPPROLE) {
+				response = ControllerUtil.hideSelfSupportAdminAppRoleFromResponse(response, limit, offset);
 			}
 			return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 		}
@@ -334,7 +334,7 @@ public class  AppRoleService {
 			      put(LogMessage.MESSAGE, String.format("Trying to read AppRoleId for the role [%s].", rolename)).
 			      put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 			      build()));
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename)) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename)) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: no permission to read roleID of this AppRole\"]}");
 		}
 		Response response = reqProcessor.process(READPOLEIDPATH,ROLENAMESTR+rolename+"\"}",token);
@@ -355,7 +355,7 @@ public class  AppRoleService {
 	 */
 	public String readRoleId(String token, String rolename){
 		String roleId = null;
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename)) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String> builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
 					.put(LogMessage.ACTION, READROLEID)
@@ -406,7 +406,7 @@ public class  AppRoleService {
 	 */
 	public List<String> readAccessorIds(String token, String rolename) {
 		ArrayList<String> accessorIds = null;
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename)) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String> builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
 					.put(LogMessage.ACTION, "readAccessorsId")
@@ -524,7 +524,7 @@ public class  AppRoleService {
 			      put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 			      build()));
 		AppRole appRole = null;
-		if (TVaultConstants.HIDEMASTERAPPROLE && Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename)) {
+		if (TVaultConstants.HIDESELFSUPPORTADMINAPPROLE && Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String> builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
 					.put(LogMessage.ACTION, "readAppRoleBasicDetails")
@@ -635,7 +635,7 @@ public class  AppRoleService {
 	 */
 	public ResponseEntity<String> readAppRoleRoleId(String token, String rolename, UserDetails userDetails){
 
-		if ((Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename))) {
+		if ((Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename))) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: You don't have enough permission to read the role_id associated with the AppRole\"]}");
 		}
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -687,7 +687,7 @@ public class  AppRoleService {
 	 */
 	public ResponseEntity<String> readAppRoleSecretId(String token, String rolename, UserDetails userDetails){
 
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename)){
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename)){
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: You don't have enough permission to read the secret_id associated with the AppRole\"]}");
 		}
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -740,7 +740,7 @@ public class  AppRoleService {
 	 */
 	public ResponseEntity<String> readSecretIdAccessors(String token, String rolename, UserDetails userDetails){
 
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename)) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename)) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
 					"{\"errors\":[\"Access denied: You don't have enough permission to read the accessors of SecretIds associated with the AppRole\"]}");
 		}
@@ -815,7 +815,7 @@ public class  AppRoleService {
 	 */
 	public ResponseEntity<String> readAppRoleDetails(String token, String rolename, UserDetails userDetails){
 
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename)) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename)) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
 					"{\"errors\":[\"Access denied: You don't have enough permission to read the information of the AppRole\"]}");
 		}
@@ -881,7 +881,7 @@ public class  AppRoleService {
 			      put(LogMessage.MESSAGE, String.format("Trying to create SecretId for  [%s]",appRoleSecretData.getRole_name() )).
 			      put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 			      build()));
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(appRoleSecretData.getRole_name())){
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(appRoleSecretData.getRole_name())){
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: no permission to create secretID for this AppRole\"]}");
 		}
 		String jsonStr = JSONUtil.getJSON(appRoleSecretData);
@@ -926,7 +926,7 @@ public class  AppRoleService {
 			      put(LogMessage.MESSAGE, String.format("Trying to read SecretId for the role [%s]", rolename)).
 			      put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 			      build()));
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename)) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename)) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body("{\"errors\":[\"Access denied: no permission to read secretID for this AppRole\"]}");
 		}
@@ -953,7 +953,7 @@ public class  AppRoleService {
 			      put(LogMessage.MESSAGE, String.format("Trying to delete SecretId for the role [%s].",appRoleNameSecretId.getRole_name())).
 			      put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 			      build()));
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(appRoleNameSecretId.getRole_name())){
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(appRoleNameSecretId.getRole_name())){
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: no permission to delete secretId for this approle\"]}");
 		}
 		String jsonStr = JSONUtil.getJSON(appRoleNameSecretId);
@@ -991,7 +991,7 @@ public class  AppRoleService {
 				put(LogMessage.MESSAGE, String.format("Start trying to delete approle [%s].", appRole.getRole_name())).
 				put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 				build()));
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(appRole.getRole_name())){
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(appRole.getRole_name())){
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 				      put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 					  put(LogMessage.ACTION, DELETE_APPROLE).
@@ -1233,7 +1233,7 @@ public class  AppRoleService {
 			      put(LogMessage.MESSAGE, String.format("Trying to delete SecretId for the role [%s].",appRoleAccessorIds.getRole_name())).
 			      put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).
 			      build()));
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(appRoleAccessorIds.getRole_name())) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(appRoleAccessorIds.getRole_name())) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(String.format(
 							"{\"errors\":[\"Access denied: You don't have enough permission to delete the secret_ids associated with the AppRole (%s) \"]}",
@@ -1354,7 +1354,7 @@ public class  AppRoleService {
 	 */
 	public ResponseEntity<String> associateApprole(String token, SafeAppRoleAccess safeAppRoleAccess){
 
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(safeAppRoleAccess.getRole_name())) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(safeAppRoleAccess.getRole_name())) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: no permission to associate this AppRole to any safe\"]}");
 		}
 		ResponseEntity<String> response = associateApproletoSafe(token,safeAppRoleAccess);
@@ -1591,7 +1591,7 @@ public class  AppRoleService {
 		}
 		String rolename = appRole.getRole_name();
 
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(rolename)) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(rolename)) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: You don't have enough permission to modify the AppRole information\"]}");
 		}
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
