@@ -261,7 +261,7 @@ public class SelfSupportController {
 	 * @param awsLoginRole
 	 * @return
 	 */
-	@ApiOperation(value = "${SelfSupportController.createRole.value}", notes = "${SelfSupportController.createRole.notes}")
+	@ApiOperation(value = "${SelfSupportController.createRole.value}", notes = "${SelfSupportController.createRole.notes}", hidden=true)
 	@PostMapping(value="/v2/ss/auth/aws/role",consumes="application/json",produces="application/json")
 	public ResponseEntity<String> createRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSLoginRole awsLoginRole, @RequestParam("path") String path) throws TVaultValidationException {
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
@@ -273,7 +273,7 @@ public class SelfSupportController {
 	 * @param jsonStr
 	 * @return
 	 */
-	@ApiOperation(value = "${SelfSupportController.updateRole.value}", notes = "${SelfSupportController.updateRole.notes}")
+	@ApiOperation(value = "${SelfSupportController.updateRole.value}", notes = "${SelfSupportController.updateRole.notes}", hidden=true)
 	@PutMapping(value="/v2/ss/auth/aws/role",consumes="application/json",produces="application/json")
 	public ResponseEntity<String> updateRole(HttpServletRequest request,@RequestHeader(value="vault-token") String token, @RequestBody AWSLoginRole awsLoginRole, @RequestParam("path") String path) throws TVaultValidationException {
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
@@ -286,7 +286,7 @@ public class SelfSupportController {
 	 * @param awsiamRole
 	 * @return
 	 */
-	@ApiOperation(value = "${SelfSupportController.createIamRole.value}", notes = "${SelfSupportController.createIamRole.notes}")
+	@ApiOperation(value = "${SelfSupportController.createIamRole.value}", notes = "${SelfSupportController.createIamRole.notes}", hidden=true)
 	@PostMapping(value="/v2/ss/auth/aws/iam/role",produces="application/json")
 	public ResponseEntity<String> createIAMRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSIAMRole awsiamRole, @RequestParam("path") String path) throws TVaultValidationException{
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
@@ -300,7 +300,7 @@ public class SelfSupportController {
 	 * @return
 	 * @throws TVaultValidationException
 	 */
-	@ApiOperation(value = "${SelfSupportController.updateIAMRole.value}", notes = "${SelfSupportController.updateIAMRole.notes}")
+	@ApiOperation(value = "${SelfSupportController.updateIAMRole.value}", notes = "${SelfSupportController.updateIAMRole.notes}", hidden=true)
 	@PutMapping(value="/v2/ss/auth/aws/iam/role",consumes="application/json",produces="application/json")
 	public ResponseEntity<String> updateRole(HttpServletRequest request, @RequestHeader(value="vault-token") String token, @RequestBody AWSIAMRole awsiamRole, @RequestParam("path") String path) throws TVaultValidationException {
 		UserDetails userDetails = (UserDetails) ((HttpServletRequest) request).getAttribute("UserDetails");
