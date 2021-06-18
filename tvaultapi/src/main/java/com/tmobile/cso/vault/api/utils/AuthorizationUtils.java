@@ -56,6 +56,10 @@ public class AuthorizationUtils {
 	public boolean isAuthorized(UserDetails userDetails, Safe safeMetaData, String[] latestPolicies, ArrayList<String> policiesTobeChecked, boolean forceCapabilityCheck) {
 		boolean authorized = false;
 		String powerToken = userDetails.getSelfSupportToken();
+		// Invalid safe
+		if (safeMetaData == null) {
+			return false;
+		}
 		if (userDetails.isAdmin()) {
 			// Admin is always authorized. This flag is set when the user logs in with "safeadmin" policy
 			return true;
