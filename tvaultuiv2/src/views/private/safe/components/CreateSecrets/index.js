@@ -177,7 +177,9 @@ const CreateSecret = (props) => {
               <BackArrow />
             </BackButton>
           )}
-          Add Secret
+          {Object.keys(secretprefilledData).length === 0
+            ? 'Add Secret'
+            : 'Edit Secret'}
         </SubHeading>
         <FormWrapper>
           <LabelRequired>
@@ -228,7 +230,7 @@ const CreateSecret = (props) => {
               label={
                 Object.keys(secretprefilledData).length === 0
                   ? 'Create'
-                  : 'Edit'
+                  : 'Update'
               }
               icon={Object.keys(secretprefilledData).length === 0 ? 'add' : ''}
               color="secondary"

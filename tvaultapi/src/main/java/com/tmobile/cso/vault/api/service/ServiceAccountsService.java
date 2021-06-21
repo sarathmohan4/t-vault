@@ -109,7 +109,7 @@ public class  ServiceAccountsService {
 	private String vaultAuthMethod;
 	
 	@Value("${ad.username}")
-	private String adMasterServiveAccount;
+	private String adSelfSupportAdminServiveAccount;
 
     @Autowired
     private TokenUtils tokenUtils;
@@ -145,7 +145,7 @@ public class  ServiceAccountsService {
 		AndFilter andFilter = new AndFilter();
 		andFilter.and(new LikeFilter("userPrincipalName", UserPrincipalName+"*"));
 		andFilter.and(new EqualsFilter("objectClass", "user"));
-		andFilter.and(new NotFilter(new EqualsFilter("CN", adMasterServiveAccount)));
+		andFilter.and(new NotFilter(new EqualsFilter("CN", adSelfSupportAdminServiveAccount)));
 		if (excludeOnboarded) {
 			ResponseEntity<String> responseEntity = getOnboardedServiceAccountsForValidation(token, userDetails);
 			if (HttpStatus.OK.equals(responseEntity.getStatusCode())) {
@@ -494,7 +494,7 @@ public class  ServiceAccountsService {
         AndFilter andFilter = new AndFilter();
         andFilter.and(new LikeFilter("userPrincipalName", serviceAccount+"*"));
         andFilter.and(new EqualsFilter("objectClass", "user"));
-        andFilter.and(new NotFilter(new EqualsFilter("CN", adMasterServiveAccount)));
+        andFilter.and(new NotFilter(new EqualsFilter("CN", adSelfSupportAdminServiveAccount)));
         return getADServiceAccounts(andFilter);
     }
 
@@ -715,7 +715,7 @@ public class  ServiceAccountsService {
 		AndFilter andFilter = new AndFilter();
 		andFilter.and(new LikeFilter("userPrincipalName", svcAccName + "*"));
 		andFilter.and(new EqualsFilter("objectClass", "user"));
-		andFilter.and(new NotFilter(new EqualsFilter("CN", adMasterServiveAccount)));
+		andFilter.and(new NotFilter(new EqualsFilter("CN", adSelfSupportAdminServiveAccount)));
 		List<ADServiceAccount> allServiceAccounts = getADServiceAccounts(andFilter);
 		if (allServiceAccounts != null && !allServiceAccounts.isEmpty() && allServiceAccounts.stream().anyMatch(s-> s.getDisplayName().equalsIgnoreCase(svcAccName))) {
 			log.info(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -1503,7 +1503,7 @@ public class  ServiceAccountsService {
 		AndFilter andFilter = new AndFilter();
 		andFilter.and(new LikeFilter("userPrincipalName", svcAccName + "*"));
 		andFilter.and(new EqualsFilter("objectClass", "user"));
-		andFilter.and(new NotFilter(new EqualsFilter("CN", adMasterServiveAccount)));
+		andFilter.and(new NotFilter(new EqualsFilter("CN", adSelfSupportAdminServiveAccount)));
 		List<ADServiceAccount> allServiceAccounts = getADServiceAccounts(andFilter);
 		if (allServiceAccounts == null || allServiceAccounts.isEmpty() || !allServiceAccounts.stream().anyMatch(s-> s.getDisplayName().equalsIgnoreCase(svcAccName))) {
 			log.info(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -1784,7 +1784,7 @@ public class  ServiceAccountsService {
 		AndFilter andFilter = new AndFilter();
 		andFilter.and(new LikeFilter("userPrincipalName", svcAccName + "*"));
 		andFilter.and(new EqualsFilter("objectClass", "user"));
-		andFilter.and(new NotFilter(new EqualsFilter("CN", adMasterServiveAccount)));
+		andFilter.and(new NotFilter(new EqualsFilter("CN", adSelfSupportAdminServiveAccount)));
 		List<ADServiceAccount> allServiceAccounts = getADServiceAccounts(andFilter);
 		if (allServiceAccounts == null || allServiceAccounts.isEmpty() || !allServiceAccounts.stream().anyMatch(s-> s.getDisplayName().equalsIgnoreCase(svcAccName))) {
 			log.info(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
@@ -2070,7 +2070,7 @@ public class  ServiceAccountsService {
 	}
 
 	/**
-     * To hide the master approle from responses to UI
+     * To hide the Admin/Selfsupport approle from responses to UI
      * @param response
      * @return
      */
@@ -2671,7 +2671,7 @@ public class  ServiceAccountsService {
         String svcAccName = serviceAccountApprole.getSvcAccName();
         String access = serviceAccountApprole.getAccess();
 
-        if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(serviceAccountApprole.getApprolename())){
+        if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(serviceAccountApprole.getApprolename())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: no permission to associate this AppRole to any Service Account\"]}");
         }
         approleName = (approleName !=null) ? approleName.toLowerCase() : approleName;
@@ -3297,7 +3297,7 @@ public class  ServiceAccountsService {
 		String svcAccName = serviceAccountApprole.getSvcAccName();
 		String access = serviceAccountApprole.getAccess();
 
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(serviceAccountApprole.getApprolename())) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(serviceAccountApprole.getApprolename())) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
 					"{\"errors\":[\"Access denied: no permission to remove this AppRole to any Service Account\"]}");
 		}
@@ -3908,7 +3908,7 @@ public class  ServiceAccountsService {
 		AndFilter andFilter = new AndFilter();
 		andFilter.and(new LikeFilter("userPrincipalName", svcAccName + "*"));
 		andFilter.and(new EqualsFilter("objectClass", "user"));
-		andFilter.and(new NotFilter(new EqualsFilter("CN", adMasterServiveAccount)));
+		andFilter.and(new NotFilter(new EqualsFilter("CN", adSelfSupportAdminServiveAccount)));
 		List<ADServiceAccount> getServiceAccounts = getADServiceAccounts(andFilter);
 		if (getServiceAccounts == null || getServiceAccounts.isEmpty() || !getServiceAccounts.stream().anyMatch(s-> s.getDisplayName().equalsIgnoreCase(svcAccName))) {
 			log.info(JSONUtil.getJSON(ImmutableMap.<String, String>builder().

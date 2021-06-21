@@ -3595,7 +3595,7 @@ public class SSLCertificateServiceTest {
     }
 
     @Test
-    public void testAssociateAppRoleToCertFailureMasterApprole() {
+    public void testAssociateAppRoleToCertFailureSelfSupportAdminApprole() {
 
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: no permission to associate this AppRole to any Certificate\"]}");
         token = "5PDrOhsy4ig8L3EpsJZSLAMg";

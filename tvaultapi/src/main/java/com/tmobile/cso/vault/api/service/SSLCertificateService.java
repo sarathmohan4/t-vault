@@ -4335,7 +4335,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
         String access = certificateApprole.getAccess().toLowerCase();
         String certType = certificateApprole.getCertType().toLowerCase();
 
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(approleName)) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(approleName)) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
 					"{\"errors\":[\"Access denied: no permission to associate this AppRole to any Certificate\"]}");
 		}
@@ -5317,6 +5317,11 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 							.put(LogMessage.ACTION, String.format("Inside  TVaultValidationException  = [%s] =  Message [%s]",
 									Arrays.toString(error.getStackTrace()), error.getMessage()))
 							.build()));
+
+			if ("Forbidden".equalsIgnoreCase(error.getMessage())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ERRORS + "Certificate " +
+                        "unavailable in system." + "\"]}");
+            }
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ERRORS + error.getMessage() + "\"]}");
 		} catch (Exception e) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String> builder()
@@ -7731,6 +7736,10 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, String.format("Inside  Exception = [%s] =  Message [%s]", Arrays.toString(e.getStackTrace()), e.getMessage()))
 				.build()));
+            if ("Forbidden".equalsIgnoreCase(e.getMessage())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ERRORS + "Certificate " +
+                        "unavailable in system." + "\"]}");
+            }
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(ERRORS + e.getMessage() + "\"]}");
 		}

@@ -143,7 +143,7 @@ public class IAMServiceAccountServiceTest {
         Whitebox.setInternalState(OIDCUtil.class, "log", LogManager.getLogger(OIDCUtil.class));
         when(JSONUtil.getJSON(Mockito.any(ImmutableMap.class))).thenReturn("log");
         ReflectionTestUtils.setField(iamServiceAccountsService, "vaultAuthMethod", "ldap");
-		ReflectionTestUtils.setField(iamServiceAccountsService, "iamMasterPolicyName", "iamportal_master_policy");
+		ReflectionTestUtils.setField(iamServiceAccountsService, "iamSelfSupportAdminPolicyName", "iamportal_admin_policy");
         Map<String, String> currentMap = new HashMap<>();
         currentMap.put("apiurl", "http://localhost:8080/vault/v2/identity");
         currentMap.put("user", "");
@@ -368,10 +368,10 @@ public class IAMServiceAccountServiceTest {
 		Mockito.doNothing().when(emailUtils).sendHtmlEmalFromTemplate(Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any());
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -511,10 +511,10 @@ public class IAMServiceAccountServiceTest {
 		Mockito.doNothing().when(emailUtils).sendHtmlEmalFromTemplate(Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any());
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -653,10 +653,10 @@ public class IAMServiceAccountServiceTest {
 		Mockito.doNothing().when(emailUtils).sendHtmlEmalFromTemplate(Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any());
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -669,7 +669,8 @@ public class IAMServiceAccountServiceTest {
 
 		String[] policies = { "o_iamsvcacc_1234567_testaccount" };
 		when(policyUtils.getCurrentPolicies(token, userDetails.getUsername(), userDetails)).thenReturn(policies);
-		Response groupResp = getMockResponse(HttpStatus.BAD_REQUEST, false,"");
+		Response groupResp = getMockResponse(HttpStatus.OK, true,
+				"{\"data\":{\"bound_cidrs\":[],\"max_ttl\":0,\"policies\":[\"default\",\"w_shared_mysafe01\",\"w_shared_mysafe02\"],\"ttl\":0,\"groups\":\"admin\"}}");
 		when(reqProcessor.process("/auth/ldap/groups", "{\"groupname\":\"group1\"}", token)).thenReturn(groupResp);
 		ReflectionTestUtils.setField(iamServiceAccountsService, "vaultAuthMethod", "ldap");
 		ObjectMapper objMapper = new ObjectMapper();
@@ -1411,10 +1412,10 @@ public class IAMServiceAccountServiceTest {
 		UserDetails userDetails = getMockUser(false);
 		
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 			when(iamServiceAccountUtils.getIdentityPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(new ArrayList<>());
@@ -1456,10 +1457,10 @@ public class IAMServiceAccountServiceTest {
 		UserDetails userDetails = getMockUser(false);
 		
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 			when(iamServiceAccountUtils.getIdentityPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(new ArrayList<>());
@@ -2062,10 +2063,10 @@ public class IAMServiceAccountServiceTest {
 		String iamSvccAccPath = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + iamSvcAccName;
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -2154,10 +2155,10 @@ public class IAMServiceAccountServiceTest {
 		String iamSvccAccPath = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + iamSvcAccName;
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -2246,10 +2247,10 @@ public class IAMServiceAccountServiceTest {
 		String iamSvccAccPath = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + iamSvcAccName;
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -2339,10 +2340,10 @@ public class IAMServiceAccountServiceTest {
 		String iamSvcAccName = serviceAccount.getAwsAccountId() + "_" + serviceAccount.getIamSvcAccName();
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -2428,7 +2429,7 @@ public class IAMServiceAccountServiceTest {
 		String iamSvcAccName = serviceAccount.getAwsAccountId() + "_" + serviceAccount.getIamSvcAccName();
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
 		currentPolicies.add("default");
@@ -2458,10 +2459,10 @@ public class IAMServiceAccountServiceTest {
 		String iamSvcAccName = serviceAccount.getAwsAccountId() + "_" + serviceAccount.getIamSvcAccName();
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -2502,10 +2503,10 @@ public class IAMServiceAccountServiceTest {
 		String iamSvcAccName = serviceAccount.getAwsAccountId() + "_" + serviceAccount.getIamSvcAccName();
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -2591,10 +2592,10 @@ public class IAMServiceAccountServiceTest {
 		String iamSvcAccName = serviceAccount.getAwsAccountId() + "_" + serviceAccount.getIamSvcAccName();
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -2688,10 +2689,10 @@ public class IAMServiceAccountServiceTest {
 		String iamSvcAccName = serviceAccount.getAwsAccountId() + "_" + serviceAccount.getIamSvcAccName();
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -3154,7 +3155,7 @@ public class IAMServiceAccountServiceTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body(expectedResponse);
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
 
@@ -3191,10 +3192,10 @@ public class IAMServiceAccountServiceTest {
 		when(reqProcessor.process(eq("/iam/onboardedlist"), Mockito.any(), eq(token))).thenReturn(getMockResponse(
 				HttpStatus.OK, true, "{\"keys\":[\"12234237890_svc_tvt_test13\",\"1223455345_svc_tvt_test9\"]}"));
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -3230,10 +3231,10 @@ public class IAMServiceAccountServiceTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedResponse);
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -3267,10 +3268,10 @@ public class IAMServiceAccountServiceTest {
 		when(reqProcessor.process(eq("/iam/onboardedlist"), Mockito.any(), eq(token))).thenReturn(getMockResponse(
 				HttpStatus.OK, true, "{\"keys\":[\"12234237890_svc_tvt_test13\",\"1223455345_svc_tvt_test9\"]}"));
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -3297,10 +3298,10 @@ public class IAMServiceAccountServiceTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedResponse);
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -3365,10 +3366,10 @@ public class IAMServiceAccountServiceTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedResponse);
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -3434,10 +3435,10 @@ public class IAMServiceAccountServiceTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.MULTI_STATUS).body(expectedResponse);
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -3515,10 +3516,10 @@ public class IAMServiceAccountServiceTest {
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(expectedResponse);
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -3636,10 +3637,10 @@ public class IAMServiceAccountServiceTest {
 				"{\"data\":{\"isActivated\":true,\"managedBy\":\"normaluser\",\"name\":\"svc_vault_test5\",\"users\":{\"normaluser\":\"sudo\"}}}"));
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -3896,14 +3897,14 @@ public class IAMServiceAccountServiceTest {
 		String folderName = "secret_2";
 		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
 
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy\"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[{\"accessKeyId\":\"testaccesskey\", \"expiryDuration\":1627685477}]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
 		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
 		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true, iamMetaDataStr));
 
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
@@ -3944,14 +3945,14 @@ public class IAMServiceAccountServiceTest {
 		String folderName = "secret_2";
 		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
 
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy\"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[{\"accessKeyId\":\"testaccesskey\", \"expiryDuration\":1627685477}]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
 		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
 		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.NOT_FOUND, true, iamMetaDataStr));
 
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
@@ -3990,14 +3991,14 @@ public class IAMServiceAccountServiceTest {
 		String folderName = "secret_2";
 		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
 
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy\"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[{\"accessKeyId\":\"testaccesskey\", \"expiryDuration\":1627685477},{\"accessKeyId\":\"testaccesskey2\", \"expiryDuration\":1627685477}]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
 		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
 		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true, iamMetaDataStr));
 
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
@@ -4036,14 +4037,14 @@ public class IAMServiceAccountServiceTest {
 		String folderName = "secret_2";
 		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
 
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy\"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[{\"accessKeyId\":\"testaccesskey\", \"expiryDuration\":1627685477}]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
 		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
 		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true, iamMetaDataStr));
 
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
@@ -4082,14 +4083,14 @@ public class IAMServiceAccountServiceTest {
 		String folderName = "secret_2";
 		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
 
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy\"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
 		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
 		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true, iamMetaDataStr));
 
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
@@ -4127,14 +4128,14 @@ public class IAMServiceAccountServiceTest {
 		String folderName = "secret_2";
 		IAMServiceAccountSecret iamServiceAccount = new IAMServiceAccountSecret(iamSvcaccName, accessKeyId, accessKeySecret, expiryDateEpoch, awsAccountId, createDate, status);
 
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy\"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy\"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		String iamMetaDataStr = "{ \"data\": {\"userName\": \"testaccount\", \"awsAccountId\": \"1234567890\", \"awsAccountName\": \"testaccount\", \"createdAtEpoch\": 1619823077, \"owner_ntid\": \"normaluser\", \"owner_email\": \"normaluser@testmail.com\", \"application_id\": \"app1\", \"application_name\": \"App1\", \"application_tag\": \"App1\", \"isActivated\": false, \"secret\":[]}, \"path\": \"iamsvcacc/1234567890_testaccount\"}";
 		String metadataPath = "metadata/iamsvcacc/" + awsAccountId + "_" + iamSvcaccName;
 		when(reqProcessor.process("/read", "{\"path\":\""+metadataPath+"\"}", token)).thenReturn(getMockResponse(HttpStatus.OK, true, iamMetaDataStr));
 
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
@@ -4165,10 +4166,10 @@ public class IAMServiceAccountServiceTest {
 		String awsAccountId = "1234567890";
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {
@@ -4187,7 +4188,7 @@ public class IAMServiceAccountServiceTest {
 		String awsAccountId = "1234567890";
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
 		currentPolicies.add("default");
@@ -4213,10 +4214,10 @@ public class IAMServiceAccountServiceTest {
 		String awsAccountId = "1234567890";
 
 		// Mock approle permission check
-		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_master_policy \"]}");
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
 		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
 		List<String> currentPolicies = new ArrayList<>();
-		currentPolicies.add("iamportal_master_policy");
+		currentPolicies.add("iamportal_admin_policy");
 		try {
 			when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(),Mockito.any())).thenReturn(currentPolicies);
 		} catch (IOException e) {

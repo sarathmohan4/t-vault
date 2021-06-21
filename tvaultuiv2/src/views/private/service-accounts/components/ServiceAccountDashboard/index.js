@@ -603,6 +603,7 @@ const ServiceAccountDashboard = () => {
           icon={svcIcon}
           showActions={false}
           listIconStyles={listIconStyles}
+          showToolTip
         />
         <BorderLine />
         {account.name && !isMobileScreen ? (

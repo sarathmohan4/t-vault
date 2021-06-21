@@ -124,7 +124,11 @@ const EditAwsApplication = (props) => {
     <ComponentError>
       <PermissionWrapper>
         <HeaderWrapper>
-          <Typography variant="h5">AWS Configuration</Typography>
+          <Typography variant="h5">
+            {awsName && access
+              ? 'Edit AWS Configuration'
+              : 'Add AWS Configuration'}
+          </Typography>
         </HeaderWrapper>
         <InputWrapper>
           <InputLabel>Aws Application Name</InputLabel>
@@ -152,7 +156,7 @@ const EditAwsApplication = (props) => {
               />
             </CancelButton>
             <ButtonComponent
-              label={awsName && access ? 'Edit' : 'Save'}
+              label={awsName && access ? 'Update' : 'Save'}
               color="secondary"
               onClick={() => handleSaveClick(value, radioValue)}
               disabled={disabledSave}

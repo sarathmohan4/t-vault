@@ -6,6 +6,7 @@ import ComponentError from '../../../../../errorBoundaries/ComponentError/compon
 import { TitleOne } from '../../../../../styles/GlobalStyles';
 import safeIcon from '../../../../../assets/icon_safes.svg';
 import mediaBreakpoints from '../../../../../breakpoints';
+import TooltipComponent from '../../../../../components/Tooltip';
 
 const FolderWrap = styled('div')`
   position: relative;
@@ -56,7 +57,7 @@ const extraCss = css`
 `;
 
 const ListItem = (props) => {
-  const { title, subTitle, flag, icon } = props;
+  const { title, subTitle, flag, icon, showToolTip } = props;
   return (
     <ComponentError>
       <FolderWrap>
@@ -65,12 +66,27 @@ const ListItem = (props) => {
             <Avatar alt="safe_icon" src={icon} />
           </SafeAvatarWrap>
           <SafeDetailBox>
-            <TitleOne extraCss={extraCss}>
-              {title}
-              <Flag fontSize="0.85rem" fontStyle="italic">
-                {flag}
-              </Flag>
-            </TitleOne>
+            {showToolTip ? (
+              <TooltipComponent
+                title={title}
+                renderContent={(
+                  <TitleOne extraCss={extraCss}>
+                    {title}
+                    <Flag fontSize="0.85rem" fontStyle="italic">
+                      {flag}
+                    </Flag>
+                  </TitleOne>
+                )}
+                certificate="top"
+              />
+            ) : (
+              <TitleOne extraCss={extraCss}>
+                {title}
+                <Flag fontSize="0.85rem" fontStyle="italic">
+                  {flag}
+                </Flag>
+              </TitleOne>
+            )}
             <Flag fontSize="1.3rem">{subTitle}</Flag>
           </SafeDetailBox>
         </LabelWrap>

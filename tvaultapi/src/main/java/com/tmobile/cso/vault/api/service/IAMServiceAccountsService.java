@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,8 +68,8 @@ public class  IAMServiceAccountsService {
 	@Value("${ad.notification.fromemail}")
 	private String supportEmail;
 
-	@Value("${iamPortal.auth.masterPolicy}")
-	private String iamMasterPolicyName;
+	@Value("${iamPortal.auth.adminPolicy}")
+	private String iamSelfSupportAdminPolicyName;
 
 	private static Logger log = LogManager.getLogger(IAMServiceAccountsService.class);
 	private static final String[] ACCESS_PERMISSIONS = { "read", IAMServiceAccountConstants.IAM_WRITE_PERMISSION_STRING, "deny", "sudo" };
@@ -270,7 +271,7 @@ public class  IAMServiceAccountsService {
 							put(LogMessage.MESSAGE, "Reverting IAM Service account onboard on failure to create secret mount with accessKeyId").
 							put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 							build()));
-					return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onSecretMountCreationFailure");
+					return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onSecretMountCreationFailure", userDetails);
 				}
 			}
 
@@ -303,14 +304,14 @@ public class  IAMServiceAccountsService {
 					.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE)
 					.put(LogMessage.MESSAGE, "Failed to onboard IAM service account. Owner association failed.")
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onOwnerAssociationFailure");
+			return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onOwnerAssociationFailure", userDetails);
 		}
 		log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE)
 				.put(LogMessage.MESSAGE, "Failed to onboard IAM service account. Policy creation failed.")
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-		return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onPolicyFailure");
+		return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onPolicyFailure", userDetails);
 
 	}
 	
@@ -419,7 +420,7 @@ public class  IAMServiceAccountsService {
 			String responseJson = response.getResponse();
 			try {
 				currentPolicies = iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(objectMapper, responseJson);
-				if (currentPolicies.contains(iamMasterPolicyName)) {
+				if (currentPolicies.contains(iamSelfSupportAdminPolicyName)) {
 					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 							.put(LogMessage.ACTION, "IsAuthorizedForIAMOnboardAndOffboard")
@@ -488,21 +489,29 @@ public class  IAMServiceAccountsService {
 	 * @return
 	 */
 	private ResponseEntity<String> rollBackIAMOnboardOnFailure(IAMServiceAccount iamServiceAccount,
-				String iamSvcAccName, String onAction) {	
+				String iamSvcAccName, String onAction, UserDetails userDetails) {
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, "rollBackIAMOnboardOnFailure")
 				.put(LogMessage.MESSAGE,
 						String.format("Trying to rollback IAM Service Account [%s]", iamServiceAccount.getUserName()))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-		
+		String selfSupportToken = tokenUtils.getSelfServiceToken();
 		//Delete the IAM Service account policies
-		deleteIAMServiceAccountPolicies(tokenUtils.getSelfServiceToken(), iamSvcAccName);
+		deleteIAMServiceAccountPolicies(selfSupportToken, iamSvcAccName);
+
+		// delete group association if exists
+		if(!StringUtils.isEmpty(iamServiceAccount.getAdSelfSupportGroup())) {
+			Map<String, String> groups = new HashedMap();
+			groups.put(iamServiceAccount.getAdSelfSupportGroup(), IAMServiceAccountConstants.IAM_WRITE_PERMISSION_STRING);
+			updateGroupPolicyAssociationOnIAMSvcaccDelete(iamServiceAccount.getAwsAccountId() + "_" + iamServiceAccount.getUserName(), groups, selfSupportToken, userDetails);
+		}
+
 		//Deleting the IAM service account metadata
 		OnboardedIAMServiceAccount iamSvcAccToRevert = new OnboardedIAMServiceAccount(
 				iamServiceAccount.getUserName(), iamServiceAccount.getAwsAccountId(),
 				iamServiceAccount.getOwnerNtid());
-		ResponseEntity<String> iamMetaDataDeletionResponse = deleteIAMSvcAccount(tokenUtils.getSelfServiceToken(), iamSvcAccToRevert);
+		ResponseEntity<String> iamMetaDataDeletionResponse = deleteIAMSvcAccount(selfSupportToken, iamSvcAccToRevert);
 		if (iamMetaDataDeletionResponse != null
 				&& HttpStatus.OK.equals(iamMetaDataDeletionResponse.getStatusCode())) {
 			if (onAction.equals("onPolicyFailure")) {
@@ -2662,7 +2671,7 @@ public class  IAMServiceAccountsService {
 		String approleName = iamServiceAccountApprole.getApprolename();
 		String access = iamServiceAccountApprole.getAccess();
 		
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(iamServiceAccountApprole.getApprolename())) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(iamServiceAccountApprole.getApprolename())) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
 					"{\"errors\":[\"Access denied: no permission to associate this AppRole to any IAM Service Account\"]}");
 		}
@@ -2901,7 +2910,7 @@ public class  IAMServiceAccountsService {
 		approleName = (approleName != null) ? approleName.toLowerCase() : approleName;
 		access = (access != null) ? access.toLowerCase() : access;
 
-		if (Arrays.asList(TVaultConstants.MASTER_APPROLES).contains(iamServiceAccountApprole.getApprolename())) {
+		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(iamServiceAccountApprole.getApprolename())) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, IAMServiceAccountConstants.REMOVE_APPROLE_TO_IAMSVCACC_MSG)

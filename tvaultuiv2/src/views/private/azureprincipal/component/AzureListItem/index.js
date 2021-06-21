@@ -4,6 +4,8 @@ import styled, { css } from 'styled-components';
 import Avatar from '@material-ui/core/Avatar';
 import ComponentError from '../../../../../errorBoundaries/ComponentError/component-error';
 import { TitleOne } from '../../../../../styles/GlobalStyles';
+import TooltipComponent from '../../../../../components/Tooltip';
+import mediaBreakpoints from '../../../../../breakpoints';
 
 const FolderWrap = styled('div')`
   position: relative;
@@ -12,7 +14,6 @@ const FolderWrap = styled('div')`
   text-decoration: none;
   align-items: center;
   justify-content: space-between;
-  overflow: hidden;
 `;
 const ListItemDetailBox = styled('div')`
   padding-left: 1.7rem;
@@ -37,6 +38,16 @@ const ListTitleStyles = css`
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  width: 25rem;
+  ${mediaBreakpoints.belowLarge} {
+    width: 17rem;
+  }
+  ${mediaBreakpoints.medium} {
+    width: 12rem;
+  }
+  ${mediaBreakpoints.small} {
+    width: 15rem;
+  }
 `;
 
 const AzureListItem = (props) => {
@@ -50,7 +61,13 @@ const AzureListItem = (props) => {
             <Avatar alt="ListItem_icon" src={icon} />
           </ListItemAvatarWrap>
           <ListItemDetailBox>
-            <TitleOne extraCss={ListTitleStyles}>{title}</TitleOne>
+            <TooltipComponent
+              title={title}
+              renderContent={
+                <TitleOne extraCss={ListTitleStyles}>{title}</TitleOne>
+              }
+              certificate="top"
+            />
           </ListItemDetailBox>
         </LabelWrap>
       </FolderWrap>
