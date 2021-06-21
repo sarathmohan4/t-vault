@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -270,7 +271,7 @@ public class  IAMServiceAccountsService {
 							put(LogMessage.MESSAGE, "Reverting IAM Service account onboard on failure to create secret mount with accessKeyId").
 							put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 							build()));
-					return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onSecretMountCreationFailure");
+					return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onSecretMountCreationFailure", userDetails);
 				}
 			}
 
@@ -303,14 +304,14 @@ public class  IAMServiceAccountsService {
 					.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE)
 					.put(LogMessage.MESSAGE, "Failed to onboard IAM service account. Owner association failed.")
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onOwnerAssociationFailure");
+			return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onOwnerAssociationFailure", userDetails);
 		}
 		log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE)
 				.put(LogMessage.MESSAGE, "Failed to onboard IAM service account. Policy creation failed.")
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-		return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onPolicyFailure");
+		return rollBackIAMOnboardOnFailure(iamServiceAccount, iamSvcAccName, "onPolicyFailure", userDetails);
 
 	}
 	
@@ -488,21 +489,29 @@ public class  IAMServiceAccountsService {
 	 * @return
 	 */
 	private ResponseEntity<String> rollBackIAMOnboardOnFailure(IAMServiceAccount iamServiceAccount,
-				String iamSvcAccName, String onAction) {	
+				String iamSvcAccName, String onAction, UserDetails userDetails) {
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, "rollBackIAMOnboardOnFailure")
 				.put(LogMessage.MESSAGE,
 						String.format("Trying to rollback IAM Service Account [%s]", iamServiceAccount.getUserName()))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-		
+		String selfSupportToken = tokenUtils.getSelfServiceToken();
 		//Delete the IAM Service account policies
-		deleteIAMServiceAccountPolicies(tokenUtils.getSelfServiceToken(), iamSvcAccName);
+		deleteIAMServiceAccountPolicies(selfSupportToken, iamSvcAccName);
+
+		// delete group association if exists
+		if(!StringUtils.isEmpty(iamServiceAccount.getAdSelfSupportGroup())) {
+			Map<String, String> groups = new HashedMap();
+			groups.put(iamServiceAccount.getAdSelfSupportGroup(), IAMServiceAccountConstants.IAM_WRITE_PERMISSION_STRING);
+			updateGroupPolicyAssociationOnIAMSvcaccDelete(iamServiceAccount.getAwsAccountId() + "_" + iamServiceAccount.getUserName(), groups, selfSupportToken, userDetails);
+		}
+
 		//Deleting the IAM service account metadata
 		OnboardedIAMServiceAccount iamSvcAccToRevert = new OnboardedIAMServiceAccount(
 				iamServiceAccount.getUserName(), iamServiceAccount.getAwsAccountId(),
 				iamServiceAccount.getOwnerNtid());
-		ResponseEntity<String> iamMetaDataDeletionResponse = deleteIAMSvcAccount(tokenUtils.getSelfServiceToken(), iamSvcAccToRevert);
+		ResponseEntity<String> iamMetaDataDeletionResponse = deleteIAMSvcAccount(selfSupportToken, iamSvcAccToRevert);
 		if (iamMetaDataDeletionResponse != null
 				&& HttpStatus.OK.equals(iamMetaDataDeletionResponse.getStatusCode())) {
 			if (onAction.equals("onPolicyFailure")) {

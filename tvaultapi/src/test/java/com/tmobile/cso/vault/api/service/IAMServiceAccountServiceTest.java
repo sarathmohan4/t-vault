@@ -669,7 +669,8 @@ public class IAMServiceAccountServiceTest {
 
 		String[] policies = { "o_iamsvcacc_1234567_testaccount" };
 		when(policyUtils.getCurrentPolicies(token, userDetails.getUsername(), userDetails)).thenReturn(policies);
-		Response groupResp = getMockResponse(HttpStatus.BAD_REQUEST, false,"");
+		Response groupResp = getMockResponse(HttpStatus.OK, true,
+				"{\"data\":{\"bound_cidrs\":[],\"max_ttl\":0,\"policies\":[\"default\",\"w_shared_mysafe01\",\"w_shared_mysafe02\"],\"ttl\":0,\"groups\":\"admin\"}}");
 		when(reqProcessor.process("/auth/ldap/groups", "{\"groupname\":\"group1\"}", token)).thenReturn(groupResp);
 		ReflectionTestUtils.setField(iamServiceAccountsService, "vaultAuthMethod", "ldap");
 		ObjectMapper objMapper = new ObjectMapper();
