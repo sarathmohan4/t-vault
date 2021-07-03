@@ -23,6 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.tmobile.cso.vault.api.utils.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
@@ -53,13 +55,6 @@ import com.tmobile.cso.vault.api.process.RequestProcessor;
 import com.tmobile.cso.vault.api.process.Response;
 
 import com.tmobile.cso.vault.api.model.*;
-
-import com.tmobile.cso.vault.api.utils.EmailUtils;
-import com.tmobile.cso.vault.api.utils.IAMServiceAccountUtils;
-import com.tmobile.cso.vault.api.utils.JSONUtil;
-import com.tmobile.cso.vault.api.utils.PolicyUtils;
-import com.tmobile.cso.vault.api.utils.ThreadLocalContext;
-import com.tmobile.cso.vault.api.utils.TokenUtils;
 
 
 @Component
@@ -109,6 +104,9 @@ public class  IAMServiceAccountsService {
 	
 	@Autowired
 	private AWSIAMAuthService awsiamAuthService;
+
+	@Autowired
+	private CommonUtils commonUtils;
 	
 	private static final String ACCOUNTSTR = "account [%s].";
 	private static final String DELETEPATH = "/delete";
@@ -3514,6 +3512,17 @@ public class  IAMServiceAccountsService {
 	 */
 	public ResponseEntity<String> readSecrets(String token, String awsAccountID, String iamSvcName, String accessKey)
 			throws IOException {
+
+		List<String> currentpolicies = commonUtils.getTokePoliciesAsList(token);
+		if (!CollectionUtils.isEmpty(currentpolicies) && !Collections.disjoint(Arrays.asList(TVaultConstants.IAM_AZURE_ADMIN_POLICY_LIST), currentpolicies)) {
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, "readSecrets")
+					.put(LogMessage.MESSAGE, String.format("Access denied: No permission to read secret for IAM service account [%s]", iamSvcName))
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"error\":"
+					+ JSONUtil.getJSON("Access denied: No permission to read secret for IAM service account") + "}");
+		}
 
 		iamSvcName = iamSvcName.toLowerCase();
 		String iamSvcNamePath = IAMServiceAccountConstants.IAM_SVCC_ACC_PATH + awsAccountID + '_' + iamSvcName;

@@ -20,6 +20,7 @@ package com.tmobile.cso.vault.api.utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
@@ -143,4 +144,37 @@ public class CommonUtils {
 		}
 		return modifiedBy;
 	}
+
+	public List<String> getTokePoliciesAsList(String token) {
+		ObjectMapper objectMapper = new ObjectMapper();
+		List<String> currentpolicies = new ArrayList<>();
+		Response response = reqProcessor.process("/auth/tvault/lookup","{}", token);
+		if(HttpStatus.OK.equals(response.getHttpstatus())) {
+			String responseJson = response.getResponse();
+			try {
+				JsonNode policiesNode = objectMapper.readTree(responseJson).get("policies");
+				if (null != policiesNode ) {
+					if (policiesNode.isContainerNode()) {
+						Iterator<JsonNode> elementsIterator = policiesNode.elements();
+						while (elementsIterator.hasNext()) {
+							JsonNode element = elementsIterator.next();
+							currentpolicies.add(element.asText());
+						}
+					}
+					else {
+						currentpolicies.add(policiesNode.asText());
+					}
+				}
+			} catch (IOException e) {
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+						.put(LogMessage.ACTION, "isAuthorizedForIAMOnboardAndOffboard")
+						.put(LogMessage.MESSAGE,
+								"Failed to parse policies from token")
+						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			}
+		}
+		return currentpolicies;
+	}
+
 }
