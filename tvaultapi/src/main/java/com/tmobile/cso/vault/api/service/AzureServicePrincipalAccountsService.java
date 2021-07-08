@@ -19,16 +19,12 @@ package com.tmobile.cso.vault.api.service;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.tmobile.cso.vault.api.model.*;
+import com.tmobile.cso.vault.api.utils.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,12 +51,6 @@ import com.tmobile.cso.vault.api.exception.LogMessage;
 import com.tmobile.cso.vault.api.exception.TVaultValidationException;
 import com.tmobile.cso.vault.api.process.RequestProcessor;
 import com.tmobile.cso.vault.api.process.Response;
-import com.tmobile.cso.vault.api.utils.AzureServiceAccountUtils;
-import com.tmobile.cso.vault.api.utils.EmailUtils;
-import com.tmobile.cso.vault.api.utils.JSONUtil;
-import com.tmobile.cso.vault.api.utils.PolicyUtils;
-import com.tmobile.cso.vault.api.utils.ThreadLocalContext;
-import com.tmobile.cso.vault.api.utils.TokenUtils;
 
 @Component
 public class AzureServicePrincipalAccountsService {
@@ -103,6 +93,9 @@ public class AzureServicePrincipalAccountsService {
 
 	@Autowired
 	private AWSIAMAuthService awsiamAuthService;
+
+	@Autowired
+	private CommonUtils commonUtils;
 
 	@Value("${azurePortal.auth.adminPolicy}")
 	private String azureSelfSupportAdminPolicyName;
@@ -1446,6 +1439,17 @@ public class AzureServicePrincipalAccountsService {
 	 */
 	public ResponseEntity<String> readSecret(String token, String azureSvcName, String secretKey)
 			throws IOException {
+
+		List<String> currentpolicies = commonUtils.getTokePoliciesAsList(token);
+		if (!CollectionUtils.isEmpty(currentpolicies) && !Collections.disjoint(Arrays.asList(TVaultConstants.IAM_AZURE_ADMIN_POLICY_LIST), currentpolicies)) {
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, "readSecrets")
+					.put(LogMessage.MESSAGE, String.format("Access denied: No permission to read secret for Azure service account [%s]", azureSvcName))
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ERRORSTR
+					+ JSONUtil.getJSON("Access denied: No permission to read secret for Azure service account") + "}");
+		}
 
 		azureSvcName = azureSvcName.toLowerCase();
 		String azureSvcNamePath = AzureServiceAccountConstants.AZURE_SVCC_ACC_PATH + azureSvcName;

@@ -187,5 +187,7 @@ public class TVaultConstants {
     public static final String OTHER_APPNAME = "other";
     public static final String OTHER_APPNAME_VALUE = "Other";
     public static final String VALIDATE_APPNAME = "Start validating Appname for safe";
-    
+    public static final String[] IAM_AZURE_ADMIN_POLICY_LIST = { "iamportal_admin_policy", "azure_admin_policy"};
+
+
 }
