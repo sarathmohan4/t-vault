@@ -45,7 +45,7 @@ public class ServiceAccountsConfiguration {
     @Bean
     public LdapContextSource svcAccContextSource() {
         LdapContextSource contextSource = new LdapContextSource();
-        contextSource.setUrl(env.getRequiredProperty("ad.url"));
+        contextSource.setUrls(env.getRequiredProperty("ad.url").split(","));
         contextSource.setBase(env.getRequiredProperty("ad.base"));
         contextSource.setUserDn("CN="+env.getRequiredProperty("ad.username")+","+env.getRequiredProperty("ad.userdn"));
         contextSource.setPassword(new String(Base64.getDecoder().decode(env.getRequiredProperty("ad.password"))));
