@@ -308,7 +308,7 @@ public class IAMServiceAccountServiceTest {
 		UserDetails userDetails = getMockUser(false);
 		IAMServiceAccountApprole serviceAccountApprole = new IAMServiceAccountApprole("AzureADRoleManager", "cloudsecurity_iam_admin_approle", "write", "1234567890");
 
-		String [] policies = {"o_iamsvcacc_1234567891_testsvcname"};
+		String [] policies = {"iamportal_admin_policy"};
 		when(policyUtils.getCurrentPolicies(token, userDetails.getUsername(), userDetails)).thenReturn(policies);
 		Response appRoleResponse = getMockResponse(HttpStatus.OK, true, "{\"data\": {\"policies\":\"w_iamsvcacc_testsvcname\"}}");
 		when(reqProcessor.process("/auth/approle/role/read","{\"role_name\":\"cloudsecurity_iam_admin_approle\"}",token)).thenReturn(appRoleResponse);
@@ -1448,7 +1448,40 @@ public class IAMServiceAccountServiceTest {
 	        assertEquals(responseEntityExpected, responseEntityActual);
 
 	    }
-	 
+
+	@Test
+	public void test_removeApproleFromIAMSvcAcc_cloud_security_approle_succssfully() throws Exception {
+
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle is successfully removed(if existed) from IAM Service Account\"]}");
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		UserDetails userDetails = getMockUser(false);
+		IAMServiceAccountApprole serviceAccountApprole = new IAMServiceAccountApprole("AzureADRoleManager", "cloudsecurity_iam_admin_approle", "read", "1234567890");
+
+		String [] policies = {"iamportal_admin_policy"};
+		when(policyUtils.getCurrentPolicies(token, userDetails.getUsername(), userDetails)).thenReturn(policies);
+		Response appRoleResponse = getMockResponse(HttpStatus.OK, true, "{\"data\": {\"policies\":\"w_iamsvcacc_1234567890_testsvcname\"}}");
+		when(reqProcessor.process("/auth/approle/role/read","{\"role_name\":\"cloudsecurity_iam_admin_approle\"}",token)).thenReturn(appRoleResponse);
+		Response configureAppRoleResponse = getMockResponse(HttpStatus.OK, true, "");
+		when(appRoleService.configureApprole(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(configureAppRoleResponse);
+		Response updateMetadataResponse = getMockResponse(HttpStatus.NO_CONTENT, true, "");
+		when(ControllerUtil.updateMetadata(Mockito.anyMap(),Mockito.anyString())).thenReturn(updateMetadataResponse);
+
+		when(reqProcessor.process(eq("/sdb"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"data\":{\"initialPasswordReset\":true,\"managedBy\":\"smohan11\",\"name\":\"svc_vault_test5\",\"users\":{\"smohan11\":\"sudo\"}}}"));
+		when(tokenUtils.getSelfServiceToken()).thenReturn(token);
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		List<String> currnetPolicies = new ArrayList<>();
+		currnetPolicies.add("iamportal_admin_policy");
+		when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(), Mockito.any())).thenReturn(currnetPolicies);
+
+		when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(), Mockito.any())).thenReturn(currnetPolicies);
+		ResponseEntity<String> responseEntityActual =  iamServiceAccountsService.removeApproleFromIAMSvcAcc(userDetails, token, serviceAccountApprole);
+
+		assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntityActual);
+
+	}
+
 	@Test
 	public void test_getOnboardedIAMServiceAccounts_successfully() {
 		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";

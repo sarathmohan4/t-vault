@@ -2967,6 +2967,9 @@ public final class ControllerUtil {
 			List<String> policyList = new ArrayList<>(Arrays.asList((String[]) requestMap.get("keys")));
 			policyList.removeAll(Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES));
 
+			// To remove cloud security admin approle or similar from listing but enable for read apis
+			policyList.removeAll(Arrays.asList(TVaultConstants.ADMIN_APPROLES_EXCLUDE_FROM_LIST));
+
 			limit = (limit == null)?policyList.size():limit;
 			offset = (offset == null)?0:offset;
 			Integer totalApproleCount = policyList.size();

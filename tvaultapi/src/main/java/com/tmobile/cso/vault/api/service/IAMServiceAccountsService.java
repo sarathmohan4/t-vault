@@ -2923,6 +2923,7 @@ public class  IAMServiceAccountsService {
 								.put(LogMessage.APIURL,
 										ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 								.build()));
+		String clientToken = token;
 		if (!userDetails.isAdmin()) {
 			token = tokenUtils.getSelfServiceToken();
 		}
@@ -2956,7 +2957,7 @@ public class  IAMServiceAccountsService {
 
 		boolean isAuthorized = hasAddOrRemovePermission(userDetails, uniqueIAMSvcaccName, token);
 
-		if (isAuthorized) {
+		if (isAuthorized || isCloudSecurityAdminApproleAction(clientToken, iamServiceAccountApprole)) {
 			String readPolicy = new StringBuffer()
 					.append(TVaultConstants.SVC_ACC_POLICIES_PREFIXES.getKey(TVaultConstants.READ_POLICY))
 					.append(IAMServiceAccountConstants.IAMSVCACC_POLICY_PREFIX).append(uniqueIAMSvcaccName).toString();

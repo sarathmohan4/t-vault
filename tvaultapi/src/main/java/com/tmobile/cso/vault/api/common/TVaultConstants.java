@@ -189,5 +189,6 @@ public class TVaultConstants {
     public static final String VALIDATE_APPNAME = "Start validating Appname for safe";
     public static final String[] IAM_AZURE_ADMIN_POLICY_LIST = { "iamportal_admin_policy", "azure_admin_policy"};
     public static final String CLOUD_SECURITY_IAM_ADMIN_APPROLE = "cloudsecurity_iam_admin_approle";
+    public static final String[] ADMIN_APPROLES_EXCLUDE_FROM_LIST = { CLOUD_SECURITY_IAM_ADMIN_APPROLE };
     public static final String CLOUD_SECURITY_AZURE_AD_MANAGER_ROLE = "AzureADRoleManager";
 }
