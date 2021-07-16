@@ -2665,7 +2665,7 @@ public class  IAMServiceAccountsService {
 					.body(INVALIDVALUEERROR);
 		}
 
-		String uniqueIAMSvcaccName = iamServiceAccountApprole.getAwsAccountId() + "_" + iamServiceAccountApprole.getIamSvcAccName();
+		String uniqueIAMSvcaccName = iamServiceAccountApprole.getAwsAccountId() + "_" + iamServiceAccountApprole.getIamSvcAccName().toLowerCase();
 		String approleName = iamServiceAccountApprole.getApprolename();
 		String access = iamServiceAccountApprole.getAccess();
 		
@@ -2927,7 +2927,7 @@ public class  IAMServiceAccountsService {
 			token = tokenUtils.getSelfServiceToken();
 		}
 		String approleName = iamServiceAccountApprole.getApprolename();
-		String uniqueIAMSvcaccName = iamServiceAccountApprole.getAwsAccountId() + "_" + iamServiceAccountApprole.getIamSvcAccName();
+		String uniqueIAMSvcaccName = iamServiceAccountApprole.getAwsAccountId() + "_" + iamServiceAccountApprole.getIamSvcAccName().toLowerCase();
 		String access = iamServiceAccountApprole.getAccess();
 		approleName = (approleName != null) ? approleName.toLowerCase() : approleName;
 		access = (access != null) ? access.toLowerCase() : access;

@@ -2844,6 +2844,7 @@ public class AzureServicePrincipalAccountsService {
 				.put(LogMessage.MESSAGE, String.format("Start trying to add Group [%s] to Azure Service Principal [%s].",azureServiceAccountGroup.getGroupname(),azureServiceAccountGroup.getAzureSvcAccName()))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 				.build()));
+		azureServiceAccountGroup.setAzureSvcAccName(azureServiceAccountGroup.getAzureSvcAccName().toLowerCase());
 		if (!userDetails.isAdmin()) {
 			token = tokenUtils.getSelfServiceToken();
 		}
@@ -3683,7 +3684,9 @@ public class AzureServicePrincipalAccountsService {
 				.put(LogMessage.ACTION, AzureServiceAccountConstants.REMOVE_GROUP_FROM_AZURESVCACC_MSG)
 				.put(LogMessage.MESSAGE,String.format("Trying to remove Group [%s] from Azure Service Account [%s].",azureServiceAccountGroup.getGroupname(),azureServiceAccountGroup.getAzureSvcAccName()))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-        if (!userDetails.isAdmin()) {
+
+		azureServiceAccountGroup.setAzureSvcAccName(azureServiceAccountGroup.getAzureSvcAccName().toLowerCase());
+		if (!userDetails.isAdmin()) {
             token = tokenUtils.getSelfServiceToken();
         }
 
@@ -4071,6 +4074,7 @@ public class AzureServicePrincipalAccountsService {
 				.put(LogMessage.MESSAGE,String.format("Start trying to add Approle[%s] to Azure Service Principal[%s].",azureServiceAccountApprole.getApprolename(),azureServiceAccountApprole.getAzureSvcAccName()))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 				.build()));
+		azureServiceAccountApprole.setAzureSvcAccName(azureServiceAccountApprole.getAzureSvcAccName().toLowerCase());
 		if (!userDetails.isAdmin()) {
 			token = tokenUtils.getSelfServiceToken();
 		}
@@ -4308,6 +4312,7 @@ public class AzureServicePrincipalAccountsService {
 						String.format("Start trying to remove approle[%s] from Azure Service Account [%s]",
 								azureServiceAccountApprole.getApprolename(),azureServiceAccountApprole.getAzureSvcAccName()))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+		azureServiceAccountApprole.setAzureSvcAccName(azureServiceAccountApprole.getAzureSvcAccName().toLowerCase());
 		if (!userDetails.isAdmin()) {
 			token = tokenUtils.getSelfServiceToken();
 		}

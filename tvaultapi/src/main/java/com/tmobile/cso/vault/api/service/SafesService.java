@@ -787,6 +787,7 @@ public class  SafesService {
 	 * @return
 	 */
 	public ResponseEntity<String> addUserToSafe(String token, SafeUser safeUser, UserDetails userDetails, boolean isPartOfCreation) {
+		safeUser.setPath(safeUser.getPath().toLowerCase());
 		OIDCEntityResponse oidcEntityResponse = new OIDCEntityResponse();
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 				put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
@@ -1324,6 +1325,7 @@ public class  SafesService {
 	 */
 	public ResponseEntity<String> removeUserFromSafe(String token, SafeUser safeUser, UserDetails userDetails) {
 		OIDCEntityResponse oidcEntityResponse = new OIDCEntityResponse();
+		safeUser.setPath(safeUser.getPath().toLowerCase());
 		String jsonstr = JSONUtil.getJSON(safeUser);
 		String removingAccess=safeUser.getAccess();
 		ObjectMapper objMapper = new ObjectMapper();
@@ -1630,7 +1632,7 @@ public class  SafesService {
 		}	
 
 		String groupName = safeGroup.getGroupname();
-		String path = safeGroup.getPath();
+		String path = safeGroup.getPath().toLowerCase();
 		if(ControllerUtil.isValidSafePath(path) && ControllerUtil.isValidSafe(path, token)){
 			// check for this group is associated to this safe
 			String safeMetadataPath = METADATA + path;
@@ -2026,6 +2028,7 @@ public class  SafesService {
 	 * @return
 	 */
 	public ResponseEntity<String> removeAWSRoleFromSafe(String token, AWSRole awsRole, boolean detachOnly, UserDetails userDetails){
+		awsRole.setPath(awsRole.getPath().toLowerCase());
 		String jsonstr = JSONUtil.getJSON(awsRole);
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 			      put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
@@ -2834,7 +2837,7 @@ public class  SafesService {
 		}
 
 		String role = requestMap.get("role_name");
-		String path = requestMap.get("path");
+		String path = requestMap.get("path").toLowerCase();
 
 		if (ControllerUtil.isValidSafePath(path) && ControllerUtil.isValidSafe(path, token)) {
 			String folders[] = path.split("[/]+");
