@@ -445,7 +445,7 @@ public class  SelfSupportService {
 			return safesService.addGroupToSafe(token, safeGroup, userDetails);
 		}
 		else {
-			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, safeGroup.getPath());
+			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, safeGroup.getPath().toLowerCase());
 			if (!isAuthorized.getStatusCode().equals(HttpStatus.OK)) {
 				return isAuthorized.getStatusCode().equals(HttpStatus.BAD_REQUEST)?isAuthorized:ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Error checking user permission\"]}");
 			}

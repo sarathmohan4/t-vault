@@ -1208,7 +1208,7 @@ public class  ServiceAccountsService {
 			}
 			
 		}else{
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: No permission to users to this service account\"]}");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: No permission to add users to this service account\"]}");
 		}
 	}
 
@@ -2427,7 +2427,7 @@ public class  ServiceAccountsService {
         }
 
         if(isAuthorized){
-			if (!ifInitialPwdReset(token, userDetails, serviceAccountGroup.getSvcAccName())) {
+			if (!ifInitialPwdReset(token, userDetails, svcAccName)) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 						put(LogMessage.ACTION, REMOVE_GROUP_AD_SERVICE_ACCOUNT).
@@ -3600,7 +3600,7 @@ public class  ServiceAccountsService {
 			serviceAccountAWSRole.setAccess(TVaultConstants.WRITE_POLICY);
 		}
 		String roleName = serviceAccountAWSRole.getRolename();
-		String svcAccName = serviceAccountAWSRole.getSvcAccName();
+		String svcAccName = serviceAccountAWSRole.getSvcAccName().toLowerCase();
 		String access = serviceAccountAWSRole.getAccess();
 
 		roleName = (roleName !=null) ? roleName.toLowerCase() : roleName;
@@ -3608,7 +3608,7 @@ public class  ServiceAccountsService {
 		boolean isAuthorized = hasAddOrRemovePermission(userDetails, svcAccName, token);
 
 		if (isAuthorized) {
-			if (!ifInitialPwdReset(token, userDetails, serviceAccountAWSRole.getSvcAccName())) {
+			if (!ifInitialPwdReset(token, userDetails, svcAccName)) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 						put(LogMessage.ACTION, REMOVE_AWSROLE_AD_SERVICE_ACCOUNT).
