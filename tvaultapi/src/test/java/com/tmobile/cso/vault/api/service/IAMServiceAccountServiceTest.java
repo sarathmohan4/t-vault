@@ -270,6 +270,68 @@ public class IAMServiceAccountServiceTest {
     }
 
 	@Test
+	public void test_AssociateAppRole_succssfully_admin_approle() throws Exception {
+
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"Approle successfully associated with IAM Service Account\"]}");
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		UserDetails userDetails = getMockUser(false);
+		IAMServiceAccountApprole serviceAccountApprole = new IAMServiceAccountApprole("AzureADRoleManager", "cloudsecurity_iam_admin_approle", "read", "1234567890");
+
+		String [] policies = {"o_iamsvcacc_1234567891_testsvcname"};
+		when(policyUtils.getCurrentPolicies(token, userDetails.getUsername(), userDetails)).thenReturn(policies);
+		Response appRoleResponse = getMockResponse(HttpStatus.OK, true, "{\"data\": {\"policies\":\"w_iamsvcacc_testsvcname\"}}");
+		when(reqProcessor.process("/auth/approle/role/read","{\"role_name\":\"cloudsecurity_iam_admin_approle\"}",token)).thenReturn(appRoleResponse);
+		Response configureAppRoleResponse = getMockResponse(HttpStatus.OK, true, "");
+		when(appRoleService.configureApprole(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(configureAppRoleResponse);
+		Response updateMetadataResponse = getMockResponse(HttpStatus.NO_CONTENT, true, "");
+		when(ControllerUtil.updateMetadata(Mockito.anyMap(),Mockito.anyString())).thenReturn(updateMetadataResponse);
+
+		when(tokenUtils.getSelfServiceToken()).thenReturn(token);
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		List<String> currnetPolicies = new ArrayList<>();
+		currnetPolicies.add("iamportal_admin_policy");
+		when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(), Mockito.any())).thenReturn(currnetPolicies);
+		when(reqProcessor.process(eq("/sdb"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"data\":{\"initialPasswordReset\":true,\"managedBy\":\"smohan11\",\"name\":\"svc_vault_test5\",\"users\":{\"smohan11\":\"sudo\"}}}"));
+		ResponseEntity<String> responseEntityActual =  iamServiceAccountsService.associateApproletoIAMsvcacc(userDetails, token, serviceAccountApprole);
+
+		assertEquals(HttpStatus.OK, responseEntityActual.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntityActual);
+
+	}
+
+	@Test
+	public void test_AssociateAppRole_failed_admin_approle() throws Exception {
+
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: No permission to add Approle to this iam service account\"]}");
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		UserDetails userDetails = getMockUser(false);
+		IAMServiceAccountApprole serviceAccountApprole = new IAMServiceAccountApprole("AzureADRoleManager", "cloudsecurity_iam_admin_approle", "write", "1234567890");
+
+		String [] policies = {"o_iamsvcacc_1234567891_testsvcname"};
+		when(policyUtils.getCurrentPolicies(token, userDetails.getUsername(), userDetails)).thenReturn(policies);
+		Response appRoleResponse = getMockResponse(HttpStatus.OK, true, "{\"data\": {\"policies\":\"w_iamsvcacc_testsvcname\"}}");
+		when(reqProcessor.process("/auth/approle/role/read","{\"role_name\":\"cloudsecurity_iam_admin_approle\"}",token)).thenReturn(appRoleResponse);
+		Response configureAppRoleResponse = getMockResponse(HttpStatus.OK, true, "");
+		when(appRoleService.configureApprole(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(configureAppRoleResponse);
+		Response updateMetadataResponse = getMockResponse(HttpStatus.NO_CONTENT, true, "");
+		when(ControllerUtil.updateMetadata(Mockito.anyMap(),Mockito.anyString())).thenReturn(updateMetadataResponse);
+
+		when(tokenUtils.getSelfServiceToken()).thenReturn(token);
+		Response lookupResponse = getMockResponse(HttpStatus.OK, true, "{\"policies\":[\"iamportal_admin_policy \"]}");
+		when(reqProcessor.process("/auth/tvault/lookup","{}", token)).thenReturn(lookupResponse);
+		List<String> currnetPolicies = new ArrayList<>();
+		currnetPolicies.add("iamportal_admin_policy");
+		when(iamServiceAccountUtils.getTokenPoliciesAsListFromTokenLookupJson(Mockito.any(), Mockito.any())).thenReturn(currnetPolicies);
+		when(reqProcessor.process(eq("/sdb"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"data\":{\"initialPasswordReset\":true,\"managedBy\":\"smohan11\",\"name\":\"svc_vault_test5\",\"users\":{\"smohan11\":\"sudo\"}}}"));
+		ResponseEntity<String> responseEntityActual =  iamServiceAccountsService.associateApproletoIAMsvcacc(userDetails, token, serviceAccountApprole);
+
+		assertEquals(HttpStatus.BAD_REQUEST, responseEntityActual.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntityActual);
+
+	}
+
+	@Test
 	public void testOnboardIAMServiceAccountSuccss() {
 		userDetails = getMockUser(true);
 		token = userDetails.getClientToken();

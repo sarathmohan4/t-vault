@@ -4017,6 +4017,7 @@ public ResponseEntity<String> getRevocationReasons(Integer certificateId, String
 	public ResponseEntity<String> addGroupToCertificate(UserDetails userDetails, String userToken, CertificateGroup certificateGroup) {
    		String authToken = null;
    		boolean isAuthorized = true;
+        certificateGroup.setCertificateName(certificateGroup.getCertificateName().toLowerCase());
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 				.put(LogMessage.ACTION, SSLCertificateConstants.ADD_GROUP_TO_CERT_MSG)
