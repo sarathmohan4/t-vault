@@ -313,6 +313,36 @@ public class IAMServiceAccountsControllerTest {
 	}
 
 	@Test
+	public void testOnboardIAMServiceAccountSuccessWithSpacesinAWSAccountName() throws Exception {
+		IAMServiceAccount serviceAccount = generateIAMServiceAccount("testaccount", "1234567", "normaluser");
+		IAMServiceAccount iamServiceAccount = new IAMServiceAccount();
+		iamServiceAccount.setUserName("testaccount");
+		iamServiceAccount.setAwsAccountId("1234567");
+		iamServiceAccount.setAwsAccountName("testaccount 1");
+		iamServiceAccount.setOwnerNtid("normaluser");
+		iamServiceAccount.setOwnerEmail("normaluser@testmail.com");
+		iamServiceAccount.setApplicationId("app1");
+		iamServiceAccount.setApplicationName("App1");
+		iamServiceAccount.setApplicationTag("App1");
+		iamServiceAccount.setCreatedAtEpoch(125L);
+		iamServiceAccount.setSecret(generateIAMSecret());
+		iamServiceAccount.setExpiryDateEpoch(7776000000L);
+		String expected = "{\"messages\":[\"Successfully completed onboarding of IAM service account into TVault for password rotation.\"]}";
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body(expected);
+		when(iamServiceAccountsService.onboardIAMServiceAccount(Mockito.anyString(), Mockito.any(), Mockito.any()))
+				.thenReturn(responseEntityExpected);
+		String inputJson = getJSON(serviceAccount);
+		MvcResult result = mockMvc
+				.perform(MockMvcRequestBuilders.post("/v2/iamserviceaccounts/onboard").header(VAULT_TOKEN_STRING, token)
+						.header(CONTENT_TYPE_STRING, CONTENT_TYPE_VALUE_STRING)
+						.requestAttr(USER_DETAILS_STRING, userDetails).content(inputJson))
+				.andExpect(status().isOk()).andReturn();
+
+		String actual = result.getResponse().getContentAsString();
+		assertEquals(expected, actual);
+	}
+
+	@Test
 	public void testAddUserToIAMSvcAccSuccess() throws Exception {
 		IAMServiceAccountUser iamSvcAccUser = new IAMServiceAccountUser("testaccount", "testuser1", "read", "1234567");
 

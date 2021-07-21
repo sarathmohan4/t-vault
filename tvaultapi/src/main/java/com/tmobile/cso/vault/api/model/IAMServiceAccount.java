@@ -44,7 +44,7 @@ public class IAMServiceAccount implements Serializable {
 	private String awsAccountId;
 
 	@NotBlank
-	@Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Name can have alphabets, numbers, _ and - characters only")
+	@Pattern(regexp = "^[a-zA-Z0-9\\s_-]+$", message = "Name can have alphabets, numbers, _ and - characters only")
 	@Size(min = 1, max = 50, message = "AWSAccountName specified should be minimum 1 chanracters and maximum 50 characters only")
 	private String awsAccountName;
 
