@@ -1005,7 +1005,7 @@ public class  ServiceAccountsService {
 		}
 
 		String userName = serviceAccountUser.getUsername();
-		String svcAccName = serviceAccountUser.getSvcAccName();
+		String svcAccName = serviceAccountUser.getSvcAccName().toLowerCase();
 		String access = serviceAccountUser.getAccess();
 
 
@@ -1018,7 +1018,7 @@ public class  ServiceAccountsService {
 		}
 
 		if(isAuthorized){
-			if (!ifInitialPwdReset(token, userDetails, serviceAccountUser.getSvcAccName()) && !TVaultConstants.SUDO_POLICY.equals(serviceAccountUser.getAccess())) {
+			if (!ifInitialPwdReset(token, userDetails, svcAccName) && !TVaultConstants.SUDO_POLICY.equals(serviceAccountUser.getAccess())) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 						put(LogMessage.ACTION, ADD_USER_AD_SERVICE_ACCOUNT).
@@ -1208,7 +1208,7 @@ public class  ServiceAccountsService {
 			}
 			
 		}else{
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: No permission to users to this service account\"]}");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Access denied: No permission to add users to this service account\"]}");
 		}
 	}
 
@@ -1275,15 +1275,15 @@ public class  ServiceAccountsService {
 			serviceAccountUser.setAccess(TVaultConstants.WRITE_POLICY);
 		}
 		String userName = serviceAccountUser.getUsername().toLowerCase();
-		String svcAccName = serviceAccountUser.getSvcAccName();
+		String svcAccName = serviceAccountUser.getSvcAccName().toLowerCase();
 		String access = serviceAccountUser.getAccess();
 
 		boolean isAuthorized = true;
 		if (userDetails != null) {
-			isAuthorized = hasAddOrRemovePermission(userDetails, serviceAccountUser.getSvcAccName(), token);
+			isAuthorized = hasAddOrRemovePermission(userDetails, svcAccName, token);
 		}
 		if(isAuthorized){
-			if (!ifInitialPwdReset(token, userDetails, serviceAccountUser.getSvcAccName())) {
+			if (!ifInitialPwdReset(token, userDetails, svcAccName)) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 						put(LogMessage.ACTION, REMOVE_USER_AD_SERVICE_ACCOUNT).
@@ -2221,7 +2221,7 @@ public class  ServiceAccountsService {
 			serviceAccountGroup.setAccess(TVaultConstants.WRITE_POLICY);
 		}
 		String groupName = serviceAccountGroup.getGroupname();
-		String svcAccName = serviceAccountGroup.getSvcAccName();
+		String svcAccName = serviceAccountGroup.getSvcAccName().toLowerCase();
 		String access = serviceAccountGroup.getAccess();
 
 		if (TVaultConstants.USERPASS.equals(vaultAuthMethod)) {
@@ -2232,7 +2232,7 @@ public class  ServiceAccountsService {
 
 		boolean canAddGroup = hasAddOrRemovePermission(userDetails, svcAccName, token);
 		if(canAddGroup){
-			if (!ifInitialPwdReset(token, userDetails, serviceAccountGroup.getSvcAccName())) {
+			if (!ifInitialPwdReset(token, userDetails, svcAccName)) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 						put(LogMessage.ACTION, ADD_GROUP_AD_SERVICE_ACCOUNT).
@@ -2418,7 +2418,7 @@ public class  ServiceAccountsService {
 			serviceAccountGroup.setAccess(TVaultConstants.WRITE_POLICY);
 		}
         String groupName = serviceAccountGroup.getGroupname();
-        String svcAccName = serviceAccountGroup.getSvcAccName();
+        String svcAccName = serviceAccountGroup.getSvcAccName().toLowerCase();
 
 
         boolean isAuthorized = true;
@@ -2427,7 +2427,7 @@ public class  ServiceAccountsService {
         }
 
         if(isAuthorized){
-			if (!ifInitialPwdReset(token, userDetails, serviceAccountGroup.getSvcAccName())) {
+			if (!ifInitialPwdReset(token, userDetails, svcAccName)) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 						put(LogMessage.ACTION, REMOVE_GROUP_AD_SERVICE_ACCOUNT).
@@ -2668,7 +2668,7 @@ public class  ServiceAccountsService {
 			serviceAccountApprole.setAccess(TVaultConstants.WRITE_POLICY);
 		}
         String approleName = serviceAccountApprole.getApprolename();
-        String svcAccName = serviceAccountApprole.getSvcAccName();
+        String svcAccName = serviceAccountApprole.getSvcAccName().toLowerCase();
         String access = serviceAccountApprole.getAccess();
 
         if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(serviceAccountApprole.getApprolename())){
@@ -2679,7 +2679,7 @@ public class  ServiceAccountsService {
 
         boolean isAuthorized = hasAddOrRemovePermission(userDetails, svcAccName, token);
         if(isAuthorized){
-			if (!ifInitialPwdReset(token, userDetails, serviceAccountApprole.getSvcAccName())) {
+			if (!ifInitialPwdReset(token, userDetails, svcAccName)) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 						put(LogMessage.ACTION, ADD_APPROLE_AD_SERVICE_ACCOUNT).
@@ -3294,7 +3294,7 @@ public class  ServiceAccountsService {
 			serviceAccountApprole.setAccess(TVaultConstants.WRITE_POLICY);
 		}
 		String approleName = serviceAccountApprole.getApprolename();
-		String svcAccName = serviceAccountApprole.getSvcAccName();
+		String svcAccName = serviceAccountApprole.getSvcAccName().toLowerCase();
 		String access = serviceAccountApprole.getAccess();
 
 		if (Arrays.asList(TVaultConstants.SELF_SUPPORT_ADMIN_APPROLES).contains(serviceAccountApprole.getApprolename())) {
@@ -3309,7 +3309,7 @@ public class  ServiceAccountsService {
 		boolean isAuthorized = hasAddOrRemovePermission(userDetails, svcAccName, token);
 
 		if (isAuthorized) {
-			if (!ifInitialPwdReset(token, userDetails, serviceAccountApprole.getSvcAccName())) {
+			if (!ifInitialPwdReset(token, userDetails, svcAccName)) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 						put(LogMessage.ACTION, REMOVE_APPROLE_AD_SERVICE_ACCOUNT).
@@ -3442,7 +3442,7 @@ public class  ServiceAccountsService {
 			serviceAccountAWSRole.setAccess(TVaultConstants.WRITE_POLICY);
 		}
 		String roleName = serviceAccountAWSRole.getRolename();
-		String svcAccName = serviceAccountAWSRole.getSvcAccName();
+		String svcAccName = serviceAccountAWSRole.getSvcAccName().toLowerCase();
 		String access = serviceAccountAWSRole.getAccess();
 
 		roleName = (roleName !=null) ? roleName.toLowerCase() : roleName;
@@ -3450,7 +3450,7 @@ public class  ServiceAccountsService {
 
 		boolean isAuthorized = hasAddOrRemovePermission(userDetails, svcAccName, token);
 		if(isAuthorized){
-			if (!ifInitialPwdReset(token, userDetails, serviceAccountAWSRole.getSvcAccName())) {
+			if (!ifInitialPwdReset(token, userDetails, svcAccName)) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 						put(LogMessage.ACTION, ADD_AWSROLE_AD_SERVICE_ACCOUNT).
@@ -3600,7 +3600,7 @@ public class  ServiceAccountsService {
 			serviceAccountAWSRole.setAccess(TVaultConstants.WRITE_POLICY);
 		}
 		String roleName = serviceAccountAWSRole.getRolename();
-		String svcAccName = serviceAccountAWSRole.getSvcAccName();
+		String svcAccName = serviceAccountAWSRole.getSvcAccName().toLowerCase();
 		String access = serviceAccountAWSRole.getAccess();
 
 		roleName = (roleName !=null) ? roleName.toLowerCase() : roleName;
@@ -3608,7 +3608,7 @@ public class  ServiceAccountsService {
 		boolean isAuthorized = hasAddOrRemovePermission(userDetails, svcAccName, token);
 
 		if (isAuthorized) {
-			if (!ifInitialPwdReset(token, userDetails, serviceAccountAWSRole.getSvcAccName())) {
+			if (!ifInitialPwdReset(token, userDetails, svcAccName)) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 						put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 						put(LogMessage.ACTION, REMOVE_AWSROLE_AD_SERVICE_ACCOUNT).

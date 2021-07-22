@@ -113,7 +113,7 @@ public class SafeUtils {
 				put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).
 				build()));
 		String token = userDetails.getSelfSupportToken();
-		String path = safeUser.getPath();
+		String path = safeUser.getPath().toLowerCase();
 		String safeType = ControllerUtil.getSafeType(path);
 		String safeName = ControllerUtil.getSafeName(path);
 		

@@ -36,7 +36,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -134,7 +133,7 @@ public class  IAMServiceAccountsService {
 				.put(LogMessage.MESSAGE,
 						String.format("Trying to onboard IAM Service Account [%s]", iamServiceAccount.getUserName()))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-		if (!isAuthorizedForIAMOnboardAndOffboard(token)) {
+		if (!isAuthorizedIAMAdminApprole(token)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_CREATION_TITLE)
@@ -410,7 +409,7 @@ public class  IAMServiceAccountsService {
 	 * @param token
 	 * @return
 	 */
-	private boolean isAuthorizedForIAMOnboardAndOffboard(String token) {
+	private boolean isAuthorizedIAMAdminApprole(String token) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		List<String> currentPolicies = new ArrayList<>();
 		Response response = reqProcessor.process("/auth/tvault/lookup","{}", token);
@@ -429,7 +428,7 @@ public class  IAMServiceAccountsService {
 			} catch (IOException e) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-						.put(LogMessage.ACTION, "isAuthorizedForIAMOnboardAndOffboard")
+						.put(LogMessage.ACTION, "isAuthorizedIAMAdminApprole")
 						.put(LogMessage.MESSAGE,
 								"Failed to parse policies from token")
 						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
@@ -437,7 +436,7 @@ public class  IAMServiceAccountsService {
 		}
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-				.put(LogMessage.ACTION, "isAuthorizedForIAMOnboardAndOffboard")
+				.put(LogMessage.ACTION, "isAuthorizedIAMAdminApprole")
 				.put(LogMessage.MESSAGE, "The User/Token does not have required policies to onboard/offboard IAM Service Account.")
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 		return false;
@@ -956,7 +955,7 @@ public class  IAMServiceAccountsService {
 				.put(LogMessage.ACTION, "listAllOnboardedIAMServiceAccounts")
 				.put(LogMessage.MESSAGE, "Trying to get all onboaded IAM service accounts")
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-		if (!isAuthorizedForIAMOnboardAndOffboard(token)) {
+		if (!isAuthorizedIAMAdminApprole(token)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
 					"{\"errors\":[\"Access denied. Not authorized to perform this operation.\"]}");
 		}
@@ -2650,6 +2649,7 @@ public class  IAMServiceAccountsService {
 				.put(LogMessage.ACTION, IAMServiceAccountConstants.ADD_APPROLE_TO_IAMSVCACC_MSG)
 				.put(LogMessage.MESSAGE, "Trying to add Approle to IAM Service Account")
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+		String clientToken = token;
 		if (!userDetails.isAdmin()) {
 			token = tokenUtils.getSelfServiceToken();
 		}
@@ -2665,7 +2665,7 @@ public class  IAMServiceAccountsService {
 					.body(INVALIDVALUEERROR);
 		}
 
-		String uniqueIAMSvcaccName = iamServiceAccountApprole.getAwsAccountId() + "_" + iamServiceAccountApprole.getIamSvcAccName();
+		String uniqueIAMSvcaccName = iamServiceAccountApprole.getAwsAccountId() + "_" + iamServiceAccountApprole.getIamSvcAccName().toLowerCase();
 		String approleName = iamServiceAccountApprole.getApprolename();
 		String access = iamServiceAccountApprole.getAccess();
 		
@@ -2677,7 +2677,7 @@ public class  IAMServiceAccountsService {
 		access = (access != null) ? access.toLowerCase() : access;
 
 		boolean isAuthorized = hasAddOrRemovePermission(userDetails, uniqueIAMSvcaccName, token);
-		if (isAuthorized) {
+		if (isAuthorized || isCloudSecurityAdminApproleAction(clientToken, iamServiceAccountApprole)) {
 			String policy = new StringBuffer().append(TVaultConstants.SVC_ACC_POLICIES_PREFIXES.getKey(access))
 					.append(IAMServiceAccountConstants.IAMSVCACC_POLICY_PREFIX).append(uniqueIAMSvcaccName).toString();
 
@@ -2855,6 +2855,30 @@ public class  IAMServiceAccountsService {
 	}
 
 	/**
+	 * To check if Cloud Security admin approle is being added to AzureADRoleManager IAM service account
+	 */
+	private boolean isCloudSecurityAdminApproleAction(String token, IAMServiceAccountApprole iamServiceAccountApprole) {
+
+		if (TVaultConstants.CLOUD_SECURITY_IAM_ADMIN_APPROLE.equals(iamServiceAccountApprole.getApprolename())
+				&& TVaultConstants.READ_POLICY.equals(iamServiceAccountApprole.getAccess())
+				&& TVaultConstants.CLOUD_SECURITY_AZURE_AD_MANAGER_ROLE.equalsIgnoreCase(iamServiceAccountApprole.getIamSvcAccName())
+				&& isAuthorizedIAMAdminApprole(token)) {
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+					.put(LogMessage.ACTION, "isCloudSecurityAdminApproleAction")
+					.put(LogMessage.MESSAGE, "CloudSecurity approle association to IAM service account AzureADRoleManager")
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			return true;
+		}
+		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+				.put(LogMessage.ACTION, "isCloudSecurityAdminApproleAction")
+				.put(LogMessage.MESSAGE, "Access denied: No permission to associate this approle to IAM service account")
+				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+		return false;
+	}
+
+	/**
 	 * Check if user has the permission to add user/group/awsrole/approles to
 	 * the IAM Service Account
 	 *
@@ -2903,7 +2927,7 @@ public class  IAMServiceAccountsService {
 			token = tokenUtils.getSelfServiceToken();
 		}
 		String approleName = iamServiceAccountApprole.getApprolename();
-		String uniqueIAMSvcaccName = iamServiceAccountApprole.getAwsAccountId() + "_" + iamServiceAccountApprole.getIamSvcAccName();
+		String uniqueIAMSvcaccName = iamServiceAccountApprole.getAwsAccountId() + "_" + iamServiceAccountApprole.getIamSvcAccName().toLowerCase();
 		String access = iamServiceAccountApprole.getAccess();
 		approleName = (approleName != null) ? approleName.toLowerCase() : approleName;
 		access = (access != null) ? access.toLowerCase() : access;
@@ -3301,7 +3325,7 @@ public class  IAMServiceAccountsService {
 		String iamSvcName = iamServiceAccountRotateRequest.getUserName().toLowerCase();
 		String uniqueIAMSvcaccName = awsAccountId + "_" + iamSvcName;
 
-		if (!hasResetPermissionForIAMServiceAccount(token, uniqueIAMSvcaccName) && !(isAuthorizedForIAMOnboardAndOffboard(token))) {
+		if (!hasResetPermissionForIAMServiceAccount(token, uniqueIAMSvcaccName) && !(isAuthorizedIAMAdminApprole(token))) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER)).
 					put(LogMessage.ACTION, IAMServiceAccountConstants.ROTATE_IAM_SVCACC_TITLE).
@@ -3588,7 +3612,7 @@ public class  IAMServiceAccountsService {
 				.put(LogMessage.MESSAGE, String.format("Trying to offboard IAM Service Account [%s]", iamSvcName))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 		
-		if (!isAuthorizedForIAMOnboardAndOffboard(token)) {
+		if (!isAuthorizedIAMAdminApprole(token)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_OFFBOARD_CREATION_TITLE)
@@ -4855,7 +4879,7 @@ public class  IAMServiceAccountsService {
 				.put(LogMessage.MESSAGE, String.format("Trying to get the list of IAM Service Account [%s] access keys", iamSvcaccName))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 
-		if (!isAuthorizedForIAMOnboardAndOffboard(token)) {
+		if (!isAuthorizedIAMAdminApprole(token)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, IAMServiceAccountConstants.GET_IAMSVCACC_ACCESSKEY_LIST_MSG)
@@ -4936,7 +4960,7 @@ public class  IAMServiceAccountsService {
 				.put(LogMessage.MESSAGE,
 						String.format("Trying to write Keys for IAM Service Account [%s]", iamServiceAccountSecret.getUserName()))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-		if (!isAuthorizedForIAMOnboardAndOffboard(token)) {
+		if (!isAuthorizedIAMAdminApprole(token)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, IAMServiceAccountConstants.IAM_SVCACC_WRITEKEY)

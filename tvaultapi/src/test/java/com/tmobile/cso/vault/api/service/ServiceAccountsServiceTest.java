@@ -1375,7 +1375,7 @@ public class ServiceAccountsServiceTest {
         }
         when(ControllerUtil.configureUserpassUser(eq("testacc01"),any(),eq(token))).thenReturn(ldapConfigureResponse);
         // System under test
-        String expectedResponse = "{\"errors\":[\"Access denied: No permission to users to this service account\"]}";
+        String expectedResponse = "{\"errors\":[\"Access denied: No permission to add users to this service account\"]}";
         when(tokenUtils.getSelfServiceToken()).thenReturn(token);
         ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(expectedResponse);
         when(reqProcessor.process(eq("/sdb"),Mockito.any(),eq(token))).thenReturn(getMockResponse(HttpStatus.OK, true, "{\"data\":{\"initialPasswordReset\":true,\"managedBy\":\"smohan11\",\"name\":\"svc_vault_test5\",\"users\":{\"smohan11\":\"sudo\"}}}"));

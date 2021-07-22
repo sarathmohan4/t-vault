@@ -335,6 +335,7 @@ public class  SelfSupportService {
 		if (StringUtils.isEmpty(safeType) || StringUtils.isEmpty(safeName)) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid path specified\"]}");
 		}
+		safeName = safeName.toLowerCase();
 		String powerToken = userDetails.getSelfSupportToken();
 		String username = userDetails.getUsername();
 		Safe safeMetaData = safeUtils.getSafeMetaData(powerToken, safeType, safeName);
@@ -444,7 +445,7 @@ public class  SelfSupportService {
 			return safesService.addGroupToSafe(token, safeGroup, userDetails);
 		}
 		else {
-			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, safeGroup.getPath());
+			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, safeGroup.getPath().toLowerCase());
 			if (!isAuthorized.getStatusCode().equals(HttpStatus.OK)) {
 				return isAuthorized.getStatusCode().equals(HttpStatus.BAD_REQUEST)?isAuthorized:ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Error checking user permission\"]}");
 			}
@@ -468,7 +469,7 @@ public class  SelfSupportService {
 			return safesService.removeGroupFromSafe(token, safeGroup, userDetails);
 		}
 		else {
-			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, safeGroup.getPath());
+			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, safeGroup.getPath().toLowerCase());
 			if (!isAuthorized.getStatusCode().equals(HttpStatus.OK)) {
 				return isAuthorized.getStatusCode().equals(HttpStatus.BAD_REQUEST)?isAuthorized:ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Error checking user permission\"]}");
 			}
@@ -519,7 +520,7 @@ public class  SelfSupportService {
 			return safesService.removeAWSRoleFromSafe(token, awsRole, detachOnly, userDetails);
 		}
 		else {
-			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, awsRole.getPath());
+			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, awsRole.getPath().toLowerCase());
 			if (!isAuthorized.getStatusCode().equals(HttpStatus.OK)) {
 				return isAuthorized.getStatusCode().equals(HttpStatus.BAD_REQUEST)?isAuthorized:ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Error checking user permission\"]}");
 			}
@@ -585,7 +586,7 @@ public class  SelfSupportService {
 			if (ObjectUtils.isEmpty(requestMap.get("role_name")) || ObjectUtils.isEmpty(requestMap.get("path"))) {
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid role name or path\"]}");
 			}
-			String path = requestMap.get("path").toString();
+			String path = requestMap.get("path").toString().toLowerCase();
 			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, path);
 			if (!isAuthorized.getStatusCode().equals(HttpStatus.OK)) {
 				return isAuthorized.getStatusCode().equals(HttpStatus.BAD_REQUEST)?isAuthorized:ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Error checking user permission\"]}");
