@@ -335,6 +335,7 @@ public class  SelfSupportService {
 		if (StringUtils.isEmpty(safeType) || StringUtils.isEmpty(safeName)) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid path specified\"]}");
 		}
+		safeName = safeName.toLowerCase();
 		String powerToken = userDetails.getSelfSupportToken();
 		String username = userDetails.getUsername();
 		Safe safeMetaData = safeUtils.getSafeMetaData(powerToken, safeType, safeName);
@@ -444,7 +445,7 @@ public class  SelfSupportService {
 			return safesService.addGroupToSafe(token, safeGroup, userDetails);
 		}
 		else {
-			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, safeGroup.getPath());
+			ResponseEntity<String> isAuthorized = isAuthorized(userDetails, safeGroup.getPath().toLowerCase());
 			if (!isAuthorized.getStatusCode().equals(HttpStatus.OK)) {
 				return isAuthorized.getStatusCode().equals(HttpStatus.BAD_REQUEST)?isAuthorized:ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"errors\":[\"Error checking user permission\"]}");
 			}
